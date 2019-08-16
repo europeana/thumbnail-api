@@ -1,4 +1,4 @@
-# Full Text API
+# Thumbnail API
 ### Europeana Thumbnail API 
 
 This project retrieves images from our object storage provider. No API key is required. 
