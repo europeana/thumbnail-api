@@ -116,23 +116,6 @@ public class ThumbnailController {
 
         return result;
     }
-    //yet to do
-    @RequestMapping(value = "/v2/thumbnail-by-url.json",
-            method = {RequestMethod.HEAD})
-    public HttpHeaders thumbnailByUrlHead(
-            @RequestParam(value = "uri") String url,
-            @RequestParam(value = "size", required = false, defaultValue = "w400") String size,
-            @RequestParam(value = "type", required = false, defaultValue = "IMAGE") String type,
-            WebRequest webRequest, HttpServletResponse response) {
-
-        final ResponseEntity<byte[]> result = thumbnailByUrl(url,size,type,webRequest,response);
-        if(result.getStatusCode().equals(HttpStatus.OK)) {
-            return result.getHeaders();
-        }
-        //what to do if the status is not 200ok
-        return result.getHeaders();
-
-    }
 
     private MediaFile retrieveThumbnail(String url, String size) {
         MediaFile mediaFile;
