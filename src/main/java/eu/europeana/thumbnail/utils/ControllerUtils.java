@@ -61,15 +61,6 @@ public class ControllerUtils {
             response.setCharacterEncoding("UTF-8");
             response.addHeader("Allow", ALLOWED);
         }
-
-        public static boolean isHeadRequest(WebRequest request)
-        {
-            if(StringUtils.equalsIgnoreCase("HEAD", ((ServletWebRequest) request).getHttpMethod().toString()))
-            {
-                return true;
-            }
-            return false;
-        }
     }
 
 

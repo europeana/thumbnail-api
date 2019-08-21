@@ -1,5 +1,6 @@
 package eu.europeana.thumbnail.web;
 
+import eu.europeana.domain.ObjectMetadata;
 import eu.europeana.thumbnail.utils.ControllerUtils;
 import eu.europeana.thumbnail.model.MediaFile;
 import eu.europeana.thumbnail.service.MediaStorageService;
@@ -54,13 +55,12 @@ public class ThumbnailController {
      */
 
     @RequestMapping(value = "/v2/thumbnail-by-url.json",
-            method = {RequestMethod.GET, RequestMethod.POST})
+            method = {RequestMethod.GET})
     public ResponseEntity<byte[]> thumbnailByUrl(
             @RequestParam(value = "uri") String url,
             @RequestParam(value = "size", required = false, defaultValue = "w400") String size,
             @RequestParam(value = "type", required = false, defaultValue = "IMAGE") String type,
             WebRequest webRequest, HttpServletResponse response) {
-
         long startTime = 0;
         if (LOG.isDebugEnabled()) {
             startTime = System.nanoTime();
@@ -117,7 +117,42 @@ public class ThumbnailController {
         return result;
     }
 
+    @RequestMapping(value = "/v2/thumbnail-by-url.json",
+            method = {RequestMethod.HEAD})
+    public ResponseEntity thumbnailByUrlHead(
+            @RequestParam(value = "uri") String url,
+            @RequestParam(value = "size", required = false, defaultValue = "w400") String size,
+            @RequestParam(value = "type", required = false, defaultValue = "IMAGE") String type,
+            WebRequest webRequest, HttpServletResponse response) {
+        long startTime = 0;
+        if (LOG.isDebugEnabled()) {
+            startTime = System.nanoTime();
+            LOG.debug("Thumbnail url = {}, size = {}, type = {}", url, size, type);
+        }
+        ResponseEntity result;
+        HttpHeaders headers= new HttpHeaders();
+        ControllerUtils.addResponseHeaders(response);
+        ObjectMetadata metadata = getMetaData(computeResourceUrl(url, size));
+
+        if(metadata!=null) {
+            headers.setETag("\""+metadata.getETag()+"\"");
+            headers.setContentLength(0);
+            headers.setContentType(MediaType.valueOf(metadata.getContentType()));
+            headers.setLastModified(metadata.getLastModified().toInstant());
+            result= new ResponseEntity(headers, HttpStatus.OK);
+        }
+        else {
+            result= new ResponseEntity(HttpStatus.NOT_FOUND);
+        }
+        if (LOG.isDebugEnabled()) {
+            Long duration = (System.nanoTime() - startTime) / 1000;
+            LOG.debug("Total thumbnail HEAD request time (from s3): {}", duration);
+        }
+       return result;
+    }
+
     private MediaFile retrieveThumbnail(String url, String size) {
+
         MediaFile mediaFile;
         final String mediaFileId = computeResourceUrl(url, size);
         LOG.debug("id = {}", mediaFileId);
@@ -127,9 +162,9 @@ public class ThumbnailController {
         mediaFile = mediaStorage.retrieveAsMediaFile(mediaFileId, url, Boolean.TRUE);
         LOG.debug("Metis thumbnail = {}", mediaFile);
 
-        mediaStorage.isMetis(false);
         // 2. Try the old UIM/CRF media storage (Amazon S3) second
         if (mediaFile == null) {
+            mediaStorage.isMetis(false);
             mediaFile = mediaStorage.retrieveAsMediaFile(mediaFileId, url, Boolean.TRUE);
             LOG.debug("UIM thumbnail = {}", mediaFile);
         }
@@ -280,5 +315,21 @@ public class ThumbnailController {
         return getMD5(resourceUrl) + "-" + (StringUtils.equalsIgnoreCase(resourceSize, "w200") ? "MEDIUM" : "LARGE");
     }
 
+    private ObjectMetadata getMetaData(String id)
+    {
+        ObjectMetadata metadata;
+
+        // 1. Check Metis storage first (IBM Cloud S3) because that has the newest thumbnails
+        mediaStorage.isMetis(true);
+        metadata= mediaStorage.retrieveMetaData(id);
+
+        // 2. Try the old UIM/CRF media storage (Amazon S3) second
+        if(metadata == null) {
+            mediaStorage.isMetis(false);
+            metadata= mediaStorage.retrieveMetaData(id);
+        }
+
+        return metadata;
+    }
 }
 
