@@ -119,7 +119,15 @@ public class ThumbnailController {
 
         return result;
     }
-
+    /**
+     * Retrieves Header values
+     * @param url optional, the URL of the media resource of which a thumbnail should be returned. Note that the URL should be encoded.
+     *            When no url is provided a default thumbnail will be returned
+     * @param size optional, the size of the thumbnail, can either be w200 (width 200) or w400 (width 400).
+     * @param type optional, type of the default thumbnail (media image) in case the thumbnail does not exists or no url is provided,
+     *             can be: IMAGE, SOUND, VIDEO, TEXT or 3D.
+     * @return responsEntity
+     */
     @RequestMapping(value = "/v2/thumbnail-by-url.json",
             method = {RequestMethod.HEAD})
     public ResponseEntity thumbnailByUrlHead(
