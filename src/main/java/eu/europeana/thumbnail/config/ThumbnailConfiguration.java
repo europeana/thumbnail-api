@@ -30,11 +30,6 @@ public class ThumbnailConfiguration {
 
     private static final Logger LOG = LogManager.getLogger(ThumbnailConfiguration.class);
 
-    @Value("${thumbnail-api.baseurl}")
-    private String thumbnailApiBaseUrl;
-    @Value("${thumbnail-api.path}")
-    private String thumbnailApiPath;
-
     @Value("${metis.thumbnails.s3.key}")
     private String metisThumbnailS3Key;
     @Value("${metis.thumbnails.s3.secret}")
@@ -54,20 +49,6 @@ public class ThumbnailConfiguration {
     private String uimThumbnailS3Region;
     @Value("${uim.thumbnails.s3.bucket}")
     private String uimThumbnailS3Bucket;
-
-    /**
-     * @return base url from where we should retrieve thumbnail json data
-     */
-    public String getThumbnailApiBaseUrl() {
-        return thumbnailApiBaseUrl;
-    }
-
-    /**
-     * @return Record resource path (should be appended to the thumbnail API base url)
-     */
-    public String getThumbnailApiPath() {
-        return thumbnailApiPath;
-    }
 
     /**
      * @return Metis Thumbnails hosted on IBM Cloud S3
@@ -145,9 +126,4 @@ public class ThumbnailConfiguration {
         }
     }
 
-    @PostConstruct
-    private void logImportantSettings() {
-        LOG.info("Thumbnail settings:");
-        LOG.info("  Thumbnail API Url = {}{} ", this.getThumbnailApiBaseUrl(), this.getThumbnailApiPath());
-    }
 }
