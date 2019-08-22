@@ -5,8 +5,6 @@ import org.apache.logging.log4j.LogManager;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
-import org.springframework.cloud.client.circuitbreaker.EnableCircuitBreaker;
-import org.springframework.cloud.netflix.hystrix.dashboard.EnableHystrixDashboard;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
@@ -20,8 +18,6 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
  * Created on 12-08-2019
  */
 @SpringBootApplication
-//@EnableHystrixDashboard
-//@EnableCircuitBreaker
 @PropertySource(value = "classpath:build.properties", ignoreResourceNotFound = true)
 public class ThumbnailApplication extends SpringBootServletInitializer {
 

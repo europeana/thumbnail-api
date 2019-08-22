@@ -42,7 +42,10 @@ public class ThumbnailController {
     private static final String GZIPSUFFIX     = "-gzip";
 
     @Autowired
-    private MediaStorageService mediaStorage;
+    private MediaStorageService metisobjectStorageClient;
+    @Autowired
+    private MediaStorageService uimObjectStorageClient;
+
 
     /**
      * Retrieves image thumbnails.
@@ -158,14 +161,12 @@ public class ThumbnailController {
         LOG.debug("id = {}", mediaFileId);
 
         // 1. Check Metis storage first (IBM Cloud S3) because that has the newest thumbnails
-        mediaStorage.isMetis(true);
-        mediaFile = mediaStorage.retrieveAsMediaFile(mediaFileId, url, Boolean.TRUE);
+        mediaFile = metisobjectStorageClient.retrieveAsMediaFile(mediaFileId, url, Boolean.TRUE);
         LOG.debug("Metis thumbnail = {}", mediaFile);
 
         // 2. Try the old UIM/CRF media storage (Amazon S3) second
         if (mediaFile == null) {
-            mediaStorage.isMetis(false);
-            mediaFile = mediaStorage.retrieveAsMediaFile(mediaFileId, url, Boolean.TRUE);
+            mediaFile = uimObjectStorageClient.retrieveAsMediaFile(mediaFileId, url, Boolean.TRUE);
             LOG.debug("UIM thumbnail = {}", mediaFile);
         }
 
@@ -320,13 +321,11 @@ public class ThumbnailController {
         ObjectMetadata metadata;
 
         // 1. Check Metis storage first (IBM Cloud S3) because that has the newest thumbnails
-        mediaStorage.isMetis(true);
-        metadata= mediaStorage.retrieveMetaData(id);
+        metadata= metisobjectStorageClient.retrieveMetaData(id);
 
         // 2. Try the old UIM/CRF media storage (Amazon S3) second
         if(metadata == null) {
-            mediaStorage.isMetis(false);
-            metadata= mediaStorage.retrieveMetaData(id);
+            metadata= uimObjectStorageClient.retrieveMetaData(id);
         }
 
         return metadata;
