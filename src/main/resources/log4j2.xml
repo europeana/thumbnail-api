@@ -13,7 +13,6 @@
         <Root level="INFO">
             <AppenderRef ref="Console"/>
         </Root>
-        <Logger name="org.apache.http" level="INFO"/>
-        <Logger name="eu.europeana.iiif" level="INFO"/>
+        <Logger name="eu.europeana.thumbnail.web.ThumbnailController" level="DEBUG"/>
     </Loggers>
 </Configuration>
