@@ -8,7 +8,6 @@ import javax.servlet.http.HttpServletResponse;
 public class ControllerUtils {
 
         private static final String ALLOWED                 = "GET, HEAD";
-        private static final String ACCEPT                 = "Accept";
 
         private ControllerUtils() {
             // to avoid instantiating this class
