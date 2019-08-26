@@ -1,7 +1,5 @@
 package eu.europeana.thumbnail.service;
 
-
-import eu.europeana.features.ObjectStorageClient;
 import eu.europeana.thumbnail.model.MediaFile;
 import eu.europeana.domain.ObjectMetadata;
 import eu.europeana.domain.StorageObject;
@@ -60,28 +58,9 @@ public interface MediaStorageService {
         ObjectMetadata retrieveMetaData(String id);
 
         /**
-         * Retrieves the desired credentials Metis or UIM
-         * @param isMetis is true if Metis credentials are required
-         * @return ObjectStorageClient object
-         */
-        ObjectStorageClient isMetis(boolean isMetis);
-
-        /**
          * If the file does not exists in the DB it creates it, otherwise it will be updated.
          * @param file the new/modified MediaFile
          * @deprecated September 2018, no longer needed/required
          */
-        @Deprecated
-        void createOrModify(MediaFile file);
-
-        /**
-         * Deletes a file with a given id.
-         * @param id the id of the file
-         * @deprecated September 2018, no longer needed/required
-         */
-        @Deprecated
-        void delete(String id);
-
-
     }
 

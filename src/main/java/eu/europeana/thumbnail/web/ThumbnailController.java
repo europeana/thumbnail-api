@@ -1,14 +1,17 @@
 package eu.europeana.thumbnail.web;
 
-import eu.europeana.thumbnail.utils.ControllerUtils;
+import eu.europeana.domain.ObjectMetadata;
 import eu.europeana.thumbnail.model.MediaFile;
 import eu.europeana.thumbnail.service.MediaStorageService;
+import eu.europeana.thumbnail.utils.ControllerUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.*;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -25,7 +28,7 @@ import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.*;
+import java.util.Locale;
 
 /**
  * Retrieves image thumbnails.
@@ -40,8 +43,14 @@ public class ThumbnailController {
     private static final String IIIF_HOST_NAME = "iiif.europeana.eu";
     private static final String GZIPSUFFIX     = "-gzip";
 
-    @Autowired
-    private MediaStorageService mediaStorage;
+    private MediaStorageService metisobjectStorageClient;
+    private MediaStorageService uimObjectStorageClient;
+
+    public ThumbnailController(MediaStorageService metisobjectStorageClient, MediaStorageService uimObjectStorageClient) {
+        this.metisobjectStorageClient = metisobjectStorageClient;
+        this.uimObjectStorageClient = uimObjectStorageClient;
+    }
+
 
     /**
      * Retrieves image thumbnails.
@@ -54,13 +63,12 @@ public class ThumbnailController {
      */
 
     @RequestMapping(value = "/v2/thumbnail-by-url.json",
-            method = {RequestMethod.GET, RequestMethod.POST})
+            method = {RequestMethod.GET})
     public ResponseEntity<byte[]> thumbnailByUrl(
             @RequestParam(value = "uri") String url,
             @RequestParam(value = "size", required = false, defaultValue = "w400") String size,
             @RequestParam(value = "type", required = false, defaultValue = "IMAGE") String type,
             WebRequest webRequest, HttpServletResponse response) {
-
         long startTime = 0;
         if (LOG.isDebugEnabled()) {
             startTime = System.nanoTime();
@@ -116,21 +124,61 @@ public class ThumbnailController {
 
         return result;
     }
+    /**
+     * Retrieves Header values
+     * @param url optional, the URL of the media resource of which a thumbnail should be returned. Note that the URL should be encoded.
+     *            When no url is provided a default thumbnail will be returned
+     * @param size optional, the size of the thumbnail, can either be w200 (width 200) or w400 (width 400).
+     * @param type optional, type of the default thumbnail (media image) in case the thumbnail does not exists or no url is provided,
+     *             can be: IMAGE, SOUND, VIDEO, TEXT or 3D.
+     * @return responsEntity
+     */
+    @RequestMapping(value = "/v2/thumbnail-by-url.json",
+            method = {RequestMethod.HEAD})
+    public ResponseEntity thumbnailByUrlHead(
+            @RequestParam(value = "uri") String url,
+            @RequestParam(value = "size", required = false, defaultValue = "w400") String size,
+            @RequestParam(value = "type", required = false, defaultValue = "IMAGE") String type,
+            WebRequest webRequest, HttpServletResponse response) {
+        long startTime = 0;
+        if (LOG.isDebugEnabled()) {
+            startTime = System.nanoTime();
+            LOG.debug("Thumbnail url = {}, size = {}, type = {}", url, size, type);
+        }
+        ResponseEntity result;
+        HttpHeaders headers= new HttpHeaders();
+        ControllerUtils.addResponseHeaders(response);
+        ObjectMetadata metadata = getMetaData(computeResourceUrl(url, size));
+
+        if (metadata != null) {
+            headers.setETag("\"" + metadata.getETag() + "\"");
+            headers.setContentLength(0);
+            headers.setContentType(MediaType.IMAGE_JPEG);
+            headers.setLastModified(metadata.getLastModified().toInstant());
+            result= new ResponseEntity(headers, HttpStatus.OK);
+        } else {
+            result= new ResponseEntity(HttpStatus.NOT_FOUND);
+        }
+        if (LOG.isDebugEnabled()) {
+            Long duration = (System.nanoTime() - startTime) / 1000;
+            LOG.debug("Total thumbnail HEAD request time (from s3): {}", duration);
+        }
+       return result;
+    }
 
     private MediaFile retrieveThumbnail(String url, String size) {
+
         MediaFile mediaFile;
         final String mediaFileId = computeResourceUrl(url, size);
         LOG.debug("id = {}", mediaFileId);
 
         // 1. Check Metis storage first (IBM Cloud S3) because that has the newest thumbnails
-        mediaStorage.isMetis(true);
-        mediaFile = mediaStorage.retrieveAsMediaFile(mediaFileId, url, Boolean.TRUE);
+        mediaFile = metisobjectStorageClient.retrieveAsMediaFile(mediaFileId, url, Boolean.TRUE);
         LOG.debug("Metis thumbnail = {}", mediaFile);
 
-        mediaStorage.isMetis(false);
         // 2. Try the old UIM/CRF media storage (Amazon S3) second
         if (mediaFile == null) {
-            mediaFile = mediaStorage.retrieveAsMediaFile(mediaFileId, url, Boolean.TRUE);
+            mediaFile = uimObjectStorageClient.retrieveAsMediaFile(mediaFileId, url, Boolean.TRUE);
             LOG.debug("UIM thumbnail = {}", mediaFile);
         }
 
@@ -280,5 +328,18 @@ public class ThumbnailController {
         return getMD5(resourceUrl) + "-" + (StringUtils.equalsIgnoreCase(resourceSize, "w200") ? "MEDIUM" : "LARGE");
     }
 
+    private ObjectMetadata getMetaData(String id) {
+        ObjectMetadata metadata;
+
+        // 1. Check Metis storage first (IBM Cloud S3) because that has the newest thumbnails
+        metadata = metisobjectStorageClient.retrieveMetaData(id);
+
+        // 2. Try the old UIM/CRF media storage (Amazon S3) second
+        if (metadata == null) {
+            metadata = uimObjectStorageClient.retrieveMetaData(id);
+        }
+
+        return metadata;
+    }
 }
 

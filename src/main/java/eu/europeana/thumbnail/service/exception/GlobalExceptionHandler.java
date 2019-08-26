@@ -21,7 +21,7 @@ public class GlobalExceptionHandler {
      * @throws ThumbnailException rethrown exception
      */
     @ExceptionHandler(ThumbnailException.class)
-    public void handleIiifException(ThumbnailException e) throws ThumbnailException {
+    public void handleThumbnailException(ThumbnailException e) throws ThumbnailException {
         if (e.doLog()) {
             LOG.error("Caught exception", e);
         }

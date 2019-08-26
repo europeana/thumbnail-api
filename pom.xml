@@ -12,6 +12,7 @@
     <groupId>eu.europeana.thumbnail</groupId>
     <artifactId>thumbnail-api</artifactId>
     <version>0.0.1-SNAPSHOT</version>
+    <packaging>war</packaging>
 
     <name>Europeana Thumbnail API</name>
     <description>Spring-Boot 2 application for Thumbnail API</description>
@@ -25,10 +26,9 @@
         <commonsIO.version>2.4</commonsIO.version>
         <commonsLang3.version>3.9</commonsLang3.version>
         <jodatime.version>2.9.2</jodatime.version>
-        <objectStorage.version>1.6</objectStorage.version>
+        <objectStorage.version>1.7-SNAPSHOT</objectStorage.version>
 
         <spring-boot.version>2.1.4.RELEASE</spring-boot.version>
-        <spring-hysterix.version>2.1.1.RELEASE</spring-hysterix.version>
     </properties>
 
     <dependencyManagement>
@@ -75,48 +75,6 @@
             <artifactId>spring-boot-configuration-processor</artifactId>
             <optional>true</optional>
         </dependency>
-        <dependency>
-            <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-starter-netflix-hystrix</artifactId>
-            <version>${spring-hysterix.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-starter-netflix-hystrix-dashboard</artifactId>
-            <version>${spring-hysterix.version}</version>
-        </dependency>
-        <!-- for retrieving record data -->
-        <dependency>
-            <groupId>org.apache.httpcomponents</groupId>
-            <artifactId>httpclient</artifactId>
-            <version>4.5.4</version>
-        </dependency>
-
-        <!-- for parsing record json -->
-        <dependency>
-            <groupId>com.jayway.jsonpath</groupId>
-            <artifactId>json-path</artifactId>
-            <version>2.4.0</version>
-            <exclusions>
-                <exclusion>
-                    <artifactId>slf4j-api</artifactId>
-                    <groupId>org.slf4j</groupId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-<!--        &lt;!&ndash; for serializing &ndash;&gt;-->
-<!--        <dependency>-->
-<!--            <groupId>com.fasterxml.jackson.core</groupId>-->
-<!--            <artifactId>jackson-core</artifactId>-->
-<!--            <version>2.9.4</version>-->
-<!--        </dependency>-->
-<!--        &lt;!&ndash; see https://github.com/io-informatics/jackson-jsonld &ndash;&gt;-->
-<!--        <dependency>-->
-<!--            <groupId>com.io-informatics.oss</groupId>-->
-<!--            <artifactId>jackson-jsonld</artifactId>-->
-<!--            <version>0.1.1</version>-->
-<!--        </dependency>-->
-
         <dependency>
             <groupId>io.springfox</groupId>
             <artifactId>springfox-swagger2</artifactId>
