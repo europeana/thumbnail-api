@@ -12,10 +12,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.WebRequest;
 
 import javax.servlet.http.HttpServletResponse;
@@ -36,7 +33,7 @@ import java.util.Locale;
  */
 @RestController
 @RequestMapping("/api")
-public class ThumbnailController {
+public class ThumbnailController{
 
     private static final Logger LOG = LogManager.getLogger(ThumbnailController.class);
 
@@ -62,14 +59,14 @@ public class ThumbnailController {
      * @return responsEntity
      */
 
-    @RequestMapping(value = "/v2/thumbnail-by-url.json",
-            method = {RequestMethod.GET})
+    @GetMapping(value = "/v2/thumbnail-by-url.json")
     public ResponseEntity<byte[]> thumbnailByUrl(
             @RequestParam(value = "uri") String url,
             @RequestParam(value = "size", required = false, defaultValue = "w400") String size,
             @RequestParam(value = "type", required = false, defaultValue = "IMAGE") String type,
             WebRequest webRequest, HttpServletResponse response) {
         long startTime = 0;
+        boolean withContent=false;
         if (LOG.isDebugEnabled()) {
             startTime = System.nanoTime();
             LOG.debug("Thumbnail url = {}, size = {}, type = {}", url, size, type);
@@ -129,7 +126,7 @@ public class ThumbnailController {
      * @param url optional, the URL of the media resource of which a thumbnail should be returned. Note that the URL should be encoded.
      *            When no url is provided a default thumbnail will be returned
      * @param size optional, the size of the thumbnail, can either be w200 (width 200) or w400 (width 400).
-     * @param type optional, type of the default thumbnail (media image) in case the thumbnail does not exists or no url is provided,
+     * @param  , type of the default thumbnail (media image) in case the thumbnail does not exists or no url is provided,
      *             can be: IMAGE, SOUND, VIDEO, TEXT or 3D.
      * @return responsEntity
      */
@@ -154,7 +151,7 @@ public class ThumbnailController {
             headers.setETag("\"" + metadata.getETag() + "\"");
             headers.setContentLength(0);
             headers.setContentType(MediaType.IMAGE_JPEG);
-            headers.setLastModified(metadata.getLastModified().toInstant());
+           // headers.setLastModified(metadata.getLastModified().toDateTime());
             result= new ResponseEntity(headers, HttpStatus.OK);
         } else {
             result= new ResponseEntity(HttpStatus.NOT_FOUND);
@@ -173,12 +170,12 @@ public class ThumbnailController {
         LOG.debug("id = {}", mediaFileId);
 
         // 1. Check Metis storage first (IBM Cloud S3) because that has the newest thumbnails
-        mediaFile = metisobjectStorageClient.retrieveAsMediaFile(mediaFileId, url, Boolean.TRUE);
+        mediaFile = metisobjectStorageClient.retrieveAsMediaFile(mediaFileId, url, true);
         LOG.debug("Metis thumbnail = {}", mediaFile);
 
         // 2. Try the old UIM/CRF media storage (Amazon S3) second
         if (mediaFile == null) {
-            mediaFile = uimObjectStorageClient.retrieveAsMediaFile(mediaFileId, url, Boolean.TRUE);
+            mediaFile = uimObjectStorageClient.retrieveAsMediaFile(mediaFileId, url, true);
             LOG.debug("UIM thumbnail = {}", mediaFile);
         }
 

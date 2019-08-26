@@ -21,6 +21,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
 @PropertySource(value = "classpath:build.properties", ignoreResourceNotFound = true)
 public class ThumbnailApplication extends SpringBootServletInitializer {
 
+    private static final long maxAge=1000;
     /**
      * Setup CORS for all requests
      * @return WebMvcConfigurer that exposes CORS headers
@@ -30,7 +31,7 @@ public class ThumbnailApplication extends SpringBootServletInitializer {
         return new WebMvcConfigurerAdapter() {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
-                registry.addMapping("/**").allowedOrigins("*").maxAge(1000)
+                registry.addMapping("/**").allowedOrigins("*").maxAge(maxAge)
                         .exposedHeaders("Allow, Vary, ETag, Last-Modified");
             }
         };
