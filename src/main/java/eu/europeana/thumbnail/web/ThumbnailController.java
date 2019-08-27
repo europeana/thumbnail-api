@@ -39,7 +39,7 @@ public class ThumbnailController {
 
     private static final String IIIF_HOST_NAME = "iiif.europeana.eu";
     private static final String GZIPSUFFIX = "-gzip";
-    private static final boolean LOG_DEBUG_ENABELED = LOG.isDebugEnabled();
+    private static final boolean LOG_DEBUG_ENABLED = LOG.isDebugEnabled();
 
     private MediaStorageService metisobjectStorageClient;
     private MediaStorageService uimObjectStorageClient;
@@ -71,7 +71,7 @@ public class ThumbnailController {
         ResponseEntity < byte[] > result;
         final HttpHeaders headers = new HttpHeaders();
 
-        if (LOG_DEBUG_ENABELED) {
+        if (LOG_DEBUG_ENABLED) {
             startTime = System.nanoTime();
             LOG.debug("Thumbnail url = {}, size = {}, type = {}", url, size, type);
         }
@@ -93,11 +93,11 @@ public class ThumbnailController {
             // finally check if we should return the full response, or a 304
             // the check below automatically sets an ETag and last-Modified in our response header and returns a 304
             // (but only when clients include the If_Modified_Since header in their request)
-            if (checkforNotModified(mediaFile, webRequest)) {
+            if (checkForNotModified(mediaFile, webRequest)) {
                 result = null;
             }
         }
-        if (LOG_DEBUG_ENABELED) {
+        if (LOG_DEBUG_ENABLED) {
             Long duration = (System.nanoTime() - startTime) / 1000;
             if (MediaType.IMAGE_PNG.equals(headers.getContentType())) {
                 LOG.debug("Total thumbnail request time (missing media): {}", duration);
@@ -131,7 +131,7 @@ public class ThumbnailController {
             @RequestParam(value = "type", required = false, defaultValue = "IMAGE") String type,
             WebRequest webRequest, HttpServletResponse response) {
         long startTime = 0;
-        if (LOG_DEBUG_ENABELED) {
+        if (LOG_DEBUG_ENABLED) {
             startTime = System.nanoTime();
             LOG.debug("Thumbnail url = {}, size = {}, type = {}", url, size, type);
         }
@@ -149,7 +149,7 @@ public class ThumbnailController {
         } else {
             result = new ResponseEntity(HttpStatus.NOT_FOUND);
         }
-        if (LOG_DEBUG_ENABELED) {
+        if (LOG_DEBUG_ENABLED) {
             Long duration = (System.nanoTime() - startTime) / 1000;
             LOG.debug("Total thumbnail HEAD request time (from s3): {}", duration);
         }
@@ -333,9 +333,9 @@ public class ThumbnailController {
     /** finally check if we should return the full response, or a 304
      * @param mediaFile
      * @param webRequest
-     * @return true if
+     * @return boolean
      */
-    private boolean checkforNotModified(MediaFile mediaFile, WebRequest webRequest) {
+    private boolean checkForNotModified(MediaFile mediaFile, WebRequest webRequest) {
 
         if (mediaFile.getLastModified() != null && mediaFile.getETag() != null) {
             if (webRequest.checkNotModified(
