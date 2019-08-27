@@ -40,10 +40,16 @@ public class ThumbnailController {
     private static final String IIIF_HOST_NAME = "iiif.europeana.eu";
     private static final String GZIPSUFFIX = "-gzip";
     private static final boolean LOG_DEBUG_ENABLED = LOG.isDebugEnabled();
+    private static final long DURATION_CONVERTER=10000;
 
     private MediaStorageService metisobjectStorageClient;
     private MediaStorageService uimObjectStorageClient;
 
+    /**
+     * Instantiation of the objects
+     * @param metisobjectStorageClient object for Metis Storage
+     * @param uimObjectStorageClient   object for UIM Storage
+     */
     public ThumbnailController(MediaStorageService metisobjectStorageClient, MediaStorageService uimObjectStorageClient) {
         this.metisobjectStorageClient = metisobjectStorageClient;
         this.uimObjectStorageClient = uimObjectStorageClient;
@@ -98,7 +104,7 @@ public class ThumbnailController {
             }
         }
         if (LOG_DEBUG_ENABLED) {
-            Long duration = (System.nanoTime() - startTime) / 1000;
+            Long duration = (System.nanoTime() - startTime) / DURATION_CONVERTER;
             if (MediaType.IMAGE_PNG.equals(headers.getContentType())) {
                 LOG.debug("Total thumbnail request time (missing media): {}", duration);
             } else {
@@ -117,7 +123,7 @@ public class ThumbnailController {
      * @param url optional, the URL of the media resource of which a thumbnail should be returned. Note that the URL should be encoded.
      *            When no url is provided a default thumbnail will be returned
      * @param size optional, the size of the thumbnail, can either be w200 (width 200) or w400 (width 400).
-     * @param  , type of the default thumbnail (media image) in case the thumbnail does not exists or no url is provided,
+     * @param type, type of the default thumbnail (media image) in case the thumbnail does not exists or no url is provided,
      *             can be: IMAGE, SOUND, VIDEO, TEXT or 3D.
      * @return responsEntity
      */
@@ -150,7 +156,7 @@ public class ThumbnailController {
             result = new ResponseEntity(HttpStatus.NOT_FOUND);
         }
         if (LOG_DEBUG_ENABLED) {
-            Long duration = (System.nanoTime() - startTime) / 1000;
+            Long duration = (System.nanoTime() - startTime) / DURATION_CONVERTER;
             LOG.debug("Total thumbnail HEAD request time (from s3): {}", duration);
         }
         return result;
@@ -351,3 +357,4 @@ public class ThumbnailController {
 
     }
 }
+

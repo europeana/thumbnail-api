@@ -1,7 +1,6 @@
 package eu.europeana.thumbnail.web;
 
 import eu.europeana.features.ObjectStorageClient;
-import eu.europeana.thumbnail.config.ThumbnailConfiguration;
 import eu.europeana.thumbnail.model.MediaFile;
 import eu.europeana.thumbnail.service.impl.MediaStorageServiceImpl;
 import org.junit.Test;
@@ -10,7 +9,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.web.servlet.MockMvc;
 
