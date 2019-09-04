@@ -14,5 +14,6 @@
             <AppenderRef ref="Console"/>
         </Root>
         <Logger name="eu.europeana.thumbnail.web.ThumbnailController" level="DEBUG"/>
+        <Logger name="eu.europeana.thumbnail.web.ThumbnailControllerV3" level="DEBUG"/>
     </Loggers>
 </Configuration>
