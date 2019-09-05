@@ -147,7 +147,7 @@ public class ThumbnailController {
 
         if(metadata!=null) {
             headers.setETag("\""+metadata.getETag()+"\"");
-            headers.setContentLength(0);
+            headers.setContentLength(metadata.getContentLength());
             headers.setContentType(MediaType.IMAGE_JPEG);
             headers.setLastModified(metadata.getLastModified().toInstant());
             result= new ResponseEntity(headers, HttpStatus.OK);
