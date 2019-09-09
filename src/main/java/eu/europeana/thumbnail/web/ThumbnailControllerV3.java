@@ -15,12 +15,10 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.WebRequest;
 
 import javax.servlet.http.HttpServletResponse;
-import java.io.BufferedInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -55,6 +53,7 @@ public class ThumbnailControllerV3 {
      * Retrieves image thumbnails.
      * @param url  the URL of the media resource of which a thumbnail should be returned. Note that the URL should be encoded.
      * @param size , the size of the thumbnail, can either be 200 (width 200px) or 400 (width 400px).
+     * @throws UnsupportedEncodingException the url is decoded in v3. Hence it may throw the exception.
      * @return responsEntity
      */
 
@@ -62,13 +61,13 @@ public class ThumbnailControllerV3 {
     public ResponseEntity<byte[]> thumbnailByUrl(
             @PathVariable(value= "size") int size,
             @PathVariable("url") String url,
-            WebRequest webRequest, HttpServletResponse response) {
+            WebRequest webRequest, HttpServletResponse response) throws UnsupportedEncodingException {
 
-        String decodedURL= StringUtils.replace(url, "%2F", "/");
+        String decodedURL= URLDecoder.decode(url, "UTF-8");
         long startTime = 0;
         if (LOG_DEBUG_ENABLED) {
             startTime = System.nanoTime();
-            LOG.debug("Thumbnail url = {}, size = {}", decodedURL, size);
+            LOG.debug("Thumbnail url = {}, decodedURL = {} ,size = {}", url, decodedURL, size);
         }
 
         ControllerUtils.addResponseHeaders(response);
@@ -80,6 +79,9 @@ public class ThumbnailControllerV3 {
         if(size!= WIDTH_200 && size!= WIDTH_400) {
             mediaContent = null;
             result = new ResponseEntity<>(mediaContent, headers, HttpStatus.NOT_FOUND);
+            if (LOG_DEBUG_ENABLED) {
+                LOG.debug("The size entered is not valid size = {}", size);
+            }
         } else {
             MediaFile mediaFile = retrieveThumbnail(decodedURL, String.valueOf(size));
 
@@ -120,6 +122,7 @@ public class ThumbnailControllerV3 {
      * Retrieves Header values
      * @param url  the URL of the media resource of which a thumbnail should be returned. Note that the URL should be encoded.
      * @param size , the size of the thumbnail, can either be 200 (width 200px) or 400 (width 400px).
+     * @throws UnsupportedEncodingException the url is decoded in v3. Hence it may throw the exception.
      * @return responsEntity
      */
     @RequestMapping(value = "/v3/{size}/{url}",
@@ -127,13 +130,13 @@ public class ThumbnailControllerV3 {
     public ResponseEntity thumbnailByUrlHead(
             @PathVariable(value= "size") int size,
             @PathVariable("url") String url,
-            WebRequest webRequest, HttpServletResponse response) {
+            WebRequest webRequest, HttpServletResponse response) throws UnsupportedEncodingException {
 
-        String decodedURL= StringUtils.replace(url, "%2F", "/");
+        String decodedURL= URLDecoder.decode(url, "UTF-8");
         long startTime = 0;
         if (LOG_DEBUG_ENABLED) {
             startTime = System.nanoTime();
-            LOG.debug("Thumbnail url = {}, size = {}", decodedURL, size);
+            LOG.debug("Thumbnail url = {}, decodedURL = {} ,size = {}", url, decodedURL, size);
         }
         ResponseEntity result;
         HttpHeaders headers= new HttpHeaders();
@@ -142,6 +145,9 @@ public class ThumbnailControllerV3 {
         //Check the “size” parameter, if it does not match either 200 or 400, respond with HTTP 404;
         if(size!= WIDTH_200 && size!= WIDTH_400) {
             result= new ResponseEntity(HttpStatus.NOT_FOUND);
+            if (LOG_DEBUG_ENABLED) {
+                LOG.debug("The size entered is not valid size = {}", size);
+            }
         } else {
             ObjectMetadata metadata = getMetaData(computeResourceUrl(decodedURL, String.valueOf(size)));
 
