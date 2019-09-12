@@ -5,10 +5,9 @@ import javax.servlet.http.HttpServletResponse;
  * Class containing a number of useful controller utilities (mainly for setting headers)
  *
  */
-public class ControllerUtils {
+public final class ControllerUtils {
 
         private static final String ALLOWED                 = "GET, HEAD";
-        private static final String ACCEPT                 = "Accept";
 
         private ControllerUtils() {
             // to avoid instantiating this class

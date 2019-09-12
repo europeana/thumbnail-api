@@ -56,11 +56,5 @@ public interface MediaStorageService {
          * @return ObjectMetadata object
          */
         ObjectMetadata retrieveMetaData(String id);
-
-        /**
-         * If the file does not exists in the DB it creates it, otherwise it will be updated.
-         * @param file the new/modified MediaFile
-         * @deprecated September 2018, no longer needed/required
-         */
     }
 

@@ -12,10 +12,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.WebRequest;
 
 import javax.servlet.http.HttpServletResponse;
@@ -41,11 +38,18 @@ public class ThumbnailController {
     private static final Logger LOG = LogManager.getLogger(ThumbnailController.class);
 
     private static final String IIIF_HOST_NAME = "iiif.europeana.eu";
-    private static final String GZIPSUFFIX     = "-gzip";
+    private static final String GZIPSUFFIX = "-gzip";
+    private static final boolean LOG_DEBUG_ENABLED = LOG.isDebugEnabled();
+    private static final long DURATION_CONVERTER=10000;
 
     private MediaStorageService metisobjectStorageClient;
     private MediaStorageService uimObjectStorageClient;
 
+    /**
+     * Instantiation of the objects
+     * @param metisobjectStorageClient object for Metis Storage
+     * @param uimObjectStorageClient   object for UIM Storage
+     */
     public ThumbnailController(MediaStorageService metisobjectStorageClient, MediaStorageService uimObjectStorageClient) {
         this.metisobjectStorageClient = metisobjectStorageClient;
         this.uimObjectStorageClient = uimObjectStorageClient;
@@ -62,65 +66,55 @@ public class ThumbnailController {
      * @return responsEntity
      */
 
-    @RequestMapping(value = "/v2/thumbnail-by-url.json",
-            method = {RequestMethod.GET})
-    public ResponseEntity<byte[]> thumbnailByUrl(
+    @GetMapping(value = "/v2/thumbnail-by-url.json")
+    public ResponseEntity < byte[] > thumbnailByUrl(
             @RequestParam(value = "uri") String url,
             @RequestParam(value = "size", required = false, defaultValue = "w400") String size,
             @RequestParam(value = "type", required = false, defaultValue = "IMAGE") String type,
             WebRequest webRequest, HttpServletResponse response) {
         long startTime = 0;
-        if (LOG.isDebugEnabled()) {
+        byte[] mediaContent;
+        ResponseEntity < byte[] > result;
+        final HttpHeaders headers = new HttpHeaders();
+
+        if (LOG_DEBUG_ENABLED) {
             startTime = System.nanoTime();
             LOG.debug("Thumbnail url = {}, size = {}, type = {}", url, size, type);
         }
 
         MediaFile mediaFile = retrieveThumbnail(url, size);
 
-        byte[] mediaContent;
-        ResponseEntity<byte[]> result;
-
         ControllerUtils.addResponseHeaders(response);
-        final HttpHeaders headers = new HttpHeaders();
+        // if there is no image, we return the default 'type' icon
+        if (mediaFile == null) {
+            headers.setContentType(MediaType.IMAGE_PNG);
+            mediaContent = getDefaultThumbnailForNotFoundResourceByType(type);
+            result = new ResponseEntity < > (mediaContent, headers, HttpStatus.OK);
 
-            // if there is no image, we return the default 'type' icon
-            if (mediaFile == null) {
-                headers.setContentType(MediaType.IMAGE_PNG);
+        } else {
+            headers.setContentType(getMediaType(url));
+            mediaContent = mediaFile.getContent();
+            result = new ResponseEntity < > (mediaContent, headers, HttpStatus.OK);
 
-                mediaContent = getDefaultThumbnailForNotFoundResourceByType(type);
-                result = new ResponseEntity<>(mediaContent, headers, HttpStatus.OK);
-
+            // finally check if we should return the full response, or a 304
+            // the check below automatically sets an ETag and last-Modified in our response header and returns a 304
+            // (but only when clients include the If_Modified_Since header in their request)
+            if (checkForNotModified(mediaFile, webRequest)) {
+                result = null;
+            }
+        }
+        if (LOG_DEBUG_ENABLED) {
+            Long duration = (System.nanoTime() - startTime) / DURATION_CONVERTER;
+            if (MediaType.IMAGE_PNG.equals(headers.getContentType())) {
+                LOG.debug("Total thumbnail request time (missing media): {}", duration);
             } else {
-                headers.setContentType(getMediaType(url));
-                mediaContent = mediaFile.getContent();
-                    result = new ResponseEntity<>(mediaContent, headers, HttpStatus.OK);
-
-                // finally check if we should return the full response, or a 304
-                // the check below automatically sets an ETag and last-Modified in our response header and returns a 304
-                // (but only when clients include the If_Modified_Since header in their request)
-                if (mediaFile.getLastModified() != null && mediaFile.getETag() != null) {
-                    if (webRequest.checkNotModified(
-                            StringUtils.removeEndIgnoreCase(mediaFile.getETag(), GZIPSUFFIX),
-                            mediaFile.getLastModified().getMillis())) {
-                        result = null;
-                    }
-                } else if (mediaFile.getETag() != null && webRequest.checkNotModified(
-                        StringUtils.removeEndIgnoreCase(mediaFile.getETag(), GZIPSUFFIX))) {
-                    result = null;
-                }
-            }
-            if (LOG.isDebugEnabled()) {
-                Long duration = (System.nanoTime() - startTime) / 1000;
-                if (MediaType.IMAGE_PNG.equals(headers.getContentType())) {
-                    LOG.debug("Total thumbnail request time (missing media): {}", duration);
+                if (result == null) {
+                    LOG.debug("Total thumbnail request time (from s3 + return 304): {}", duration);
                 } else {
-                    if (result == null) {
-                        LOG.debug("Total thumbnail request time (from s3 + return 304): {}", duration);
-                    } else {
-                        LOG.debug("Total thumbnail request time (from s3 + return 200): {}", duration);
-                    }
+                    LOG.debug("Total thumbnail request time (from s3 + return 200): {}", duration);
                 }
             }
+        }
 
         return result;
     }
@@ -129,24 +123,26 @@ public class ThumbnailController {
      * @param url optional, the URL of the media resource of which a thumbnail should be returned. Note that the URL should be encoded.
      *            When no url is provided a default thumbnail will be returned
      * @param size optional, the size of the thumbnail, can either be w200 (width 200) or w400 (width 400).
-     * @param type optional, type of the default thumbnail (media image) in case the thumbnail does not exists or no url is provided,
+     * @param type, type of the default thumbnail (media image) in case the thumbnail does not exists or no url is provided,
      *             can be: IMAGE, SOUND, VIDEO, TEXT or 3D.
      * @return responsEntity
      */
     @RequestMapping(value = "/v2/thumbnail-by-url.json",
-            method = {RequestMethod.HEAD})
+            method = {
+                    RequestMethod.HEAD
+            })
     public ResponseEntity thumbnailByUrlHead(
             @RequestParam(value = "uri") String url,
             @RequestParam(value = "size", required = false, defaultValue = "w400") String size,
             @RequestParam(value = "type", required = false, defaultValue = "IMAGE") String type,
             WebRequest webRequest, HttpServletResponse response) {
         long startTime = 0;
-        if (LOG.isDebugEnabled()) {
+        if (LOG_DEBUG_ENABLED) {
             startTime = System.nanoTime();
             LOG.debug("Thumbnail url = {}, size = {}, type = {}", url, size, type);
         }
         ResponseEntity result;
-        HttpHeaders headers= new HttpHeaders();
+        HttpHeaders headers = new HttpHeaders();
         ControllerUtils.addResponseHeaders(response);
         ObjectMetadata metadata = getMetaData(computeResourceUrl(url, size));
 
@@ -155,15 +151,15 @@ public class ThumbnailController {
             headers.setContentLength(0);
             headers.setContentType(MediaType.IMAGE_JPEG);
             headers.setLastModified(metadata.getLastModified().toInstant());
-            result= new ResponseEntity(headers, HttpStatus.OK);
+            result = new ResponseEntity(headers, HttpStatus.OK);
         } else {
-            result= new ResponseEntity(HttpStatus.NOT_FOUND);
+            result = new ResponseEntity(HttpStatus.NOT_FOUND);
         }
-        if (LOG.isDebugEnabled()) {
-            Long duration = (System.nanoTime() - startTime) / 1000;
+        if (LOG_DEBUG_ENABLED) {
+            Long duration = (System.nanoTime() - startTime) / DURATION_CONVERTER;
             LOG.debug("Total thumbnail HEAD request time (from s3): {}", duration);
         }
-       return result;
+        return result;
     }
 
     private MediaFile retrieveThumbnail(String url, String size) {
@@ -173,12 +169,12 @@ public class ThumbnailController {
         LOG.debug("id = {}", mediaFileId);
 
         // 1. Check Metis storage first (IBM Cloud S3) because that has the newest thumbnails
-        mediaFile = metisobjectStorageClient.retrieveAsMediaFile(mediaFileId, url, Boolean.TRUE);
+        mediaFile = metisobjectStorageClient.retrieveAsMediaFile(mediaFileId, url, true);
         LOG.debug("Metis thumbnail = {}", mediaFile);
 
         // 2. Try the old UIM/CRF media storage (Amazon S3) second
         if (mediaFile == null) {
-            mediaFile = uimObjectStorageClient.retrieveAsMediaFile(mediaFileId, url, Boolean.TRUE);
+            mediaFile = uimObjectStorageClient.retrieveAsMediaFile(mediaFileId, url, true);
             LOG.debug("UIM thumbnail = {}", mediaFile);
         }
 
@@ -241,7 +237,7 @@ public class ThumbnailController {
         // all urls are encoded so they start with either http:// or https://
         // and end with /full/full/0/default.<extension>.
         if (isIiifRecordUrl(url)) {
-            return new URI(url.replace("/full/full/0/default.", "/full/" +width+ ",/0/default."));
+            return new URI(url.replace("/full/full/0/default.", "/full/" + width + ",/0/default."));
         }
         return null;
     }
@@ -253,11 +249,10 @@ public class ThumbnailController {
      * @throws IOException
      */
     private MediaFile downloadImage(URI uri) throws IOException {
-        try (InputStream in = new BufferedInputStream(uri.toURL().openStream());
-             ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+        try (InputStream in = new BufferedInputStream(uri.toURL().openStream()); ByteArrayOutputStream out = new ByteArrayOutputStream()) {
             byte[] buf = new byte[1024];
             int n;
-            while (-1 != (n = in.read(buf))) {
+            while (-1 != (n = in .read(buf))) {
                 out.write(buf, 0, n);
             }
             // for now we don't do anything with LastModified or ETag as this is not easily available for IIIF
@@ -272,8 +267,8 @@ public class ThumbnailController {
      */
     private byte[] getImage(String path) {
         byte[] result = null;
-        try (InputStream in = this.getClass().getResourceAsStream(path)){
-            result = IOUtils.toByteArray(in);
+        try (InputStream in = this.getClass().getResourceAsStream(path)) {
+            result = IOUtils.toByteArray( in );
         } catch (IOException e) {
             LOG.error("Error reading default thumbnail file", e);
         }
@@ -289,7 +284,7 @@ public class ThumbnailController {
             messageDigest.update(resourceUrl.getBytes(StandardCharsets.UTF_8));
             final byte[] resultByte = messageDigest.digest();
             StringBuilder sb = new StringBuilder();
-            for (byte aResultByte : resultByte) {
+            for (byte aResultByte: resultByte) {
                 sb.append(Integer.toString((aResultByte & 0xff) + 0x100, 16).substring(1));
             }
             return sb.toString();
@@ -340,6 +335,26 @@ public class ThumbnailController {
         }
 
         return metadata;
+    }
+    /** finally check if we should return the full response, or a 304
+     * @param mediaFile
+     * @param webRequest
+     * @return boolean
+     */
+    private boolean checkForNotModified(MediaFile mediaFile, WebRequest webRequest) {
+
+        if (mediaFile.getLastModified() != null && mediaFile.getETag() != null) {
+            if (webRequest.checkNotModified(
+                    StringUtils.removeEndIgnoreCase(mediaFile.getETag(), GZIPSUFFIX),
+                    mediaFile.getLastModified().getMillis())) {
+                return true;
+            }
+        } else if (mediaFile.getETag() != null && webRequest.checkNotModified(
+                StringUtils.removeEndIgnoreCase(mediaFile.getETag(), GZIPSUFFIX))) {
+            return true;
+        }
+        return false;
+
     }
 }
 
