@@ -29,7 +29,6 @@
         <objectStorage.version>1.7-SNAPSHOT</objectStorage.version>
 
         <spring-boot.version>2.1.4.RELEASE</spring-boot.version>
-        <spring-hysterix.version>2.1.1.RELEASE</spring-hysterix.version>
     </properties>
 
     <dependencyManagement>
@@ -121,7 +120,6 @@
             <artifactId>object-storage</artifactId>
             <version>${objectStorage.version}</version>
         </dependency>
-
     </dependencies>
 
     <build>
