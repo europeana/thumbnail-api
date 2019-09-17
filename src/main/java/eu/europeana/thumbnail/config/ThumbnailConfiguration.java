@@ -9,6 +9,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Component;
+import org.springframework.validation.beanvalidation.MethodValidationPostProcessor;
 
 /**
  * Container for all manifest settings that we load from the iiif.properties file. Note that we also have hard-coded
@@ -51,6 +52,11 @@ public class ThumbnailConfiguration {
     public MediaStorageService uimObjectStorageClient() {
 
       return new MediaStorageServiceImpl(new S3ObjectStorageClient(uimThumbnailS3Key, uimThumbnailS3Secret, uimThumbnailS3Region, uimThumbnailS3Bucket));
+    }
+
+    @Bean
+    public MethodValidationPostProcessor methodValidationPostProcessor() {
+        return new MethodValidationPostProcessor();
     }
 
 }
