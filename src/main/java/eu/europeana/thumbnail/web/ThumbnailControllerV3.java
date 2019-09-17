@@ -118,55 +118,6 @@ public class ThumbnailControllerV3 {
 
         return result;
     }
-    /**
-     * Retrieves Header values
-     * @param url  the URL of the media resource of which a thumbnail should be returned. Note that the URL should be encoded.
-     * @param size , the size of the thumbnail, can either be 200 (width 200px) or 400 (width 400px).
-     * @throws UnsupportedEncodingException the url is decoded in v3. Hence it may throw the exception.
-     * @return responsEntity
-     */
-    @RequestMapping(value = "/v3/{size}/{url}",
-            method = {RequestMethod.HEAD})
-    public ResponseEntity thumbnailByUrlHead(
-            @PathVariable(value= "size") int size,
-            @PathVariable("url") String url,
-            WebRequest webRequest, HttpServletResponse response) throws UnsupportedEncodingException {
-
-        String decodedURL= URLDecoder.decode(url, "UTF-8");
-        long startTime = 0;
-        if (LOG_DEBUG_ENABLED) {
-            startTime = System.nanoTime();
-            LOG.debug("Thumbnail url = {}, decodedURL = {} ,size = {}", url, decodedURL, size);
-        }
-        ResponseEntity result;
-        HttpHeaders headers= new HttpHeaders();
-        ControllerUtils.addResponseHeaders(response);
-
-        //Check the “size” parameter, if it does not match either 200 or 400, respond with HTTP 404;
-        if(size!= WIDTH_200 && size!= WIDTH_400) {
-            result= new ResponseEntity(HttpStatus.NOT_FOUND);
-            if (LOG_DEBUG_ENABLED) {
-                LOG.debug("The size entered is not valid size = {}", size);
-            }
-        } else {
-            ObjectMetadata metadata = getMetaData(computeResourceUrl(decodedURL, String.valueOf(size)));
-
-            if (metadata != null) {
-                headers.setETag("\"" + metadata.getETag() + "\"");
-                headers.setContentLength(metadata.getContentLength());
-                headers.setContentType(MediaType.IMAGE_JPEG);
-                headers.setLastModified(metadata.getLastModified().toInstant());
-                result = new ResponseEntity(headers, HttpStatus.OK);
-            } else { // if there is no image present in the storage,return 404 NOT FOUND
-                result = new ResponseEntity(HttpStatus.NOT_FOUND);
-            }
-        }
-        if (LOG_DEBUG_ENABLED) {
-            Long duration = (System.nanoTime() - startTime) / DURATION_CONVERTER;
-            LOG.debug("Total thumbnail HEAD request time (from s3): {}", duration);
-        }
-        return result;
-    }
 
     private MediaFile retrieveThumbnail(String url, String size) {
 
@@ -295,20 +246,6 @@ public class ThumbnailControllerV3 {
      */
     private String computeResourceUrl(final String resourceUrl, final String resourceSize) {
         return getMD5(resourceUrl) + "-" + (StringUtils.equalsIgnoreCase(resourceSize, "200") ? "MEDIUM" : "LARGE");
-    }
-
-    private ObjectMetadata getMetaData(String id) {
-        ObjectMetadata metadata;
-
-        // 1. Check Metis storage first (IBM Cloud S3) because that has the newest thumbnails
-        metadata = metisobjectStorageClient.retrieveMetaData(id);
-
-        // 2. Try the old UIM/CRF media storage (Amazon S3) second
-        if (metadata == null) {
-            metadata = uimObjectStorageClient.retrieveMetaData(id);
-        }
-
-        return metadata;
     }
     /** finally check if we should return the full response, or a 304
      * @param mediaFile

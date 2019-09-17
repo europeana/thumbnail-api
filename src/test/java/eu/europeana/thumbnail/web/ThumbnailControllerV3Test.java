@@ -84,7 +84,7 @@ public class ThumbnailControllerV3Test {
      * Test Get mapping
      */
     @Test
-    public void testGetResponse() throws Exception {
+    public void testGet_Head_200Ok_Response() throws Exception {
 
         byte[] users = "test thumbnail image".getBytes();
         MediaFile mediaFile = new MediaFile(anyString(),TEST_URL,users);
@@ -97,28 +97,13 @@ public class ThumbnailControllerV3Test {
                 .andExpect(header().string("Content-Type", (MediaType.IMAGE_JPEG_VALUE)+UTF8_CHARSET))
                 .andExpect(header().string("Content-Length", notNullValue()));
 
-    }
-    /**
-     * Test Head mapping
-     */
-    @Test
-    public void testHeadResponse() throws Exception {
-
-        HashMap<String, Object> metadataValues= new HashMap<String, Object>();
-        metadataValues.put("Content-Length", DEFAULT_CONTENTLENGTH);
-        metadataValues.put("ETag","/test/");
-        metadataValues.put("Content-Type",(MediaType.IMAGE_JPEG_VALUE)+UTF8_CHARSET);
-        metadataValues.put("Last-Modified", new Date());
-
-        ObjectMetadata metadata= new ObjectMetadata(metadataValues);
-        given(thumbnailService.retrieveMetaData(anyString())).willReturn(metadata);
-
         this.mockMvc.perform(head("/thumbnail/v3/{size}/{url}",200,TEST_URL))
                 .andExpect(status().isOk())
                 .andExpect(header().string("Content-Type", (MediaType.IMAGE_JPEG_VALUE)+UTF8_CHARSET))
-               .andExpect(header().string("Content-Length", notNullValue()));
+                .andExpect(header().string("Content-Length", notNullValue()));
 
     }
+
     @Test
     public void test400Response() throws Exception {
         //For GET mapping
