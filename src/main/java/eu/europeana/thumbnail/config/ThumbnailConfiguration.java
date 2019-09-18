@@ -54,9 +54,4 @@ public class ThumbnailConfiguration {
       return new MediaStorageServiceImpl(new S3ObjectStorageClient(uimThumbnailS3Key, uimThumbnailS3Secret, uimThumbnailS3Region, uimThumbnailS3Bucket));
     }
 
-    @Bean
-    public MethodValidationPostProcessor methodValidationPostProcessor() {
-        return new MethodValidationPostProcessor();
-    }
-
 }

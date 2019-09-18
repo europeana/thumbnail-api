@@ -13,6 +13,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.web.servlet.MockMvc;
+import sun.jvm.hotspot.memory.HeapBlock;
 
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -52,7 +53,9 @@ public class ThumbnailControllerTest {
     private static final String DEFAULT_CONTENTLENGTH_IMAGE = "2319";
     private static final String DEFAULT_CONTENTLENGTH_VIDEO = "1932";
     private static final String UTF8_CHARSET = ";charset=UTF-8";
-    private static final String INVALID_URL_MESSAGE = "INVALID URL";
+    private static final String THUMBNAIL_MEDIA_FILE = "test thumbnail image";
+    private static final String THUMBNAIL_MEDIA_FILE_CONTENT_LENGTH = "20";
+
 
 
     @Autowired
@@ -61,8 +64,6 @@ public class ThumbnailControllerTest {
     private MediaStorageServiceImpl thumbnailService;
     @MockBean
     private ObjectStorageClient objectStorage;
-
-    private  ErrorResponse errorReponse;
 
     /**
      * Tests if we detect IIIF image urls correctly
@@ -85,6 +86,10 @@ public class ThumbnailControllerTest {
         assertNull(ThumbnailController.getIiifThumbnailUrl(null, "300"));
     }
 
+    /**
+     * Test Get and Head mapping Invalid URL schema Response
+     */
+
     @Test
     public void testInvalidURL() throws Exception {
 
@@ -97,15 +102,18 @@ public class ThumbnailControllerTest {
                         "    ]\n" +
                         "}"));
 
+        this.mockMvc.perform(head("/api/v2/thumbnail-by-url.json").param("uri", INVALID_URI))
+                .andExpect(status().isBadRequest());
+
     }
 
     /**
-     * Test Get mapping
+     * Test Get and Head mapping 200 Ok response
      */
     @Test
     public void testGet_Head_Mapping_200Ok() throws Exception {
 
-        byte[] users = "test thumbnail image".getBytes();
+        byte[] users = THUMBNAIL_MEDIA_FILE.getBytes();
         MediaFile mediaFile = new MediaFile(anyString(),URI,users);
         given(thumbnailService.retrieveAsMediaFile("test", any(), anyBoolean())).willReturn(mediaFile);
         given(objectStorage.getContent(anyString())).willReturn(users);
@@ -114,14 +122,19 @@ public class ThumbnailControllerTest {
                 .andExpect(content().bytes(objectStorage.getContent(anyString())))
                 .andExpect(status().isOk())
                 .andExpect(header().string("Content-Type", (MediaType.IMAGE_JPEG_VALUE)+UTF8_CHARSET))
-                .andExpect(header().string("Content-Length", notNullValue()));
+                .andExpect(header().string("Content-Length", notNullValue()))
+                .andExpect(header().string("Content-Length", THUMBNAIL_MEDIA_FILE_CONTENT_LENGTH));
 
         this.mockMvc.perform(head("/api/v2/thumbnail-by-url.json").param("uri", URI))
                 .andExpect(status().isOk())
                 .andExpect(header().string("Content-Type", (MediaType.IMAGE_JPEG_VALUE)+UTF8_CHARSET))
-                .andExpect(header().string("Content-Length", notNullValue()));
+                .andExpect(header().string("Content-Length", notNullValue()))
+                .andExpect(header().string("Content-Length", THUMBNAIL_MEDIA_FILE_CONTENT_LENGTH));;
     }
 
+    /**
+     * Test Get and Head mapping Default response
+     */
     @Test
     public void testGet_Head_DefaultResponse() throws Exception {
         //for invalid Image and default icon
