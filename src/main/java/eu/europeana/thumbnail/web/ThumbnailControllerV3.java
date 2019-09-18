@@ -1,9 +1,9 @@
 package eu.europeana.thumbnail.web;
 
+import eu.europeana.domain.ObjectMetadata;
 import eu.europeana.thumbnail.model.MediaFile;
 import eu.europeana.thumbnail.service.MediaStorageService;
 import eu.europeana.thumbnail.utils.ControllerUtils;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -11,99 +11,96 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.WebRequest;
 
 import javax.servlet.http.HttpServletResponse;
-import javax.validation.constraints.Pattern;
-import java.io.BufferedInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Locale;
 
 /**
- * Retrieves image thumbnails.
+ * Retrieves image thumbnails for version 3
  * The thumbnail API doesn't require any form of authentication, providing an API key is optional.
  */
 @RestController
-@RequestMapping("/api")
-@Validated
-public class ThumbnailController {
+@RequestMapping("/thumbnail")
+public class ThumbnailControllerV3 {
 
-    private static final Logger LOG = LogManager.getLogger(ThumbnailController.class);
+    private static final Logger LOG = LogManager.getLogger(ThumbnailControllerV3.class);
 
     private static final String IIIF_HOST_NAME = "iiif.europeana.eu";
-    private static final String GZIPSUFFIX = "-gzip";
+    private static final String GZIPSUFFIX     = "-gzip";
     private static final boolean LOG_DEBUG_ENABLED = LOG.isDebugEnabled();
     private static final long DURATION_CONVERTER=10000;
-    private static final String INVALID_URL_MESSAGE = "INVALID URL";
+    private static final int WIDTH_200 = 200;
+    private static final int WIDTH_400 = 400;
 
     private MediaStorageService metisobjectStorageClient;
     private MediaStorageService uimObjectStorageClient;
 
-    /**
-     * Instantiation of the objects
-     * @param metisobjectStorageClient object for Metis Storage
-     * @param uimObjectStorageClient   object for UIM Storage
-     */
-    public ThumbnailController(MediaStorageService metisobjectStorageClient, MediaStorageService uimObjectStorageClient) {
+    public ThumbnailControllerV3(MediaStorageService metisobjectStorageClient, MediaStorageService uimObjectStorageClient) {
         this.metisobjectStorageClient = metisobjectStorageClient;
         this.uimObjectStorageClient = uimObjectStorageClient;
     }
 
-
     /**
      * Retrieves image thumbnails.
-     * @param url optional, the URL of the media resource of which a thumbnail should be returned. Note that the URL should be encoded.
-     *            When no url is provided a default thumbnail will be returned
-     * @param size optional, the size of the thumbnail, can either be w200 (width 200) or w400 (width 400).
-     * @param type optional, type of the default thumbnail (media image) in case the thumbnail does not exists or no url is provided,
-     *             can be: IMAGE, SOUND, VIDEO, TEXT or 3D.
+     * @param url  the URL of the media resource of which a thumbnail should be returned. Note that the URL should be encoded.
+     * @param size , the size of the thumbnail, can either be 200 (width 200px) or 400 (width 400px).
+     * @throws UnsupportedEncodingException the url is decoded in v3. Hence it may throw the exception.
      * @return responsEntity
      */
 
-    @GetMapping(value = "/v2/thumbnail-by-url.json")
-    public ResponseEntity < byte[] > thumbnailByUrl(
-            @RequestParam(value = "uri")  @Pattern(regexp = "^(https?|ftp)://.*$", message = INVALID_URL_MESSAGE) String url,
-            @RequestParam(value = "size", required = false, defaultValue = "w400") String size,
-            @RequestParam(value = "type", required = false, defaultValue = "IMAGE") String type,
-            WebRequest webRequest, HttpServletResponse response) {
-        long startTime = 0;
-        byte[] mediaContent;
-        ResponseEntity < byte[] > result;
-        final HttpHeaders headers = new HttpHeaders();
+    @GetMapping(value = "/v3/{size}/{url}")
+    public ResponseEntity<byte[]> thumbnailByUrl(
+            @PathVariable(value= "size") int size,
+            @PathVariable("url") String url,
+            WebRequest webRequest, HttpServletResponse response) throws UnsupportedEncodingException {
 
+        String decodedURL= URLDecoder.decode(url, "UTF-8");
+        long startTime = 0;
         if (LOG_DEBUG_ENABLED) {
             startTime = System.nanoTime();
-            LOG.debug("Thumbnail url = {}, size = {}, type = {}", url, size, type);
+            LOG.debug("Thumbnail url = {}, decodedURL = {} ,size = {}", url, decodedURL, size);
         }
 
-        MediaFile mediaFile = retrieveThumbnail(url, size);
-
         ControllerUtils.addResponseHeaders(response);
-        // if there is no image, we return the default 'type' icon
-        if (mediaFile == null) {
-            headers.setContentType(MediaType.IMAGE_PNG);
-            mediaContent = getDefaultThumbnailForNotFoundResourceByType(type);
-            result = new ResponseEntity < > (mediaContent, headers, HttpStatus.OK);
+        byte[] mediaContent;
+        ResponseEntity<byte[]> result;
+        final HttpHeaders headers = new HttpHeaders();
 
+        //Check the “size” parameter, if it does not match either 200 or 400, respond with HTTP 404;
+        if(size!= WIDTH_200 && size!= WIDTH_400) {
+            mediaContent = null;
+            result = new ResponseEntity<>(mediaContent, headers, HttpStatus.NOT_FOUND);
+            if (LOG_DEBUG_ENABLED) {
+                LOG.debug("The size entered is not valid size = {}", size);
+            }
         } else {
-            headers.setContentType(getMediaType(url));
-            mediaContent = mediaFile.getContent();
-            result = new ResponseEntity < > (mediaContent, headers, HttpStatus.OK);
+            MediaFile mediaFile = retrieveThumbnail(decodedURL, String.valueOf(size));
 
-            // finally check if we should return the full response, or a 304
-            // the check below automatically sets an ETag and last-Modified in our response header and returns a 304
-            // (but only when clients include the If_Modified_Since header in their request)
-            if (checkForNotModified(mediaFile, webRequest)) {
-                result = null;
+            // if there is no image present in the storage,return 404 NOT FOUND with empty body
+            if (mediaFile == null) {
+                mediaContent = null;
+                result = new ResponseEntity<>(mediaContent, headers, HttpStatus.NOT_FOUND);
+
+            } else {
+                headers.setContentType(getMediaType(decodedURL));
+                mediaContent = mediaFile.getContent();
+                result = new ResponseEntity<>(mediaContent, headers, HttpStatus.OK);
+
+                // finally check if we should return the full response, or a 304
+                // the check below automatically sets an ETag and last-Modified in our response header and returns a 304
+                // (but only when clients include the If_Modified_Since header in their request)
+                if (checkForNotModified(mediaFile, webRequest)) {
+                    result = null;
+                }
             }
         }
         if (LOG_DEBUG_ENABLED) {
@@ -141,7 +138,7 @@ public class ThumbnailController {
         // 3. We retrieve IIIF thumbnails by downloading a requested size from eCloud
         if (mediaFile == null && ThumbnailController.isIiifRecordUrl(url)) {
             try {
-                String width = (StringUtils.equalsIgnoreCase(size, "w200") ? "200" : "400");
+                String width = (StringUtils.equalsIgnoreCase(size, "200") ? "200" : "400");
                 URI iiifUri = ThumbnailController.getIiifThumbnailUrl(url, width);
                 if (iiifUri != null) {
                     LOG.debug("IIIF url = {} ", iiifUri.getPath());
@@ -197,7 +194,7 @@ public class ThumbnailController {
         // all urls are encoded so they start with either http:// or https://
         // and end with /full/full/0/default.<extension>.
         if (isIiifRecordUrl(url)) {
-            return new URI(url.replace("/full/full/0/default.", "/full/" + width + ",/0/default."));
+            return new URI(url.replace("/full/full/0/default.", "/full/" +width+ ",/0/default."));
         }
         return null;
     }
@@ -209,30 +206,16 @@ public class ThumbnailController {
      * @throws IOException
      */
     private MediaFile downloadImage(URI uri) throws IOException {
-        try (InputStream in = new BufferedInputStream(uri.toURL().openStream()); ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+        try (InputStream in = new BufferedInputStream(uri.toURL().openStream());
+             ByteArrayOutputStream out = new ByteArrayOutputStream()) {
             byte[] buf = new byte[1024];
             int n;
-            while (-1 != (n = in .read(buf))) {
+            while (-1 != (n = in.read(buf))) {
                 out.write(buf, 0, n);
             }
             // for now we don't do anything with LastModified or ETag as this is not easily available for IIIF
             return new MediaFile(getMD5(uri.getPath()), uri.getPath(), out.toByteArray());
         }
-    }
-
-    /**
-     * Retrieve the default thumbnail image as a byte array
-     * @param path
-     * @return
-     */
-    private byte[] getImage(String path) {
-        byte[] result = null;
-        try (InputStream in = this.getClass().getResourceAsStream(path)) {
-            result = IOUtils.toByteArray( in );
-        } catch (IOException e) {
-            LOG.error("Error reading default thumbnail file", e);
-        }
-        return result;
     }
 
     @SuppressWarnings("squid:S2070") // we have to use MD5 here
@@ -244,7 +227,7 @@ public class ThumbnailController {
             messageDigest.update(resourceUrl.getBytes(StandardCharsets.UTF_8));
             final byte[] resultByte = messageDigest.digest();
             StringBuilder sb = new StringBuilder();
-            for (byte aResultByte: resultByte) {
+            for (byte aResultByte : resultByte) {
                 sb.append(Integer.toString((aResultByte & 0xff) + 0x100, 16).substring(1));
             }
             return sb.toString();
@@ -252,24 +235,6 @@ public class ThumbnailController {
             LOG.error("Error determining MD5 for resource {}", resourceUrl, e);
         }
         return resourceUrl;
-    }
-
-    private byte[] getDefaultThumbnailForNotFoundResourceByType(final String type) {
-        switch (StringUtils.upperCase(type)) {
-            case "IMAGE":
-                return getImage("/images/EU_thumbnails_image.png");
-            case "SOUND":
-                return getImage("/images/EU_thumbnails_sound.png");
-            case "VIDEO":
-                return getImage("/images/EU_thumbnails_video.png");
-            case "TEXT":
-                return getImage("/images/EU_thumbnails_text.png");
-            case "3D":
-                return getImage("/images/EU_thumbnails_3d.png");
-            default:
-                return getImage("/images/EU_thumbnails_image.png");
-        }
-
     }
 
     /**
@@ -280,7 +245,7 @@ public class ThumbnailController {
      * @return id of the thumbnail as it is stored in S3
      */
     private String computeResourceUrl(final String resourceUrl, final String resourceSize) {
-        return getMD5(resourceUrl) + "-" + (StringUtils.equalsIgnoreCase(resourceSize, "w200") ? "MEDIUM" : "LARGE");
+        return getMD5(resourceUrl) + "-" + (StringUtils.equalsIgnoreCase(resourceSize, "200") ? "MEDIUM" : "LARGE");
     }
     /** finally check if we should return the full response, or a 304
      * @param mediaFile

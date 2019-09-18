@@ -4,13 +4,12 @@ package eu.europeana.thumbnail.config;
 import eu.europeana.features.S3ObjectStorageClient;
 import eu.europeana.thumbnail.service.MediaStorageService;
 import eu.europeana.thumbnail.service.impl.MediaStorageServiceImpl;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Component;
+import org.springframework.validation.beanvalidation.MethodValidationPostProcessor;
 
 /**
  * Container for all manifest settings that we load from the iiif.properties file. Note that we also have hard-coded
@@ -23,8 +22,6 @@ import org.springframework.stereotype.Component;
 @PropertySource("classpath:thumbnail.properties")
 @PropertySource(value = "classpath:thumbnail.user.properties", ignoreResourceNotFound = true)
 public class ThumbnailConfiguration {
-
-    private static final Logger LOG = LogManager.getLogger(ThumbnailConfiguration.class);
 
     @Value("${metis.thumbnails.s3.key}")
     private String metisThumbnailS3Key;
