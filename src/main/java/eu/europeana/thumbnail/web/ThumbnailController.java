@@ -70,14 +70,14 @@ public class ThumbnailController {
      */
 
     @GetMapping(value = "/v2/thumbnail-by-url.json")
-    public ResponseEntity < byte[] > thumbnailByUrl(
+    public ResponseEntity <byte[]> thumbnailByUrl(
             @RequestParam(value = "uri")  @Pattern(regexp = "^(https?|ftp)://.*$", message = INVALID_URL_MESSAGE) String url,
             @RequestParam(value = "size", required = false, defaultValue = "w400") String size,
             @RequestParam(value = "type", required = false, defaultValue = "IMAGE") String type,
             WebRequest webRequest, HttpServletResponse response) {
         long startTime = 0;
         byte[] mediaContent;
-        ResponseEntity < byte[] > result;
+        ResponseEntity <byte[]> result;
         final HttpHeaders headers = new HttpHeaders();
 
         if (LOG_DEBUG_ENABLED) {
@@ -92,12 +92,12 @@ public class ThumbnailController {
         if (mediaFile == null) {
             headers.setContentType(MediaType.IMAGE_PNG);
             mediaContent = getDefaultThumbnailForNotFoundResourceByType(type);
-            result = new ResponseEntity < > (mediaContent, headers, HttpStatus.OK);
+            result = new ResponseEntity<> (mediaContent, headers, HttpStatus.OK);
 
         } else {
             headers.setContentType(getMediaType(url));
             mediaContent = mediaFile.getContent();
-            result = new ResponseEntity < > (mediaContent, headers, HttpStatus.OK);
+            result = new ResponseEntity<> (mediaContent, headers, HttpStatus.OK);
 
             // finally check if we should return the full response, or a 304
             // the check below automatically sets an ETag and last-Modified in our response header and returns a 304
@@ -235,7 +235,7 @@ public class ThumbnailController {
         return result;
     }
 
-    @SuppressWarnings("squid:S2070") // we have to use MD5 here
+    @SuppressWarnings("findsecbugs:WEAK_MESSAGE_DIGEST_MD5") // we have to use MD5, security is not an issue here
     private String getMD5(String resourceUrl) {
         MessageDigest messageDigest;
         try {
