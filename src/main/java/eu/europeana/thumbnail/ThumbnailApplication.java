@@ -39,13 +39,13 @@ public class ThumbnailApplication extends SpringBootServletInitializer {
 
     /**
      * This method is called when starting as a Spring-Boot application (e.g. from your IDE)
-     * @param args main application paramaters
-     */
-    @SuppressWarnings("squid:S2095") // to avoid sonarqube false positive (see https://stackoverflow.com/a/37073154/741249)
-    public static void main(String[] args) {
+             * @param args main application paramaters
+        */
+@SuppressWarnings("squid:S2095") // to avoid sonarqube false positive (see https://stackoverflow.com/a/37073154/741249)
+public static void main(String[] args) {
         LogManager.getLogger(ThumbnailApplication.class).info("CF_INSTANCE_INDEX  = {}, CF_INSTANCE_GUID = {}, CF_INSTANCE_IP  = {}",
-                System.getenv("CF_INSTANCE_INDEX"), System.getenv("CF_INSTANCE_GUID"), System.getenv("CF_INSTANCE_IP"));
+        System.getenv("CF_INSTANCE_INDEX"), System.getenv("CF_INSTANCE_GUID"), System.getenv("CF_INSTANCE_IP"));
         SpringApplication.run(ThumbnailApplication.class, args);
-    }
+        }
 
-}
+        }
