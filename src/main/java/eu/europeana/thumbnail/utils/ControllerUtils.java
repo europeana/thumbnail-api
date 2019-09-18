@@ -7,7 +7,8 @@ import javax.servlet.http.HttpServletResponse;
  */
 public final class ControllerUtils {
 
-        private static final String ALLOWED                 = "GET, HEAD";
+        private static final String ALLOWED = "GET, HEAD";
+        private static final String NOCACHE = "no-cache";
 
         private ControllerUtils() {
             // to avoid instantiating this class
@@ -20,5 +21,8 @@ public final class ControllerUtils {
         public static void addResponseHeaders(HttpServletResponse response) {
             response.setCharacterEncoding("UTF-8");
             response.addHeader("Allow", ALLOWED);
+            response.addHeader("Cache-Control", NOCACHE);
         }
+
+
     }
