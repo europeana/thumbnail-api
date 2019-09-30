@@ -14,7 +14,6 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.net.URISyntaxException;
-import java.time.LocalDate;
 import java.util.Date;
 import java.util.HashMap;
 
@@ -47,8 +46,9 @@ public class ThumbnailControllerV3Test {
 
     private static final String TEST_URL="test-v3-thumbnail";
     private static final long DEFAULT_CONTENTLENGTH= 2000L;
-    //private static final String DEFAULT_CONTENTLENGTH_VIDEO = "1932";
     private static final String UTF8_CHARSET = ";charset=UTF-8";
+    private static final String THUMBNAIL_MEDIA_FILE = "test thumbnail image";
+    private static final String THUMBNAIL_MEDIA_FILE_CONTENT_LENGTH = "20";
 
 
     @Autowired
@@ -86,7 +86,7 @@ public class ThumbnailControllerV3Test {
     @Test
     public void testGet_Head_200Ok_Response() throws Exception {
 
-        byte[] users = "test thumbnail image".getBytes();
+        byte[] users = THUMBNAIL_MEDIA_FILE.getBytes();
         MediaFile mediaFile = new MediaFile(anyString(),TEST_URL,users);
         given(thumbnailService.retrieveAsMediaFile("test", any(), anyBoolean())).willReturn(mediaFile);
         when(objectStorage.getContent(anyString())).thenReturn(users);
@@ -123,5 +123,30 @@ public class ThumbnailControllerV3Test {
         //for invalid url
         this.mockMvc.perform(head("/thumbnail/v3/{size}/{url}",200,TEST_URL))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    public void testGet_421_PreconditionFailedREsponse() throws Exception{
+        Date dt = new Date(2010, 3, 5, 0, 0);
+        HashMap<String, Object> map = new HashMap<>();
+        map.put("ETag", "12345abcde");
+        map.put("Last-Modified", dt);
+        ObjectMetadata metadata= new ObjectMetadata(map);
+        byte[] users = THUMBNAIL_MEDIA_FILE.getBytes();
+        MediaFile mediaFile = new MediaFile(anyString(),TEST_URL,users,metadata);
+
+        given(thumbnailService.retrieveAsMediaFile("test", any(), anyBoolean())).willReturn(mediaFile);
+
+        //for Valid ETag : *, 12345abcde
+        this.mockMvc.perform(get("/thumbnail/v3/{size}/{url}",200,TEST_URL).header("If-Match", "*"))
+                .andExpect(status().isOk());
+
+        this.mockMvc.perform(get("/thumbnail/v3/{size}/{url}",200,TEST_URL).header("If-Match", "12345abcde"))
+                .andExpect(status().isOk());
+
+        //for invalid Etag : test
+        this.mockMvc.perform(get("/thumbnail/v3/{size}/{url}",200,TEST_URL).header("If-Match", "test"))
+                .andExpect(status().isPreconditionFailed());
+
     }
         }

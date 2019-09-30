@@ -1,5 +1,6 @@
 package eu.europeana.thumbnail.web;
 
+import eu.europeana.domain.ObjectMetadata;
 import eu.europeana.features.ObjectStorageClient;
 import eu.europeana.thumbnail.model.MediaFile;
 import eu.europeana.thumbnail.service.impl.MediaStorageServiceImpl;
@@ -13,6 +14,8 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.net.URISyntaxException;
+import java.util.Date;
+import java.util.HashMap;
 
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.*;
@@ -151,5 +154,30 @@ public class ThumbnailControllerTest {
                 .param("type", "VIDEO")).andExpect(status().isOk())
                 .andExpect(header().string("Content-Type", (MediaType.IMAGE_PNG_VALUE)+UTF8_CHARSET))
                 .andExpect(header().string("Content-Length", DEFAULT_CONTENTLENGTH_VIDEO));
+    }
+
+    @Test
+    public void testGet_421_PreconditionFailedREsponse() throws Exception{
+         Date dt = new Date(2010, 3, 5, 0, 0);
+         HashMap<String, Object> map = new HashMap<>();
+         map.put("ETag", "12345abcde");
+         map.put("Last-Modified", dt);
+         ObjectMetadata metadata= new ObjectMetadata(map);
+         byte[] users = THUMBNAIL_MEDIA_FILE.getBytes();
+         MediaFile mediaFile = new MediaFile(anyString(),URI,users,metadata);
+
+        given(thumbnailService.retrieveAsMediaFile("test", any(), anyBoolean())).willReturn(mediaFile);
+
+        //for Valid ETag : *, 12345abcde
+        this.mockMvc.perform(get("/api/v2/thumbnail-by-url.json").param("uri", URI).header("If-Match", "*"))
+                .andExpect(status().isOk());
+
+        this.mockMvc.perform(get("/api/v2/thumbnail-by-url.json").param("uri", URI).header("If-Match", "12345abcde"))
+                .andExpect(status().isOk());
+
+        //for invalid Etag : test
+        this.mockMvc.perform(get("/api/v2/thumbnail-by-url.json").param("uri", URI).header("If-Match", "test"))
+                .andExpect(status().isPreconditionFailed());
+
     }
 }

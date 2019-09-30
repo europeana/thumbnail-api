@@ -35,7 +35,6 @@ public class ThumbnailControllerV3 {
     private static final Logger LOG = LogManager.getLogger(ThumbnailControllerV3.class);
 
     private static final String IIIF_HOST_NAME = "iiif.europeana.eu";
-    private static final String GZIPSUFFIX     = "-gzip";
     private static final boolean LOG_DEBUG_ENABLED = LOG.isDebugEnabled();
     private static final long DURATION_CONVERTER=10000;
     private static final int WIDTH_200 = 200;
@@ -98,8 +97,13 @@ public class ThumbnailControllerV3 {
                 // finally check if we should return the full response, or a 304
                 // the check below automatically sets an ETag and last-Modified in our response header and returns a 304
                 // (but only when clients include the If_Modified_Since header in their request)
-                if (checkForNotModified(mediaFile, webRequest)) {
+                if (ControllerUtils.checkForNotModified(mediaFile, webRequest)) {
                     result = null;
+                }
+                // If “If-Match” is supplied, check if the value is the same as the current “ETag” of the resource or if it is “*”,
+                // if false respond with HTTP 412;
+                if(ControllerUtils.checkForPrecondition(mediaFile,webRequest)) {
+                    result = new ResponseEntity<> (HttpStatus.PRECONDITION_FAILED);
                 }
             }
         }
@@ -246,26 +250,6 @@ public class ThumbnailControllerV3 {
      */
     private String computeResourceUrl(final String resourceUrl, final String resourceSize) {
         return getMD5(resourceUrl) + "-" + (StringUtils.equalsIgnoreCase(resourceSize, "200") ? "MEDIUM" : "LARGE");
-    }
-    /** finally check if we should return the full response, or a 304
-     * @param mediaFile
-     * @param webRequest
-     * @return boolean
-     */
-    private boolean checkForNotModified(MediaFile mediaFile, WebRequest webRequest) {
-
-        if (mediaFile.getLastModified() != null && mediaFile.getETag() != null) {
-            if (webRequest.checkNotModified(
-                    StringUtils.removeEndIgnoreCase(mediaFile.getETag(), GZIPSUFFIX),
-                    mediaFile.getLastModified().getMillis())) {
-                return true;
-            }
-        } else if (mediaFile.getETag() != null && webRequest.checkNotModified(
-                StringUtils.removeEndIgnoreCase(mediaFile.getETag(), GZIPSUFFIX))) {
-            return true;
-        }
-        return false;
-
     }
 }
 
