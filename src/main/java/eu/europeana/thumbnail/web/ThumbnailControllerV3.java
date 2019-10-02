@@ -35,7 +35,7 @@ public class ThumbnailControllerV3 {
     private static final long DURATION_CONVERTER=10000;
     private static final int WIDTH_200 = 200;
     private static final int WIDTH_400 = 400;
-    private static final String INVALID_SIZE_MESSAGE = "The size should be 200 or 400.";
+    private static final String INVALID_SIZE_MESSAGE = "The size should be 200 or 400";
     private static final String INVALID_SIZE ="INVALID SIZE";
 
     private MediaStorageService metisobjectStorageClient;
