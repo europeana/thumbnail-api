@@ -58,28 +58,6 @@ public class ThumbnailControllerV3Test {
     @MockBean
     private ObjectStorageClient objectStorage;
 
-
-    /**
-     * Tests if we detect IIIF image urls correctly
-     */
-    @Test
-    public void DetectIiifUrlTest() {
-        assertTrue(ThumbnailControllerV3.isIiifRecordUrl(ORIG_IIIF_URL_HTTP));
-        assertTrue(ThumbnailControllerV3.isIiifRecordUrl(ORIG_IIIF_URL_HTTPS));
-        assertFalse(ThumbnailControllerV3.isIiifRecordUrl(REGULAR_URL));
-    }
-
-    /**
-     * Test if we generate IIIF image thumbnail urls correctly
-     */
-    @Test
-    public void GetIiifThumbnailTest() throws URISyntaxException {
-        assertEquals(REVISED_IIIF_URL_HTTP, ThumbnailControllerV3.getIiifThumbnailUrl(ORIG_IIIF_URL_HTTP, "400").toString());
-        assertEquals(REVISED_IIIF_URL_HTTPS, ThumbnailControllerV3.getIiifThumbnailUrl(ORIG_IIIF_URL_HTTPS, "200").toString());
-        assertNull(ThumbnailControllerV3.getIiifThumbnailUrl(REGULAR_URL, "400"));
-        assertNull(ThumbnailControllerV3.getIiifThumbnailUrl(null, "300"));
-    }
-
     /**
      * Test Get mapping
      */

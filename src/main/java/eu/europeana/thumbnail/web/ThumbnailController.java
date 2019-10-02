@@ -43,7 +43,7 @@ public class ThumbnailController {
     private static final String GZIPSUFFIX = "-gzip";
     private static final boolean LOG_DEBUG_ENABLED = LOG.isDebugEnabled();
     private static final long DURATION_CONVERTER=10000;
-    private static final String INVALID_URL_MESSAGE = "INVALID URL";
+    private static final String INVALID_URL_MESSAGE = "INVALID URL. Please check the URL";
 
     private MediaStorageService metisobjectStorageClient;
     private MediaStorageService uimObjectStorageClient;
@@ -138,6 +138,7 @@ public class ThumbnailController {
             LOG.debug("UIM thumbnail = {}", mediaFile);
         }
 
+
         // 3. We retrieve IIIF thumbnails by downloading a requested size from eCloud
         if (mediaFile == null && ThumbnailController.isIiifRecordUrl(url)) {
             try {
@@ -174,7 +175,9 @@ public class ThumbnailController {
      * Check if the provided url is a thumbnail hosted on iiif.europeana.eu.
      * @param url to a thumbnail
      * @return true if the provided url is a thumbnail hosted on iiif.europeana.eu, otherwise false
+     * @deprecated since 2 Oct 2019. All the thumbnail are available in S3. This functionality s not present in V3.
      */
+    @Deprecated
     static boolean isIiifRecordUrl(String url) {
         if (url != null) {
             String urlLowercase = url.toLowerCase(Locale.GERMAN);
@@ -192,7 +195,9 @@ public class ThumbnailController {
      * @param width, desired image width
      * @return thumbnail URI for iiif urls, otherwise null
      * @throws URISyntaxException when the provided string is not a valid url
+     * @deprecated since 2 Oct 2019. All the thumbnail are available in S3. This functionality s not present in V3.
      */
+    @Deprecated
     static URI getIiifThumbnailUrl(String url, String width) throws URISyntaxException {
         // all urls are encoded so they start with either http:// or https://
         // and end with /full/full/0/default.<extension>.
@@ -207,7 +212,9 @@ public class ThumbnailController {
      * @param uri
      * @return
      * @throws IOException
+     * @deprecated since 2 Oct 2019. All the thumbnail are available in S3. This functionality s not present in V3.
      */
+    @Deprecated
     private MediaFile downloadImage(URI uri) throws IOException {
         try (InputStream in = new BufferedInputStream(uri.toURL().openStream()); ByteArrayOutputStream out = new ByteArrayOutputStream()) {
             byte[] buf = new byte[1024];
