@@ -3,12 +3,11 @@ package eu.europeana.thumbnail.model;
 import java.util.List;
 
     public class ErrorResponse {
-        public ErrorResponse(String message, List<String> details) {
+        public ErrorResponse( String message, List<String> details) {
             super();
             this.message = message;
             this.details = details;
         }
-
         private String message;
         private List<String> details;
 
@@ -16,9 +15,7 @@ import java.util.List;
             return message;
         }
 
-        public void setMessage(String message) {
-            this.message = message;
-        }
+        public void setMessage(String message) { this.message = message; }
 
         public List<String> getDetails() {
             return details;
