@@ -90,7 +90,7 @@ public class ThumbnailControllerTest {
                 .andExpect(content().json("{\n" +
                         "    \"message\": \"BAD_REQUEST\",\n" +
                         "    \"details\": [\n" +
-                        "        \"INVALID URL\"\n" +
+                        "        \"INVALID URL. Please check the URL\"\n" +
                         "    ]\n" +
                         "}"));
 
