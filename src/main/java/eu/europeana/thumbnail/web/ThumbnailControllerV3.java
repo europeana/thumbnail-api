@@ -72,7 +72,7 @@ public class ThumbnailControllerV3 {
         ResponseEntity<byte[]> result;
         final HttpHeaders headers = new HttpHeaders();
 
-        if(validateSize(size)) {
+        if(size != 200 && size != 400) {
             List<String> details= new ArrayList<>();
             details.add(INVALID_SIZE_MESSAGE);
             result = new ResponseEntity(new ErrorResponse(INVALID_SIZE, details), headers, HttpStatus.NOT_FOUND);
@@ -175,17 +175,6 @@ public class ThumbnailControllerV3 {
         }
         return false;
 
-    }
-
-    //validate the “size” parameter, if it does not match either 200 or 400, return true
-    private boolean validateSize(int size) {
-        if (String.valueOf(size) != null && size != WIDTH_200 && size != WIDTH_400) {
-            if (LOG_DEBUG_ENABLED) {
-                LOG.debug("The size entered is not valid size = {}", size);
-            }
-            return true;
-        }
-        return false;
     }
 }
 
