@@ -35,6 +35,7 @@ public class ThumbnailControllerV3 {
     private static final long DURATION_CONVERTER=10000;
     private static final String INVALID_SIZE_MESSAGE = "The size should be 200 or 400";
     private static final String INVALID_SIZE ="INVALID SIZE";
+    private static final String INVALID_SIZE_TYPE_MESSAGE ="The size must be an integer";
 
     private MediaStorageService metisobjectStorageClient;
     private MediaStorageService uimObjectStorageClient;
@@ -54,29 +55,42 @@ public class ThumbnailControllerV3 {
 
     @GetMapping(value = "/v3/{size}/{url}")
     public ResponseEntity<byte[]> thumbnailByUrl(
-            @PathVariable(value= "size")  int size ,
+            @PathVariable(value= "size")  String size ,
             @PathVariable("url") String url,
             WebRequest webRequest, HttpServletResponse response) {
 
         String extensionRemoved = url.split("\\.")[0];
+        // converting size in integer
+        int sizeValue;
+        try{
+            sizeValue = Integer.parseInt(size);
+        }catch(NumberFormatException e){
+            sizeValue=0;
+        }
+
         long startTime = 0;
         if (LOG_DEBUG_ENABLED) {
             startTime = System.nanoTime();
-            LOG.debug("Thumbnail url = {}, extensionRemoved = {} ,size = {}", url, extensionRemoved, size);
+            LOG.debug("Thumbnail url = {}, extensionRemoved = {} , size = {}", url, extensionRemoved, sizeValue);
         }
 
         ControllerUtils.addResponseHeaders(response);
         byte[] mediaContent;
         ResponseEntity<byte[]> result;
         final HttpHeaders headers = new HttpHeaders();
+        //validating size
+       if(sizeValue==0){
+           List<String> details= new ArrayList<>();
+           details.add(INVALID_SIZE_TYPE_MESSAGE);
+           result = new ResponseEntity(new ErrorResponse(INVALID_SIZE, details), headers, HttpStatus.BAD_REQUEST);
 
-        if(size != 200 && size != 400) {
+       } else if(sizeValue != 200 && sizeValue != 400) {
             List<String> details= new ArrayList<>();
             details.add(INVALID_SIZE_MESSAGE);
-            result = new ResponseEntity(new ErrorResponse(INVALID_SIZE, details), headers, HttpStatus.NOT_FOUND);
+            result = new ResponseEntity(new ErrorResponse(INVALID_SIZE, details), headers, HttpStatus.BAD_REQUEST);
 
         } else {
-            MediaFile mediaFile = retrieveThumbnail(extensionRemoved, String.valueOf(size));
+            MediaFile mediaFile = retrieveThumbnail(extensionRemoved, String.valueOf(sizeValue));
 
             // if there is no image present in the storage,return 404 NOT FOUND with empty body
             if (mediaFile == null) {

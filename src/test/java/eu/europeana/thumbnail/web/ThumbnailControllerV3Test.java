@@ -87,7 +87,7 @@ public class ThumbnailControllerV3Test {
         //For GET mapping
         //for invalid size value other than 200 or 400
         this.mockMvc.perform(get("/thumbnail/v3/{size}/{url}",456,TEST_URL))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isBadRequest());
 
         //for invalid url
         this.mockMvc.perform(get("/thumbnail/v3/{size}/{url}",200,TEST_URL))
@@ -96,7 +96,7 @@ public class ThumbnailControllerV3Test {
         //For HEAD mapping
         //for invalid size value other than 200 or 400
         this.mockMvc.perform(head("/thumbnail/v3/{size}/{url}",456,TEST_URL))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isBadRequest());
 
         //for invalid url
         this.mockMvc.perform(head("/thumbnail/v3/{size}/{url}",200,TEST_URL))
