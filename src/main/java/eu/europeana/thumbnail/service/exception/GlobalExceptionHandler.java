@@ -17,6 +17,7 @@ import java.util.stream.Collectors;
 
 /**
  * Global exception handler that catches all errors and logs the interesting ones
+ *
  * @author Srishti Singh
  * Created on 12-08-2019
  */
@@ -24,11 +25,12 @@ import java.util.stream.Collectors;
 @ResponseBody
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
-    private static final Logger LOG = LogManager.getLogger(GlobalExceptionHandler.class);
+    private static final Logger LOG         = LogManager.getLogger(GlobalExceptionHandler.class);
     private static final String BAD_REQUEST = "BAD_REQUEST";
 
     /**
      * Checks if we should log an error and rethrows it
+     *
      * @param e caught exception
      * @throws ThumbnailException rethrown exception
      */
@@ -41,14 +43,11 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     @ExceptionHandler(ConstraintViolationException.class)
-    public final ResponseEntity<ErrorResponse> handleConstraintViolation(
-            ConstraintViolationException ex,
-            WebRequest request)
-    {
+    public final ResponseEntity<ErrorResponse> handleConstraintViolation(ConstraintViolationException ex) {
         List<String> details = ex.getConstraintViolations()
-                .parallelStream()
-                .map(e -> e.getMessage())
-                .collect(Collectors.toList());
+                                 .parallelStream()
+                                 .map(e -> e.getMessage())
+                                 .collect(Collectors.toList());
 
         ErrorResponse error = new ErrorResponse(BAD_REQUEST, details);
         return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);

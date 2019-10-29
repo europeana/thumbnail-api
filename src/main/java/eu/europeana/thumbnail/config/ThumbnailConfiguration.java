@@ -1,6 +1,5 @@
 package eu.europeana.thumbnail.config;
 
-
 import eu.europeana.features.S3ObjectStorageClient;
 import eu.europeana.thumbnail.service.MediaStorageService;
 import eu.europeana.thumbnail.service.impl.MediaStorageServiceImpl;
@@ -13,6 +12,7 @@ import org.springframework.stereotype.Component;
 /**
  * Container for all manifest settings that we load from the iiif.properties file. Note that we also have hard-coded
  * properties in the Definitions class
+ *
  * @author Srishti Singh
  * Created on 12-08-2019
  */
@@ -44,12 +44,20 @@ public class ThumbnailConfiguration {
 
     @Bean
     public MediaStorageService metisobjectStorageClient() {
-        return new MediaStorageServiceImpl(new S3ObjectStorageClient(metisThumbnailS3Key, metisThumbnailS3Secret, metisThumbnailS3Region, metisThumbnailS3Bucket, metisThumbnailS3Endpoint));
+        return new MediaStorageServiceImpl(new S3ObjectStorageClient(metisThumbnailS3Key,
+                                                                     metisThumbnailS3Secret,
+                                                                     metisThumbnailS3Region,
+                                                                     metisThumbnailS3Bucket,
+                                                                     metisThumbnailS3Endpoint));
 
     }
+
     @Bean
     public MediaStorageService uimObjectStorageClient() {
 
-      return new MediaStorageServiceImpl(new S3ObjectStorageClient(uimThumbnailS3Key, uimThumbnailS3Secret, uimThumbnailS3Region, uimThumbnailS3Bucket));
+        return new MediaStorageServiceImpl(new S3ObjectStorageClient(uimThumbnailS3Key,
+                                                                     uimThumbnailS3Secret,
+                                                                     uimThumbnailS3Region,
+                                                                     uimThumbnailS3Bucket));
     }
 }
