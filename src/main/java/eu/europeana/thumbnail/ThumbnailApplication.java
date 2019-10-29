@@ -20,7 +20,6 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @PropertySource(value = "classpath:build.properties", ignoreResourceNotFound = true)
 public class ThumbnailApplication extends SpringBootServletInitializer {
 
-    private static final long MAX_AGE=1000;
     /**
      * Setup CORS for all requests
      * @return WebMvcConfigurer that exposes CORS headers
