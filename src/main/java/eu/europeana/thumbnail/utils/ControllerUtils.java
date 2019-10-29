@@ -5,40 +5,41 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.context.request.WebRequest;
 
 import javax.servlet.http.HttpServletResponse;
+
 /**
  * Class containing a number of useful controller utilities (mainly for setting headers)
- *
  */
 public final class ControllerUtils {
 
-        private static final String ALLOWED = "GET, HEAD";
-        private static final String NOCACHE = "no-cache";
-        private static final String  IFMATCH         = "If-Match";
-        private static final String  ANY             = "*";
-        private static final String GZIPSUFFIX = "-gzip";
+    private static final String ALLOWED    = "GET, HEAD";
+    private static final String NOCACHE    = "no-cache";
+    private static final String IFMATCH    = "If-Match";
+    private static final String ANY        = "*";
+    private static final String GZIPSUFFIX = "-gzip";
 
-        private ControllerUtils() {
-            // to avoid instantiating this class
-        }
-        /**
-         * Add the 'UTF-8' character encoding to the response
-         *
-         * @param response The response to add the encoding and headers to
-         */
-        public static void addResponseHeaders(HttpServletResponse response) {
-            response.setCharacterEncoding("UTF-8");
-            response.addHeader("Allow", ALLOWED);
-            response.addHeader("Cache-Control", NOCACHE);
-        }
+    private ControllerUtils() {
+        // to avoid instantiating this class
+    }
 
+    /**
+     * Add the 'UTF-8' character encoding to the response
+     *
+     * @param response The response to add the encoding and headers to
+     */
+    public static void addResponseHeaders(HttpServletResponse response) {
+        response.setCharacterEncoding("UTF-8");
+        response.addHeader("Allow", ALLOWED);
+        response.addHeader("Cache-Control", NOCACHE);
+    }
 
     /**
      * Supports multiple values in the "If-Match" header
-     * @param webRequest      incoming WebRequest
-     * @param mediaFile       mediaFile with requested eTag
+     *
+     * @param webRequest incoming WebRequest
+     * @param mediaFile  mediaFile with requested eTag
      * @return boolean true IF ("If-Match" header is supplied AND
-     *                        (contains matching eTag OR == "*") )
-     *         otherwise false
+     * (contains matching eTag OR == "*") )
+     * otherwise false
      */
 
     public static boolean checkForPrecondition(MediaFile mediaFile, WebRequest webRequest) {
@@ -46,33 +47,28 @@ public final class ControllerUtils {
                 (!doesAnyETagMatch(webRequest.getHeader(IFMATCH), mediaFile.getETag())));
     }
 
-    /** finally check if we should return the full response, or a 304
-     * @param mediaFile
-     * @param webRequest
-     * @return boolean
+    /**
+     * Checks if we should return the full response, or a 304
+     *
+     * @param mediaFile  input Media file to check
+     * @param webRequest webrequest object
+     * @return boolean   is modified yes / no
      */
     public static boolean checkForNotModified(MediaFile mediaFile, WebRequest webRequest) {
-
         if (mediaFile.getLastModified() != null && mediaFile.getETag() != null) {
-            if (webRequest.checkNotModified(
-                    StringUtils.removeEndIgnoreCase(mediaFile.getETag(), GZIPSUFFIX),
-                    mediaFile.getLastModified().getMillis())) {
-                return true;
-            }
-        } else if (mediaFile.getETag() != null && webRequest.checkNotModified(
-                StringUtils.removeEndIgnoreCase(mediaFile.getETag(), GZIPSUFFIX))) {
-            return true;
-        }
-       return false;
+            return webRequest.checkNotModified(StringUtils.removeEndIgnoreCase(mediaFile.getETag(), GZIPSUFFIX),
+                                               mediaFile.getLastModified().getMillis());
+        } else return mediaFile.getETag() != null &&
+                      webRequest.checkNotModified(StringUtils.removeEndIgnoreCase(mediaFile.getETag(), GZIPSUFFIX));
     }
 
-    private static boolean doesAnyETagMatch(String eTags, String eTagToMatch){
-        if (StringUtils.equals(ANY, eTags)){
+    private static boolean doesAnyETagMatch(String eTags, String eTagToMatch) {
+        if (StringUtils.equals(ANY, eTags)) {
             return true;
         }
-        if (StringUtils.isNoneBlank(eTags, eTagToMatch)){
-            for (String eTag : StringUtils.stripAll(StringUtils.split(eTags, ","))){
-                if (StringUtils.equalsIgnoreCase(spicAndSpan(eTag),spicAndSpan(eTagToMatch))){
+        if (StringUtils.isNoneBlank(eTags, eTagToMatch)) {
+            for (String eTag : StringUtils.stripAll(StringUtils.split(eTags, ","))) {
+                if (StringUtils.equalsIgnoreCase(spicAndSpan(eTag), spicAndSpan(eTagToMatch))) {
                     return true;
                 }
             }
@@ -80,7 +76,7 @@ public final class ControllerUtils {
         return false;
     }
 
-    private static String spicAndSpan(String header){
+    private static String spicAndSpan(String header) {
         return StringUtils.remove(StringUtils.stripStart(header, "W/"), "\"");
     }
-    }
+}
