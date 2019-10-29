@@ -9,7 +9,7 @@ public class ErrorResponse {
         this.details = details;
     }
 
-    private String message;
+    private String       message;
     private List<String> details;
 
     public String getMessage() {

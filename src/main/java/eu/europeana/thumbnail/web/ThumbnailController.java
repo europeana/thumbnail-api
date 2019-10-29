@@ -190,7 +190,9 @@ public class ThumbnailController {
      *
      * @param url to a thumbnail
      * @return true if the provided url is a thumbnail hosted on iiif.europeana.eu, otherwise false
+     * @deprecated since 2 Oct 2019. All the thumbnail are available in S3. This functionality s not present in V3.
      */
+    @Deprecated(since="2.1", forRemoval=true)
     static boolean isIiifRecordUrl(String url) {
         if (url != null) {
             String urlLowercase = url.toLowerCase(Locale.GERMAN);
@@ -207,10 +209,12 @@ public class ThumbnailController {
      * Note that this is a temporary solution until all newspaper thumbnails are processed by CRF.
      *
      * @param url    to a IIIF thumbnail
-     * @param width, desired image width
+     * @param width  desired image width
      * @return thumbnail URI for iiif urls, otherwise null
      * @throws URISyntaxException when the provided string is not a valid url
+     * @deprecated since 2 Oct 2019. All the thumbnail are available in S3. This functionality s not present in V3.
      */
+    @Deprecated(since="2.1", forRemoval=true)
     static URI getIiifThumbnailUrl(String url, String width) throws URISyntaxException {
         // all urls are encoded so they start with either http:// or https://
         // and end with /full/full/0/default.<extension>.
@@ -226,7 +230,9 @@ public class ThumbnailController {
      * @param uri
      * @return
      * @throws IOException
+     * @deprecated since 2 Oct 2019. All the thumbnail are available in S3. This functionality s not present in V3.
      */
+    @Deprecated(since="2.1", forRemoval=true)
     private MediaFile downloadImage(URI uri) throws IOException {
         try (InputStream in = new BufferedInputStream(uri.toURL()
                                                          .openStream()); ByteArrayOutputStream out = new ByteArrayOutputStream()) {
@@ -305,4 +311,3 @@ public class ThumbnailController {
         return getMD5(resourceUrl) + "-" + (StringUtils.equalsIgnoreCase(resourceSize, "w200") ? "MEDIUM" : "LARGE");
     }
 }
-

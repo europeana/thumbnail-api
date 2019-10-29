@@ -1,5 +1,6 @@
 package eu.europeana.thumbnail.web;
 
+import eu.europeana.thumbnail.model.ErrorResponse;
 import eu.europeana.thumbnail.model.MediaFile;
 import eu.europeana.thumbnail.service.MediaStorageService;
 import eu.europeana.thumbnail.utils.ControllerUtils;
@@ -24,6 +25,8 @@ import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
 /**
@@ -36,11 +39,8 @@ public class ThumbnailControllerV3 {
 
     private static final Logger LOG = LogManager.getLogger(ThumbnailControllerV3.class);
 
-    private static final String  IIIF_HOST_NAME     = "iiif.europeana.eu";
-    private static final boolean LOG_DEBUG_ENABLED  = LOG.isDebugEnabled();
-    private static final long    DURATION_CONVERTER = 10000;
-    private static final int     WIDTH_200          = 200;
-    private static final int     WIDTH_400          = 400;
+    private static final boolean LOG_DEBUG_ENABLED         = LOG.isDebugEnabled();
+    private static final long    DURATION_CONVERTER        = 10000;
 
     private MediaStorageService metisobjectStorageClient;
     private MediaStorageService uimObjectStorageClient;
@@ -61,40 +61,43 @@ public class ThumbnailControllerV3 {
      */
 
     @GetMapping(value = "/v3/{size}/{url}")
-    public ResponseEntity<byte[]> thumbnailByUrl(@PathVariable(value = "size") int size,
+    public ResponseEntity<byte[]> thumbnailByUrl(@PathVariable(value = "size") String size,
                                                  @PathVariable("url") String url,
                                                  WebRequest webRequest,
-                                                 HttpServletResponse response) throws UnsupportedEncodingException {
+                                                 HttpServletResponse response) {
 
-        String decodedURL = URLDecoder.decode(url, "UTF-8");
         long   startTime  = 0;
-        if (LOG_DEBUG_ENABLED) {
-            startTime = System.nanoTime();
-            LOG.debug("Thumbnail url = {}, decodedURL = {} ,size = {}", url, decodedURL, size);
-        }
+        String decodedURL = URLDecoder.decode(url, StandardCharsets.UTF_8);
+        String cleanedURL = decodedURL.split("\\.")[0];
 
         ControllerUtils.addResponseHeaders(response);
-        byte[]                 mediaContent;
-        ResponseEntity<byte[]> result;
-        final HttpHeaders      headers = new HttpHeaders();
+        byte[]            mediaContent;
+        ResponseEntity    result;
+        final HttpHeaders headers = new HttpHeaders();
 
-        //Check the “size” parameter, if it does not match either 200 or 400, respond with HTTP 404;
-        if (size != WIDTH_200 && size != WIDTH_400) {
-            mediaContent = null;
-            result = new ResponseEntity<>(mediaContent, headers, HttpStatus.NOT_FOUND);
-            if (LOG_DEBUG_ENABLED) {
-                LOG.debug("The size entered is not valid size = {}", size);
-            }
-        } else {
-            MediaFile mediaFile = retrieveThumbnail(decodedURL, String.valueOf(size));
+        // converting size in integer
+        int sizeValue;
+
+        try {
+            sizeValue = Integer.parseInt(size);
+        } catch (NumberFormatException e) {
+            return sizeErrorMessage(size, headers);
+        }
+
+        if (LOG_DEBUG_ENABLED) {
+            LOG.debug("Thumbnail url = {}, cleanedURL = {} , size = {}", url, cleanedURL, sizeValue);
+        }
+
+        //validating size
+        if (sizeValue == 200 || sizeValue == 400){
+            MediaFile mediaFile = retrieveThumbnail(cleanedURL, String.valueOf(sizeValue));
 
             // if there is no image present in the storage,return 404 NOT FOUND with empty body
             if (mediaFile == null) {
-                mediaContent = null;
-                result = new ResponseEntity<>(mediaContent, headers, HttpStatus.NOT_FOUND);
+                result = new ResponseEntity<>(null, headers, HttpStatus.NOT_FOUND);
 
             } else {
-                headers.setContentType(getMediaType(decodedURL));
+                headers.setContentType(getMediaType(url));
                 mediaContent = mediaFile.getContent();
                 result = new ResponseEntity<>(mediaContent, headers, HttpStatus.OK);
 
@@ -110,7 +113,10 @@ public class ThumbnailControllerV3 {
                     result = new ResponseEntity<>(HttpStatus.PRECONDITION_FAILED);
                 }
             }
+        } else {
+            return sizeErrorMessage(size, headers);
         }
+
         if (LOG_DEBUG_ENABLED) {
             Long duration = (System.nanoTime() - startTime) / DURATION_CONVERTER;
             if (MediaType.IMAGE_PNG.equals(headers.getContentType())) {
@@ -123,8 +129,14 @@ public class ThumbnailControllerV3 {
                 }
             }
         }
-
         return result;
+    }
+
+    private ResponseEntity<byte[]> sizeErrorMessage(String wrongSize, HttpHeaders headers){
+        String       message = String.format("'%s' is not a valid size parameter", wrongSize);
+        List<String> details = new ArrayList<>();
+        details.add("It must be either 200 or 400");
+        return new ResponseEntity(new ErrorResponse(message, details), headers, HttpStatus.BAD_REQUEST);
     }
 
     private MediaFile retrieveThumbnail(String url, String size) {
@@ -141,22 +153,6 @@ public class ThumbnailControllerV3 {
         if (mediaFile == null) {
             mediaFile = uimObjectStorageClient.retrieveAsMediaFile(mediaFileId, url, true);
             LOG.debug("UIM thumbnail = {}", mediaFile);
-        }
-
-        // 3. We retrieve IIIF thumbnails by downloading a requested size from eCloud
-        if (mediaFile == null && ThumbnailController.isIiifRecordUrl(url)) {
-            try {
-                String width   = (StringUtils.equalsIgnoreCase(size, "200") ? "200" : "400");
-                URI    iiifUri = ThumbnailController.getIiifThumbnailUrl(url, width);
-                if (iiifUri != null) {
-                    LOG.debug("IIIF url = {} ", iiifUri.getPath());
-                    mediaFile = downloadImage(iiifUri);
-                }
-            } catch (URISyntaxException e) {
-                LOG.error("Error reading IIIF thumbnail url", e);
-            } catch (IOException io) {
-                LOG.error("Error retrieving IIIF thumbnail image", io);
-            }
         }
         return mediaFile;
     }
@@ -177,89 +173,15 @@ public class ThumbnailControllerV3 {
     }
 
     /**
-     * Check if the provided url is a thumbnail hosted on iiif.europeana.eu.
-     *
-     * @param url to a thumbnail
-     * @return true if the provided url is a thumbnail hosted on iiif.europeana.eu, otherwise false
-     */
-    static boolean isIiifRecordUrl(String url) {
-        if (url != null) {
-            String urlLowercase = url.toLowerCase(Locale.GERMAN);
-            return (urlLowercase.startsWith("http://" + IIIF_HOST_NAME) ||
-                    urlLowercase.startsWith("https://" + IIIF_HOST_NAME));
-        }
-        return false;
-    }
-
-    /**
-     * All 3 million IIIF newspaper thumbnails have not been processed yet in CRF (see also Jira EA-892) but the
-     * edmPreview field will point to the default IIIF image url, so if we slightly alter that url the IIIF
-     * API will generate a thumbnail in the appropriate size for us on-the-fly
-     * Note that this is a temporary solution until all newspaper thumbnails are processed by CRF.
-     *
-     * @param url    to a IIIF thumbnail
-     * @param width, desired image width
-     * @return thumbnail URI for iiif urls, otherwise null
-     * @throws URISyntaxException when the provided string is not a valid url
-     */
-    static URI getIiifThumbnailUrl(String url, String width) throws URISyntaxException {
-        // all urls are encoded so they start with either http:// or https://
-        // and end with /full/full/0/default.<extension>.
-        if (isIiifRecordUrl(url)) {
-            return new URI(url.replace("/full/full/0/default.", "/full/" + width + ",/0/default."));
-        }
-        return null;
-    }
-
-    /**
-     * Download (IIIF) image from external location
-     *
-     * @param uri
-     * @return
-     * @throws IOException
-     */
-    private MediaFile downloadImage(URI uri) throws IOException {
-        try (InputStream in = new BufferedInputStream(uri.toURL()
-                                                         .openStream()); ByteArrayOutputStream out = new ByteArrayOutputStream()) {
-            byte[] buf = new byte[1024];
-            int    n;
-            while (-1 != (n = in.read(buf))) {
-                out.write(buf, 0, n);
-            }
-            // for now we don't do anything with LastModified or ETag as this is not easily available for IIIF
-            return new MediaFile(getMD5(uri.getPath()), uri.getPath(), out.toByteArray());
-        }
-    }
-
-    @SuppressWarnings("squid:S2070") // we have to use MD5 here
-    private String getMD5(String resourceUrl) {
-        MessageDigest messageDigest;
-        try {
-            messageDigest = MessageDigest.getInstance("MD5");
-            messageDigest.reset();
-            messageDigest.update(resourceUrl.getBytes(StandardCharsets.UTF_8));
-            final byte[]  resultByte = messageDigest.digest();
-            StringBuilder sb         = new StringBuilder();
-            for (byte aResultByte : resultByte) {
-                sb.append(Integer.toString((aResultByte & 0xff) + 0x100, 16).substring(1));
-            }
-            return sb.toString();
-        } catch (NoSuchAlgorithmException e) {
-            LOG.error("Error determining MD5 for resource {}", resourceUrl, e);
-        }
-        return resourceUrl;
-    }
-
-    /**
-     * Convert the provided url and size into a string representing the id of the media file. The id consists of the md5-
-     * hash of the provided resourceUrl concatenated with a hyphen and a size (MEDIUM or LARGE)
+     * Convert the provided url and size into a string representing the id of the media file. The id consists of the
+     * md5-hash of the provided resourceUrl concatenated with a hyphen and a size (MEDIUM or LARGE)
      *
      * @param resourceUrl  url of the original image
      * @param resourceSize requested thumbnail size (w200 or w400), default is w400 (meaning LARGE)
      * @return id of the thumbnail as it is stored in S3
      */
     private String computeResourceUrl(final String resourceUrl, final String resourceSize) {
-        return getMD5(resourceUrl) + "-" + (StringUtils.equalsIgnoreCase(resourceSize, "200") ? "MEDIUM" : "LARGE");
+        return resourceUrl + "-" + (StringUtils.equalsIgnoreCase(resourceSize, "200") ? "MEDIUM" : "LARGE");
     }
-}
 
+}
