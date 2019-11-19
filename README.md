@@ -11,7 +11,7 @@ This Thumbnail API implements the functionality described in Thumbnail API Speci
 ``mvn clean install`` (add ``-DskipTests``) to skip the unit tests during build
 
 ### REQUIREMENTS
-The application needs Java8 jre, Spring-Boot and Maven v3.3.x or above
+The application needs Java11 jre, Spring-Boot and Maven v3.3.x or above
 
 ### FUNCTIONALITY
 *This project retrieves images from our object storage provider. No API key is required. 
