@@ -58,29 +58,34 @@ public class ThumbnailControllerV3Test {
         when(objectStorage.getContent(anyString())).thenReturn(users);
 
         this.mockMvc.perform(get("/thumbnail/v3/{size}/{url}", 200, TEST_URL))
-                    .andExpect(content().bytes(objectStorage.getContent(anyString())))
-                    .andExpect(status().isOk())
-                    .andExpect(header().string("Content-Type", (MediaType.IMAGE_JPEG_VALUE) + UTF8_CHARSET))
-                    .andExpect(header().string("Content-Length", notNullValue()));
+                .andExpect(content().bytes(objectStorage.getContent(anyString())))
+                .andExpect(status().isOk())
+                .andExpect(header().string("Content-Type", (MediaType.IMAGE_JPEG_VALUE)))
+                .andExpect(header().string("Content-Length", notNullValue()));
 
         this.mockMvc.perform(head("/thumbnail/v3/{size}/{url}", 200, TEST_URL))
-                    .andExpect(status().isOk())
-                    .andExpect(header().string("Content-Type", (MediaType.IMAGE_JPEG_VALUE) + UTF8_CHARSET))
-                    .andExpect(header().string("Content-Length", notNullValue()));
+                .andExpect(status().isOk())
+                .andExpect(header().string("Content-Type", (MediaType.IMAGE_JPEG_VALUE)))
+                .andExpect(header().string("Content-Length", notNullValue()));
     }
 
     @Test
     public void test400Response() throws Exception {
         //For GET mapping
         //for invalid size value other than 200 or 400
-        this.mockMvc.perform(get("/thumbnail/v3/{size}/{url}", 456, TEST_URL)).andExpect(status().isBadRequest());
+        this.mockMvc.perform(get("/thumbnail/v3/{size}/{url}", 456, TEST_URL))
+                .andExpect(status().isBadRequest())
+                .andExpect(header().string("Content-Type", (MediaType.APPLICATION_JSON_VALUE) + UTF8_CHARSET));
 
         //for invalid url
         this.mockMvc.perform(get("/thumbnail/v3/{size}/{url}", 200, TEST_URL)).andExpect(status().isNotFound());
 
         //For HEAD mapping
         //for invalid size value other than 200 or 400
-        this.mockMvc.perform(head("/thumbnail/v3/{size}/{url}", 456, TEST_URL)).andExpect(status().isBadRequest());
+        this.mockMvc.perform(head("/thumbnail/v3/{size}/{url}", 456, TEST_URL))
+                .andExpect(status().isBadRequest())
+                .andExpect(header().string("Content-Type", (MediaType.APPLICATION_JSON_VALUE) + UTF8_CHARSET));
+
 
         //for invalid url
         this.mockMvc.perform(head("/thumbnail/v3/{size}/{url}", 200, TEST_URL)).andExpect(status().isNotFound());
@@ -100,13 +105,14 @@ public class ThumbnailControllerV3Test {
 
         //for Valid ETag : *, 12345abcde
         this.mockMvc.perform(get("/thumbnail/v3/{size}/{url}", 200, TEST_URL).header("If-Match", "*"))
-                    .andExpect(status().isOk());
+                .andExpect(status().isOk());
 
         this.mockMvc.perform(get("/thumbnail/v3/{size}/{url}", 200, TEST_URL).header("If-Match", "12345abcde"))
-                    .andExpect(status().isOk());
+                .andExpect(status().isOk());
 
         //for invalid Etag : test
         this.mockMvc.perform(get("/thumbnail/v3/{size}/{url}", 200, TEST_URL).header("If-Match", "test"))
-                    .andExpect(status().isPreconditionFailed());
+                .andExpect(status().isPreconditionFailed());
     }
+
 }

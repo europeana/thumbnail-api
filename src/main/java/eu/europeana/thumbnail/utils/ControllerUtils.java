@@ -27,7 +27,6 @@ public final class ControllerUtils {
      * @param response The response to add the encoding and headers to
      */
     public static void addResponseHeaders(HttpServletResponse response) {
-        response.setCharacterEncoding("UTF-8");
         response.addHeader("Allow", ALLOWED);
         response.addHeader("Cache-Control", NOCACHE);
     }

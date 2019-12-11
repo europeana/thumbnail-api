@@ -76,11 +76,11 @@ public class ThumbnailControllerTest {
     @Test
     public void GetIiifThumbnailTest() throws URISyntaxException {
         assertEquals(REVISED_IIIF_URL_HTTP,
-                     Objects.requireNonNull(ThumbnailController.getIiifThumbnailUrl(ORIG_IIIF_URL_HTTP, "400"))
-                            .toString());
+                Objects.requireNonNull(ThumbnailController.getIiifThumbnailUrl(ORIG_IIIF_URL_HTTP, "400"))
+                        .toString());
         assertEquals(REVISED_IIIF_URL_HTTPS,
-                     Objects.requireNonNull(ThumbnailController.getIiifThumbnailUrl(ORIG_IIIF_URL_HTTPS, "200"))
-                            .toString());
+                Objects.requireNonNull(ThumbnailController.getIiifThumbnailUrl(ORIG_IIIF_URL_HTTPS, "200"))
+                        .toString());
         assertNull(ThumbnailController.getIiifThumbnailUrl(REGULAR_URL, "400"));
         assertNull(ThumbnailController.getIiifThumbnailUrl(null, "300"));
     }
@@ -93,14 +93,14 @@ public class ThumbnailControllerTest {
     public void testInvalidURL() throws Exception {
 
         this.mockMvc.perform(get("/api/v2/thumbnail-by-url.json").param("uri", INVALID_URI))
-                    .andExpect(status().isBadRequest())
-                    .andExpect(content().json("{\n" + "    \"message\": \"BAD_REQUEST\",\n" + "    \"details\": [\n" +
+                .andExpect(status().isBadRequest())
+                .andExpect(content().json("{\n" + "    \"message\": \"BAD_REQUEST\",\n" + "    \"details\": [\n" +
                         "        \"INVALID URL\"\n" +
                         "    ]\n" +
                         "}"));
 
         this.mockMvc.perform(head("/api/v2/thumbnail-by-url.json").param("uri", INVALID_URI))
-                    .andExpect(status().isBadRequest());
+                .andExpect(status().isBadRequest());
 
     }
 
@@ -115,17 +115,17 @@ public class ThumbnailControllerTest {
         given(objectStorage.getContent(anyString())).willReturn(users);
 
         this.mockMvc.perform(get("/api/v2/thumbnail-by-url.json").param("uri", URI))
-                    .andExpect(content().bytes(objectStorage.getContent(anyString())))
-                    .andExpect(status().isOk())
-                    .andExpect(header().string("Content-Type", (MediaType.IMAGE_JPEG_VALUE) + UTF8_CHARSET))
-                    .andExpect(header().string("Content-Length", notNullValue()))
-                    .andExpect(header().string("Content-Length", THUMBNAIL_MEDIA_FILE_CONTENT_LENGTH));
+                .andExpect(content().bytes(objectStorage.getContent(anyString())))
+                .andExpect(status().isOk())
+                .andExpect(header().string("Content-Type", (MediaType.IMAGE_JPEG_VALUE)))
+                .andExpect(header().string("Content-Length", notNullValue()))
+                .andExpect(header().string("Content-Length", THUMBNAIL_MEDIA_FILE_CONTENT_LENGTH));
 
         this.mockMvc.perform(head("/api/v2/thumbnail-by-url.json").param("uri", URI))
-                    .andExpect(status().isOk())
-                    .andExpect(header().string("Content-Type", (MediaType.IMAGE_JPEG_VALUE) + UTF8_CHARSET))
-                    .andExpect(header().string("Content-Length", notNullValue()))
-                    .andExpect(header().string("Content-Length", THUMBNAIL_MEDIA_FILE_CONTENT_LENGTH));
+                .andExpect(status().isOk())
+                .andExpect(header().string("Content-Type", (MediaType.IMAGE_JPEG_VALUE)))
+                .andExpect(header().string("Content-Length", notNullValue()))
+                .andExpect(header().string("Content-Length", THUMBNAIL_MEDIA_FILE_CONTENT_LENGTH));
     }
 
     /**
@@ -135,26 +135,26 @@ public class ThumbnailControllerTest {
     public void testGet_Head_DefaultResponse() throws Exception {
         //for invalid Image and default icon
         this.mockMvc.perform(get("/api/v2/thumbnail-by-url.json").param("uri", URI))
-                    .andExpect(status().isOk())
-                    .andExpect(header().string("Content-Type", (MediaType.IMAGE_PNG_VALUE) + UTF8_CHARSET))
-                    .andExpect(header().string("Content-Length", DEFAULT_CONTENTLENGTH_IMAGE));
+                .andExpect(status().isOk())
+                .andExpect(header().string("Content-Type", (MediaType.IMAGE_PNG_VALUE)))
+                .andExpect(header().string("Content-Length", DEFAULT_CONTENTLENGTH_IMAGE));
 
         //for invalid Video and default icon
         this.mockMvc.perform(get("/api/v2/thumbnail-by-url.json").param("uri", URI).param("type", "VIDEO"))
-                    .andExpect(status().isOk())
-                    .andExpect(header().string("Content-Type", (MediaType.IMAGE_PNG_VALUE) + UTF8_CHARSET))
-                    .andExpect(header().string("Content-Length", DEFAULT_CONTENTLENGTH_VIDEO));
+                .andExpect(status().isOk())
+                .andExpect(header().string("Content-Type", (MediaType.IMAGE_PNG_VALUE)))
+                .andExpect(header().string("Content-Length", DEFAULT_CONTENTLENGTH_VIDEO));
 
         this.mockMvc.perform(head("/api/v2/thumbnail-by-url.json").param("uri", URI))
-                    .andExpect(status().isOk())
-                    .andExpect(header().string("Content-Type", (MediaType.IMAGE_PNG_VALUE) + UTF8_CHARSET))
-                    .andExpect(header().string("Content-Length", DEFAULT_CONTENTLENGTH_IMAGE));
+                .andExpect(status().isOk())
+                .andExpect(header().string("Content-Type", (MediaType.IMAGE_PNG_VALUE)))
+                .andExpect(header().string("Content-Length", DEFAULT_CONTENTLENGTH_IMAGE));
 
         //for invalid Video and default icon
         this.mockMvc.perform(head("/api/v2/thumbnail-by-url.json").param("uri", URI).param("type", "VIDEO"))
-                    .andExpect(status().isOk())
-                    .andExpect(header().string("Content-Type", (MediaType.IMAGE_PNG_VALUE) + UTF8_CHARSET))
-                    .andExpect(header().string("Content-Length", DEFAULT_CONTENTLENGTH_VIDEO));
+                .andExpect(status().isOk())
+                .andExpect(header().string("Content-Type", (MediaType.IMAGE_PNG_VALUE)))
+                .andExpect(header().string("Content-Length", DEFAULT_CONTENTLENGTH_VIDEO));
     }
 
     @Test
@@ -171,14 +171,14 @@ public class ThumbnailControllerTest {
 
         //for Valid ETag : *, 12345abcde
         this.mockMvc.perform(get("/api/v2/thumbnail-by-url.json").param("uri", URI).header("If-Match", "*"))
-                    .andExpect(status().isOk());
+                .andExpect(status().isOk());
 
         this.mockMvc.perform(get("/api/v2/thumbnail-by-url.json").param("uri", URI).header("If-Match", "12345abcde"))
-                    .andExpect(status().isOk());
+                .andExpect(status().isOk());
 
         //for invalid Etag : test
         this.mockMvc.perform(get("/api/v2/thumbnail-by-url.json").param("uri", URI).header("If-Match", "test"))
-                    .andExpect(status().isPreconditionFailed());
+                .andExpect(status().isPreconditionFailed());
 
     }
 }
