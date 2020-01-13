@@ -77,7 +77,7 @@ public class ThumbnailApplication extends SpringBootServletInitializer {
         protected void configure(HttpSecurity http) throws Exception {
             if(securityEnable) {
                 http.authorizeRequests()
-                        .antMatchers("/presentation/**").access(createHasIpRangeExpression());
+                        .antMatchers("/api/**", "/thumbnail/**").access(createHasIpRangeExpression());
             }
         }
 
