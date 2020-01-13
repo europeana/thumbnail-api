@@ -1,13 +1,22 @@
 package eu.europeana.thumbnail;
 
 import org.apache.logging.log4j.LogManager;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Main application
@@ -17,7 +26,15 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
  */
 @SpringBootApplication
 @PropertySource(value = "classpath:build.properties", ignoreResourceNotFound = true)
+@PropertySource("classpath:thumbnail.properties")
+@PropertySource(value = "classpath:thumbnail.user.properties", ignoreResourceNotFound = true)
 public class ThumbnailApplication extends SpringBootServletInitializer {
+
+    @Value("${features.security.enable}")
+    private boolean securityEnable;
+
+    @Value("${security.config.ipRanges}")
+    private String ipRanges;
 
     /**
      * This method is called when starting as a Spring-Boot application (e.g. from your IDE)
@@ -50,6 +67,28 @@ public class ThumbnailApplication extends SpringBootServletInitializer {
                         .exposedHeaders("Allow", "ETag", "Cache-Control", "Last-Modified");
             }
         };
+    }
+
+    @EnableWebSecurity
+    @Configuration
+    class SecurityConfig extends WebSecurityConfigurerAdapter {
+
+        @Override
+        protected void configure(HttpSecurity http) throws Exception {
+            if(securityEnable) {
+                http.authorizeRequests()
+                        .antMatchers("/presentation/**").access(createHasIpRangeExpression());
+            }
+        }
+
+        /**
+         * creates the string for authorizing request for the provided ipRanges
+         */
+        private String createHasIpRangeExpression() {
+            List<String> validIps = Arrays.asList(ipRanges.split("\\s*,\\s*"));
+            return validIps.stream()
+                    .collect(Collectors.joining("') or hasIpAddress('", "hasIpAddress('", "')"));
+        }
     }
 
 }
