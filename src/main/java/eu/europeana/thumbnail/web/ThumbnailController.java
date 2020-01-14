@@ -162,9 +162,9 @@ public class ThumbnailController {
                     mediaFile = downloadImage(iiifUri);
                 }
             } catch (URISyntaxException e) {
-                LOG.error("Error reading IIIF thumbnail url", e);
+                LOG.error("Error reading IIIF thumbnail url {}", url, e);
             } catch (IOException io) {
-                LOG.error("Error retrieving IIIF thumbnail image", io);
+                LOG.error("Error retrieving IIIF thumbnail image {} ", url, io);
             }
         }
         return mediaFile;
