@@ -4,6 +4,7 @@ import eu.europeana.domain.ObjectMetadata;
 import eu.europeana.features.ObjectStorageClient;
 import eu.europeana.thumbnail.model.MediaFile;
 import eu.europeana.thumbnail.service.impl.MediaStorageServiceImpl;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +13,8 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.context.WebApplicationContext;
 
 import java.net.URISyntaxException;
 import java.util.Date;
@@ -53,13 +56,21 @@ public class ThumbnailControllerTest {
     private static final String THUMBNAIL_MEDIA_FILE                = "test thumbnail image";
     private static final String THUMBNAIL_MEDIA_FILE_CONTENT_LENGTH = "20";
 
-    @Autowired
     private MockMvc                 mockMvc;
+
     @MockBean
     private MediaStorageServiceImpl thumbnailService;
     @MockBean
     private ObjectStorageClient     objectStorage;
 
+    @Autowired
+    private WebApplicationContext webApplicationContext;
+
+    // Setting it manually to bypass Spring Security IP address filter
+    @Before
+    public void setUp() {
+        mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
+    }
     /**
      * Tests if we detect IIIF image urls correctly
      */
