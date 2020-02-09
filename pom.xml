@@ -8,7 +8,6 @@
         <version>2.1</version>
     </parent>
 
-    <groupId>eu.europeana.thumbnail</groupId>
     <artifactId>thumbnail-api</artifactId>
     <version>0.2-SNAPSHOT</version>
     <packaging>war</packaging>
