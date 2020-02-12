@@ -9,12 +9,14 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -75,12 +77,18 @@ public class ThumbnailApplication extends SpringBootServletInitializer {
 
         @Override
         protected void configure(HttpSecurity http) throws Exception {
-            if(securityEnable) {
+            System.out.println(createHasIpRangeExpression());
+            if (securityEnable) {
                 http.authorizeRequests()
-                        .antMatchers("/api/**", "/thumbnail/**").access(createHasIpRangeExpression());
+                        .antMatchers("/api/**", "/thumbnail/**")
+                        .access(createHasIpRangeExpression());
             }
         }
 
+        @Override
+        public void configure(WebSecurity web) throws Exception {
+            web.ignoring().antMatchers("**/runscope-radar/**");
+        }
         /**
          * creates the string for authorizing request for the provided ipRanges
          */
@@ -89,6 +97,23 @@ public class ThumbnailApplication extends SpringBootServletInitializer {
             return validIps.stream()
                     .collect(Collectors.joining("') or hasIpAddress('", "hasIpAddress('", "')"));
         }
-    }
 
+//        @Bean
+//        public DelegatingAuthenticationEntryPoint delegatingAuthenticationEntryPoint() {
+//
+//            ELRequestMatcher matcher = new ELRequestMatcher("hasHeader('user-agent', 'runscope-radar/2.0')" );
+//
+//
+//            LinkedHashMap<RequestMatcher, AuthenticationEntryPoint> map =
+//                    new LinkedHashMap<RequestMatcher, AuthenticationEntryPoint>();
+//            map.put(matcher, new BasicAuthenticationEntryPoint());
+//
+//            DelegatingAuthenticationEntryPoint delegatingAuthenticationEntryPoint = new DelegatingAuthenticationEntryPoint(map);
+//            delegatingAuthenticationEntryPoint.setDefaultEntryPoint(new Http403ForbiddenEntryPoint());
+//
+//
+//            return delegatingAuthenticationEntryPoint;
+//        }
+//    }
+    }
 }
