@@ -16,9 +16,7 @@ import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.authentication.DelegatingAuthenticationEntryPoint;
 import org.springframework.security.web.authentication.Http403ForbiddenEntryPoint;
 import org.springframework.security.web.authentication.www.BasicAuthenticationEntryPoint;
-import org.springframework.security.web.util.matcher.ELRequestMatcher;
-import org.springframework.security.web.util.matcher.RequestHeaderRequestMatcher;
-import org.springframework.security.web.util.matcher.RequestMatcher;
+import org.springframework.security.web.util.matcher.*;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
@@ -85,15 +83,16 @@ public class ThumbnailApplication extends SpringBootServletInitializer {
         @Override
         protected void configure(HttpSecurity http) throws Exception {
           //  ELRequestMatcher matcher = new ELRequestMatcher("hasHeader('user-agent', 'runscope-radar/2.0')" );
-            RequestHeaderRequestMatcher matcher = new RequestHeaderRequestMatcher("user-agent","runscope-radar/2.0" );
+            RequestHeaderRequestMatcher headerMatcher = new RequestHeaderRequestMatcher("user-agent","runscope-radar/2.0" );
+            AntPathRequestMatcher antRequestMatcher = new AntPathRequestMatcher("/api/**");
+            AndRequestMatcher andMatcher = new AndRequestMatcher(headerMatcher,antRequestMatcher );
 
 
             if (securityEnable) {
                 http.authorizeRequests()
                         .antMatchers("/api/**", "/thumbnail/**")
-                        .access(createHasIpRangeExpression());
-
-                http.authorizeRequests().requestMatchers(matcher).permitAll();
+                        .access(createHasIpRangeExpression())
+                        .and().authorizeRequests().requestMatchers(andMatcher).permitAll();
             }
 
 
