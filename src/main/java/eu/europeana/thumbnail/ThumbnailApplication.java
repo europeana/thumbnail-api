@@ -87,7 +87,7 @@ public class ThumbnailApplication extends SpringBootServletInitializer {
 
         @Override
         public void configure(WebSecurity web) throws Exception {
-            web.ignoring().antMatchers("**/runscope-radar/**");
+            web.ignoring().antMatchers("**/runscope.com/radar/**");
         }
         /**
          * creates the string for authorizing request for the provided ipRanges
@@ -97,6 +97,8 @@ public class ThumbnailApplication extends SpringBootServletInitializer {
             return validIps.stream()
                     .collect(Collectors.joining("') or hasIpAddress('", "hasIpAddress('", "')"));
         }
+
+        //https://api.runscope.com/radar/bucket/3a0a035c-23e9-4208-81e6-37448dfcec07/trigger?environment=thumbnail-test.eanadev.org
 
 //        @Bean
 //        public DelegatingAuthenticationEntryPoint delegatingAuthenticationEntryPoint() {
