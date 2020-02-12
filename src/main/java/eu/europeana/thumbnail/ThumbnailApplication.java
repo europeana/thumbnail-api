@@ -12,6 +12,12 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.web.AuthenticationEntryPoint;
+import org.springframework.security.web.authentication.DelegatingAuthenticationEntryPoint;
+import org.springframework.security.web.authentication.Http403ForbiddenEntryPoint;
+import org.springframework.security.web.authentication.www.BasicAuthenticationEntryPoint;
+import org.springframework.security.web.util.matcher.ELRequestMatcher;
+import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
@@ -77,18 +83,20 @@ public class ThumbnailApplication extends SpringBootServletInitializer {
 
         @Override
         protected void configure(HttpSecurity http) throws Exception {
-            System.out.println(createHasIpRangeExpression());
             if (securityEnable) {
                 http.authorizeRequests()
                         .antMatchers("/api/**", "/thumbnail/**")
-                        .access(createHasIpRangeExpression());
+                        .access(createHasIpRangeExpression())
+                        .and()
+                        .httpBasic()
+                        .authenticationEntryPoint(delegatingAuthenticationEntryPoint());
             }
         }
 
-        @Override
-        public void configure(WebSecurity web) throws Exception {
-            web.ignoring().antMatchers("**/runscope.com/radar/**");
-        }
+//        @Override
+//        public void configure(WebSecurity web) throws Exception {
+//            web.ignoring().antMatchers("**/runscope.com/radar/**");
+//        }
         /**
          * creates the string for authorizing request for the provided ipRanges
          */
@@ -100,22 +108,20 @@ public class ThumbnailApplication extends SpringBootServletInitializer {
 
         //https://api.runscope.com/radar/bucket/3a0a035c-23e9-4208-81e6-37448dfcec07/trigger?environment=thumbnail-test.eanadev.org
 
-//        @Bean
-//        public DelegatingAuthenticationEntryPoint delegatingAuthenticationEntryPoint() {
-//
-//            ELRequestMatcher matcher = new ELRequestMatcher("hasHeader('user-agent', 'runscope-radar/2.0')" );
-//
-//
-//            LinkedHashMap<RequestMatcher, AuthenticationEntryPoint> map =
-//                    new LinkedHashMap<RequestMatcher, AuthenticationEntryPoint>();
-//            map.put(matcher, new BasicAuthenticationEntryPoint());
-//
-//            DelegatingAuthenticationEntryPoint delegatingAuthenticationEntryPoint = new DelegatingAuthenticationEntryPoint(map);
-//            delegatingAuthenticationEntryPoint.setDefaultEntryPoint(new Http403ForbiddenEntryPoint());
-//
-//
-//            return delegatingAuthenticationEntryPoint;
-//        }
-//    }
+        @Bean
+        public DelegatingAuthenticationEntryPoint delegatingAuthenticationEntryPoint() {
+
+            ELRequestMatcher matcher = new ELRequestMatcher("hasHeader('user-agent', 'runscope-radar/2.0')" );
+
+            LinkedHashMap<RequestMatcher, AuthenticationEntryPoint> map =
+                    new LinkedHashMap<RequestMatcher, AuthenticationEntryPoint>();
+            map.put(matcher, new BasicAuthenticationEntryPoint());
+
+            DelegatingAuthenticationEntryPoint delegatingAuthenticationEntryPoint = new DelegatingAuthenticationEntryPoint(map);
+            delegatingAuthenticationEntryPoint.setDefaultEntryPoint( new Http403ForbiddenEntryPoint());
+
+
+            return delegatingAuthenticationEntryPoint;
+        }
     }
 }
