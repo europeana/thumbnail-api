@@ -82,20 +82,18 @@ public class ThumbnailApplication extends SpringBootServletInitializer {
 
         @Override
         protected void configure(HttpSecurity http) throws Exception {
-          //  ELRequestMatcher matcher = new ELRequestMatcher("hasHeader('user-agent', 'runscope-radar/2.0')" );
-            RequestHeaderRequestMatcher headerMatcher = new RequestHeaderRequestMatcher("User-Agent","runscope-radar/2.0" );
-            AntPathRequestMatcher antRequestMatcher = new AntPathRequestMatcher("/api/**");
-            AndRequestMatcher andMatcher = new AndRequestMatcher(headerMatcher,antRequestMatcher );
+           ELRequestMatcher matcher = new ELRequestMatcher("hasHeader('User-Agent', 'runscope-radar/2.0')" );
+//            RequestHeaderRequestMatcher headerMatcher = new RequestHeaderRequestMatcher("User-Agent","runscope-radar/2.0" );
+//            AntPathRequestMatcher antRequestMatcher = new AntPathRequestMatcher("/api/**");
+//            AndRequestMatcher andMatcher = new AndRequestMatcher(headerMatcher,antRequestMatcher );
 
 
             if (securityEnable) {
                 http.authorizeRequests()
-//                        .antMatchers("/api/**", "/thumbnail/**")
-//                        .access(createHasIpRangeExpression())
-                        .and().authorizeRequests().requestMatchers(andMatcher).permitAll();
+                       // .antMatchers("/api/**", "/thumbnail/**")
+//                        .access(createHasIpRangeExpression());
+                         .requestMatchers(matcher).permitAll();
             }
-
-
         }
 
         /**
