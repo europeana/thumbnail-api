@@ -90,8 +90,8 @@ public class ThumbnailApplication extends SpringBootServletInitializer {
 
             if (securityEnable) {
                 http.authorizeRequests()
-                        .antMatchers("/api/**", "/thumbnail/**")
-                        .access(createHasIpRangeExpression())
+//                        .antMatchers("/api/**", "/thumbnail/**")
+//                        .access(createHasIpRangeExpression())
                         .and().authorizeRequests().requestMatchers(andMatcher).permitAll();
             }
 
