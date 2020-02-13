@@ -92,7 +92,7 @@ public class ThumbnailApplication extends SpringBootServletInitializer {
                 http.authorizeRequests()
                        // .antMatchers("/api/**", "/thumbnail/**")
 //                        .access(createHasIpRangeExpression());
-                         .requestMatchers(matcher).permitAll();
+                         .requestMatchers(matcher).hasAnyRole("admin");
             }
         }
 
