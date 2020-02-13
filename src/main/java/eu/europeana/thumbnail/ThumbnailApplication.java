@@ -87,12 +87,22 @@ public class ThumbnailApplication extends SpringBootServletInitializer {
 //            AntPathRequestMatcher antRequestMatcher = new AntPathRequestMatcher("/api/**");
 //            AndRequestMatcher andMatcher = new AndRequestMatcher(headerMatcher,antRequestMatcher );
 
-
             if (securityEnable) {
                 http.authorizeRequests()
-                       // .antMatchers("/api/**", "/thumbnail/**")
-//                        .access(createHasIpRangeExpression());
-                         .requestMatchers(matcher).hasAnyRole("admin");
+                        .antMatchers("/api/**", "/thumbnail/**")
+                        .access(createHasIpRangeExpression());
+//                         .requestMatchers(matcher).hasAnyRole("admin");
+            }
+            if (securityEnable) {
+                http
+                        .requestCache()
+                        .disable()
+                        .antMatcher("/api/**")
+                        .authorizeRequests()
+                        .requestMatchers(new RequestHeaderRequestMatcher("User-Agent", "runscope-radar/2.0"))
+                        .hasAnyRole("admin")
+                        .and()
+                        .httpBasic();
             }
         }
 
