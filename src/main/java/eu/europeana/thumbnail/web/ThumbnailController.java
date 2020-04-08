@@ -36,7 +36,7 @@ import java.util.Locale;
  * The thumbnail API doesn't require any form of authentication, providing an API key is optional.
  */
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/thumbnail")
 @Validated
 public class ThumbnailController {
 
@@ -73,7 +73,7 @@ public class ThumbnailController {
      * @return responsEntity
      */
 
-    @GetMapping(value = "/v2/thumbnail-by-url.json")
+    @GetMapping(value = "/v2/url.json")
     public ResponseEntity<byte[]> thumbnailByUrl(@RequestParam(value = "uri")
                                                  @Pattern(regexp = "^(https?|ftp)://.*$",
                                                           message = INVALID_URL_MESSAGE) String url,
