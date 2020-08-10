@@ -16,15 +16,7 @@ public class ErrorResponse {
         return message;
     }
 
-    public void setMessage(String message) {
-        this.message = message;
-    }
-
     public List<String> getDetails() {
         return details;
-    }
-
-    public void setDetails(List<String> details) {
-        this.details = details;
     }
 }

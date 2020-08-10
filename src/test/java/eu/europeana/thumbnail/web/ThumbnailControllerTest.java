@@ -2,6 +2,7 @@ package eu.europeana.thumbnail.web;
 
 import eu.europeana.domain.ObjectMetadata;
 import eu.europeana.features.ObjectStorageClient;
+import eu.europeana.thumbnail.model.ErrorResponse;
 import eu.europeana.thumbnail.model.MediaFile;
 import eu.europeana.thumbnail.service.impl.MediaStorageServiceImpl;
 import org.junit.Test;
@@ -14,9 +15,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.net.URISyntaxException;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Objects;
+import java.util.*;
 
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.*;
@@ -91,17 +90,18 @@ public class ThumbnailControllerTest {
 
     @Test
     public void testInvalidURL() throws Exception {
-
+        String errorMessage = "INVALID URL";
+        List<String> details = new ArrayList<>();
+        details.add(errorMessage);
+        ErrorResponse errorResponse = new ErrorResponse("BAD_REQUEST",details);
         this.mockMvc.perform(get("/api/v2/thumbnail-by-url.json").param("uri", INVALID_URI))
                 .andExpect(status().isBadRequest())
-                .andExpect(content().json("{\n" + "    \"message\": \"BAD_REQUEST\",\n" + "    \"details\": [\n" +
-                        "        \"INVALID URL\"\n" +
+                .andExpect(content().json("{\n" + "    \"message\": \""+ errorResponse.getMessage()+  "\",\n" + "    \"details\": [\n\""
+                        + errorResponse.getDetails().get(0) +"\" \n" +
                         "    ]\n" +
                         "}"));
-
         this.mockMvc.perform(head("/api/v2/thumbnail-by-url.json").param("uri", INVALID_URI))
                 .andExpect(status().isBadRequest());
-
     }
 
     /**
@@ -179,6 +179,33 @@ public class ThumbnailControllerTest {
         //for invalid Etag : test
         this.mockMvc.perform(get("/api/v2/thumbnail-by-url.json").param("uri", URI).header("If-Match", "test"))
                 .andExpect(status().isPreconditionFailed());
+
+    }
+
+    @Test
+    public void testGet_URI_Parameter() throws Exception {
+        //for invalid Image and default icon
+        this.mockMvc.perform(get("/api/v2/thumbnail-by-url.json").param("uri", URI))
+                .andExpect(status().isOk())
+                .andExpect(header().string("Content-Type", (MediaType.IMAGE_PNG_VALUE)))
+                .andExpect(header().string("Content-Length", DEFAULT_CONTENTLENGTH_IMAGE));
+
+        //for invalid Video and default icon
+        this.mockMvc.perform(get("/api/v2/thumbnail-by-url.json").param("uri", URI).param("type", "VIDEO"))
+                .andExpect(status().isOk())
+                .andExpect(header().string("Content-Type", (MediaType.IMAGE_PNG_VALUE)))
+                .andExpect(header().string("Content-Length", DEFAULT_CONTENTLENGTH_VIDEO));
+
+        this.mockMvc.perform(head("/api/v2/thumbnail-by-url.json").param("uri", URI))
+                .andExpect(status().isOk())
+                .andExpect(header().string("Content-Type", (MediaType.IMAGE_PNG_VALUE)))
+                .andExpect(header().string("Content-Length", DEFAULT_CONTENTLENGTH_IMAGE));
+
+        //for invalid Video and default icon
+        this.mockMvc.perform(head("/api/v2/thumbnail-by-url.json").param("uri", URI).param("type", "VIDEO"))
+                .andExpect(status().isOk())
+                .andExpect(header().string("Content-Type", (MediaType.IMAGE_PNG_VALUE)))
+                .andExpect(header().string("Content-Length", DEFAULT_CONTENTLENGTH_VIDEO));
 
     }
 }
