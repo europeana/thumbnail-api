@@ -24,7 +24,7 @@
         <commonsIO.version>2.4</commonsIO.version>
         <commonsLang3.version>3.9</commonsLang3.version>
         <jodatime.version>2.9.2</jodatime.version>
-        <objectStorage.version>1.8</objectStorage.version>
+        <objectStorage.version>1.9-SNAPSHOT</objectStorage.version>
 
         <spring-boot.version>2.1.4.RELEASE</spring-boot.version>
     </properties>
