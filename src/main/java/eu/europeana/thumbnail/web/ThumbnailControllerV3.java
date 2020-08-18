@@ -19,12 +19,8 @@ import org.springframework.web.context.request.WebRequest;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -67,17 +63,13 @@ public class ThumbnailControllerV3 {
                                                  HttpServletResponse response) {
 
         long   startTime  = 0;
-        String decodedURL = URLDecoder.decode(url, StandardCharsets.UTF_8);
-        String cleanedURL = decodedURL.split("\\.")[0];
-
+        String cleanedURL = getCleanedUrl(url);
         ControllerUtils.addResponseHeaders(response);
-        byte[]            mediaContent;
         ResponseEntity    result;
         final HttpHeaders headers = new HttpHeaders();
-
-        // converting size in integer
         int sizeValue;
 
+        // converting size into integer
         try {
             sizeValue = Integer.parseInt(size);
         } catch (NumberFormatException e) {
@@ -90,29 +82,7 @@ public class ThumbnailControllerV3 {
 
         //validating size
         if (sizeValue == 200 || sizeValue == 400){
-            MediaFile mediaFile = retrieveThumbnail(cleanedURL, String.valueOf(sizeValue));
-
-            // if there is no image present in the storage,return 404 NOT FOUND with empty body
-            if (mediaFile == null) {
-                result = new ResponseEntity<>(null, headers, HttpStatus.NOT_FOUND);
-
-            } else {
-                headers.setContentType(getMediaType(url));
-                mediaContent = mediaFile.getContent();
-                result = new ResponseEntity<>(mediaContent, headers, HttpStatus.OK);
-
-                // finally check if we should return the full response, or a 304
-                // the check below automatically sets an ETag and last-Modified in our response header and returns a 304
-                // (but only when clients include the If_Modified_Since header in their request)
-                if (ControllerUtils.checkForNotModified(mediaFile, webRequest)) {
-                    result = null;
-                }
-                // If “If-Match” is supplied, check if the value is the same as the current “ETag” of the resource or if it is “*”,
-                // if false respond with HTTP 412;
-                if (ControllerUtils.checkForPrecondition(mediaFile, webRequest)) {
-                    result = new ResponseEntity<>(HttpStatus.PRECONDITION_FAILED);
-                }
-            }
+            result = getThumbnail(cleanedURL, sizeValue, headers, webRequest);
         } else {
             return sizeErrorMessage(size, headers);
         }
@@ -132,11 +102,41 @@ public class ThumbnailControllerV3 {
         return result;
     }
 
-    private ResponseEntity<byte[]> sizeErrorMessage(String wrongSize, HttpHeaders headers){
-        String       message = String.format("'%s' is not a valid size parameter", wrongSize);
-        List<String> details = new ArrayList<>();
-        details.add("It must be either 200 or 400");
-        return new ResponseEntity(new ErrorResponse(message, details), headers, HttpStatus.BAD_REQUEST);
+    /**
+     * Retrieves image thumbnails for version 3
+     * @param url     cleaned url of thumbnail
+     * @param size    size if the image
+     * @param headers headers for the response
+     * @param webRequest
+     * @return result
+     */
+    private ResponseEntity<byte[]> getThumbnail(String url, int size, HttpHeaders headers, WebRequest webRequest) {
+        ResponseEntity    result;
+        byte[]            mediaContent;
+        MediaFile mediaFile = retrieveThumbnail(url, String.valueOf(size));
+
+        // if there is no image present in the storage,return 404 NOT FOUND with empty body
+        if (mediaFile == null) {
+            result = new ResponseEntity<>(null, headers, HttpStatus.NOT_FOUND);
+
+        } else {
+            headers.setContentType(getMediaType(url));
+            mediaContent = mediaFile.getContent();
+            result = new ResponseEntity<>(mediaContent, headers, HttpStatus.OK);
+
+            // finally check if we should return the full response, or a 304
+            // the check below automatically sets an ETag and last-Modified in our response header and returns a 304
+            // (but only when clients include the If_Modified_Since header in their request)
+            if (ControllerUtils.checkForNotModified(mediaFile, webRequest)) {
+                result = null;
+            }
+            // If “If-Match” is supplied, check if the value is the same as the current “ETag” of the resource or if it is “*”,
+            // if false respond with HTTP 412;
+            if (ControllerUtils.checkForPrecondition(mediaFile, webRequest)) {
+                result = new ResponseEntity<>(HttpStatus.PRECONDITION_FAILED);
+            }
+        }
+        return result;
     }
 
     private MediaFile retrieveThumbnail(String url, String size) {
@@ -155,6 +155,28 @@ public class ThumbnailControllerV3 {
             LOG.debug("UIM thumbnail = {}", mediaFile);
         }
         return mediaFile;
+    }
+
+    /**
+     * checks the size passed in the request
+     * @param wrongSize size passed
+     * @param headers headers for the response
+     */
+    private ResponseEntity<byte[]> sizeErrorMessage(String wrongSize, HttpHeaders headers){
+        String       message = String.format("'%s' is not a valid size parameter", wrongSize);
+        List<String> details = new ArrayList<>();
+        details.add("It must be either 200 or 400");
+        return new ResponseEntity(new ErrorResponse(message, details), headers, HttpStatus.BAD_REQUEST);
+    }
+
+    /**
+     * checks the size passed in the request
+     * @param url url passed
+     * @return decoded and cleaned url
+     */
+    private String getCleanedUrl(String url){
+        String decodedURL = URLDecoder.decode(url, StandardCharsets.UTF_8);
+        return decodedURL.split("\\.")[0];
     }
 
     /**
