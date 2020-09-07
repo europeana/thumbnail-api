@@ -2,6 +2,7 @@ package eu.europeana.thumbnail.web;
 
 import eu.europeana.thumbnail.config.StorageRoutes;
 import eu.europeana.thumbnail.service.MediaStorageService;
+import eu.europeana.thumbnail.service.impl.IiifImageServerImpl;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,7 +56,7 @@ public class StorageRoutesTest {
         assertEquals("default", services.get(0).getName());
         assertEquals("prod1", services.get(1).getName());
         assertEquals("prod2", services.get(2).getName());
-        assertEquals("IIIF-IS", services.get(3).getName());
+        assertEquals(IiifImageServerImpl.STORAGE_NAME, services.get(3).getName());
     }
 
     private void testSecondStorage(List<MediaStorageService> services) {

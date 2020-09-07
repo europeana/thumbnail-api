@@ -72,7 +72,7 @@ public class StorageRoutes {
             String[] routes = environment.getProperty(routeKeyName).split(VALUE_SEPARATOR);
             // set first loaded route as default
             if  (defaultRoute == null) {
-                defaultRoute = routes[0];
+                defaultRoute = routes[0].trim();
             }
 
             // get storage names
@@ -80,8 +80,9 @@ public class StorageRoutes {
             if (environment.containsProperty(routePropStorage)) {
                 String[] storages = environment.getProperty(routePropStorage).split(VALUE_SEPARATOR);
                 for (String route : routes) {
-                    LOG.info("Adding route {} with storage(s) {}", route, storages);
-                    routeToStorageService.put(route, generateStorageServices(storages));
+                    // trim to remove spaces
+                    LOG.info("Adding route {} with storage(s) {}", route.trim(), storages);
+                    routeToStorageService.put(route.trim(), generateStorageServices(storages));
                 }
             } else {
                 throw new ConfigurationException(("No storage defined for route(s)" + routes));
@@ -100,14 +101,17 @@ public class StorageRoutes {
     private ArrayList<MediaStorageService> generateStorageServices(String[] storageNames) {
         ArrayList<MediaStorageService> result = new ArrayList<>();
         for (String storageName : storageNames) {
+            // trim values to prevent trailing space
+            String name = storageName.trim();
+
             // check if we already created this storage before
-            MediaStorageService service = storageNameToService.get(storageName);
+            MediaStorageService service = storageNameToService.get(name);
             if (service == null) {
-                service = createNewService(storageName);
+                service = createNewService(name);
             } else {
                 LOG.info("Reusing existing service {}", service.getName());
             }
-            storageNameToService.put(storageName, service);
+            storageNameToService.put(name, service);
             result.add(service);
         }
         return result;
