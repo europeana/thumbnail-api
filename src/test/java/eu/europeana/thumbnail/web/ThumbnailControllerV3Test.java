@@ -1,9 +1,9 @@
 package eu.europeana.thumbnail.web;
 
-import eu.europeana.domain.ObjectMetadata;
-import eu.europeana.features.ObjectStorageClient;
-import eu.europeana.thumbnail.model.MediaFile;
-import eu.europeana.thumbnail.service.impl.MediaStorageServiceImpl;
+import eu.europeana.domain.Headers;
+import eu.europeana.thumbnail.config.StorageRoutes;
+import eu.europeana.thumbnail.service.MediaStorageService;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,105 +13,134 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.net.URISyntaxException;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Objects;
-
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.junit.Assert.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.head;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 /**
- * Test class for Thumbnail controller
+ * Test class for Thumbnail V3 controller
  *
  * @author Srishti Singh on 05-09-2019.
+ * @author Patrick Ehlert, major refactoring in September 2020
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@WebMvcTest(ThumbnailControllerV3.class)
+@WebMvcTest({ThumbnailControllerV3.class, StorageRoutes.class})
 public class ThumbnailControllerV3Test {
 
-    private static final String TEST_URL                = "test-v3-thumbnail";
-    private static final String UTF8_CHARSET            = ";charset=UTF-8";
-    private static final String THUMBNAIL_MEDIA_FILE    = "test thumbnail image";
+    private static final String V3_ENDPOINT  = "/thumbnail/v3/{size}/{url}";
+    private static final String UTF8_CHARSET = ";charset=UTF-8";
 
     @Autowired
-    private MockMvc                 mockMvc;
+    private MockMvc             mockMvc;
     @MockBean
-    private MediaStorageServiceImpl thumbnailService;
+    private StorageRoutes       storageRoutes;
     @MockBean
-    private ObjectStorageClient     objectStorage;
+    private MediaStorageService mediaStorage;
+
+
+    @Before
+    public void setup() {
+        TestData.defaultSetup(storageRoutes, mediaStorage);
+    }
 
     /**
-     * Test Get mapping
+     * Test normal 200 Ok requests
      */
     @Test
-    public void testGet_Head_200Ok_Response() throws Exception {
-        byte[]    users     = THUMBNAIL_MEDIA_FILE.getBytes();
-        MediaFile mediaFile = new MediaFile(anyString(), TEST_URL, users);
-        given(thumbnailService.retrieveAsMediaFile("test", any(), anyBoolean())).willReturn(mediaFile);
-        when(objectStorage.getContent(anyString())).thenReturn(users);
-
-        this.mockMvc.perform(get("/thumbnail/v3/{size}/{url}", 200, TEST_URL))
-                .andExpect(content().bytes(objectStorage.getContent(anyString())))
+    public void test_200_Ok() throws Exception {
+        // small image
+        this.mockMvc.perform(get(V3_ENDPOINT, 200, TestData.URI_HASH))
                 .andExpect(status().isOk())
                 .andExpect(header().string("Content-Type", (MediaType.IMAGE_JPEG_VALUE)))
-                .andExpect(header().string("Content-Length", notNullValue()));
+                .andExpect(header().string("Content-Length", String.valueOf(TestData.MEDIUM_FILE.length())))
+                .andExpect(content().bytes(TestData.MEDIUM_CONTENT));
 
-        this.mockMvc.perform(head("/thumbnail/v3/{size}/{url}", 200, TEST_URL))
+        this.mockMvc.perform(head(V3_ENDPOINT, 200, TestData.URI_HASH))
                 .andExpect(status().isOk())
                 .andExpect(header().string("Content-Type", (MediaType.IMAGE_JPEG_VALUE)))
-                .andExpect(header().string("Content-Length", notNullValue()));
+                .andExpect(header().string("Content-Length", String.valueOf(TestData.MEDIUM_FILE.length())))
+                .andExpect(content().string(""));
+
+        // large image
+        this.mockMvc.perform(get(V3_ENDPOINT, 400, TestData.URI_HASH))
+                .andExpect(status().isOk())
+                .andExpect(header().string("Content-Type", (MediaType.IMAGE_JPEG_VALUE)))
+                .andExpect(header().string("Content-Length", String.valueOf(TestData.LARGE_FILE.length())))
+                .andExpect(content().bytes(TestData.LARGE_CONTENT));
+
+        this.mockMvc.perform(head(V3_ENDPOINT, 400, TestData.URI_HASH))
+                .andExpect(status().isOk())
+                .andExpect(header().string("Content-Type", (MediaType.IMAGE_JPEG_VALUE)))
+                .andExpect(header().string("Content-Length", String.valueOf(TestData.LARGE_FILE.length())))
+                .andExpect(content().string(""));
+    }
+
+    /**
+     * Test if we get a 400 response for unknown hash codes
+     */
+    @Test
+    public void test_404_NotFound() throws Exception {
+        this.mockMvc.perform(get(V3_ENDPOINT, 400, "hashNotFound"))
+                .andExpect(status().isNotFound())
+                .andExpect(content().string(""));
+
+        this.mockMvc.perform(head(V3_ENDPOINT, 400,  "hashNotFound"))
+                .andExpect(status().isNotFound())
+                .andExpect(content().string(""));
+    }
+
+    /**
+     * Test if we return a 400 error for image size other than the supported 200 and 400
+     */
+    @Test
+    public void test_400_InvalidSize() throws Exception {
+        this.mockMvc.perform(get(V3_ENDPOINT, 456, TestData.URI_HASH))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("status").value(400))
+                .andExpect(jsonPath("error").value("Bad Request"))
+                .andExpect(jsonPath("message").isNotEmpty());
+
+        this.mockMvc.perform(head(V3_ENDPOINT, 456, TestData.URI_HASH))
+                .andExpect(status().isBadRequest())
+                .andExpect(header().string("Content-Type", (MediaType.APPLICATION_JSON_VALUE) + UTF8_CHARSET))
+                .andExpect(content().string(""));
     }
 
     @Test
-    public void test400Response() throws Exception {
-        //For GET mapping
-        //for invalid size value other than 200 or 400
-        this.mockMvc.perform(get("/thumbnail/v3/{size}/{url}", 456, TEST_URL))
-                .andExpect(status().isBadRequest())
-                .andExpect(header().string("Content-Type", (MediaType.APPLICATION_JSON_VALUE) + UTF8_CHARSET));
+    public void test_304_NotModified() throws Exception  {
+        // Check if Last-Modified and eTag are present from first request
+        this.mockMvc.perform(get(V3_ENDPOINT, 400, TestData.URI_HASH))
+                .andExpect(status().isOk())
+                .andExpect(header().string((Headers.LAST_MODIFIED), TestData.LAST_MODIFIED_TEXT))
+                .andExpect(header().string((Headers.ETAG), TestData.ETAG_VALUE));
 
-        //for invalid url
-        this.mockMvc.perform(get("/thumbnail/v3/{size}/{url}", 200, TEST_URL)).andExpect(status().isNotFound());
+        // Check if we get 304 if we sent only LastModified
+        this.mockMvc.perform(get(V3_ENDPOINT, 400, TestData.URI_HASH)
+                .header("If-Modified-Since", TestData.LAST_MODIFIED_TEXT))
+                .andExpect(status().isNotModified())
+                .andExpect(header().string((Headers.LAST_MODIFIED), TestData.LAST_MODIFIED_TEXT))
+                .andExpect(header().string((Headers.ETAG), TestData.ETAG_VALUE));
 
-        //For HEAD mapping
-        //for invalid size value other than 200 or 400
-        this.mockMvc.perform(head("/thumbnail/v3/{size}/{url}", 456, TEST_URL))
-                .andExpect(status().isBadRequest())
-                .andExpect(header().string("Content-Type", (MediaType.APPLICATION_JSON_VALUE) + UTF8_CHARSET));
-
-
-        //for invalid url
-        this.mockMvc.perform(head("/thumbnail/v3/{size}/{url}", 200, TEST_URL)).andExpect(status().isNotFound());
+        // Check if we get 304 if we sent only eTag
+        this.mockMvc.perform(get(V3_ENDPOINT, 400, TestData.URI_HASH)
+                .header("If-None-Match", TestData.ETAG_VALUE))
+                .andExpect(status().isNotModified())
+                .andExpect(header().string((Headers.LAST_MODIFIED), TestData.LAST_MODIFIED_TEXT))
+                .andExpect(header().string((Headers.ETAG), TestData.ETAG_VALUE));
     }
 
     @Test
-    public void testGet_421_PreconditionFailedREsponse() throws Exception {
-        Date                    dt  = new Date(2010, 3, 5, 0, 0);
-        HashMap<String, Object> map = new HashMap<>();
-        map.put("ETag", "12345abcde");
-        map.put("Last-Modified", dt);
-        ObjectMetadata metadata  = new ObjectMetadata(map);
-        byte[]         users     = THUMBNAIL_MEDIA_FILE.getBytes();
-        MediaFile      mediaFile = new MediaFile(anyString(), TEST_URL, users, metadata);
-
-        given(thumbnailService.retrieveAsMediaFile("test", any(), anyBoolean())).willReturn(mediaFile);
-
-        //for Valid ETag : *, 12345abcde
-        this.mockMvc.perform(get("/thumbnail/v3/{size}/{url}", 200, TEST_URL).header("If-Match", "*"))
+    public void test_412_PreconditionFailed() throws Exception {
+        this.mockMvc.perform(get(V3_ENDPOINT, 400, TestData.URI_HASH)
+                .header("If-Match", "*"))
                 .andExpect(status().isOk());
 
-        this.mockMvc.perform(get("/thumbnail/v3/{size}/{url}", 200, TEST_URL).header("If-Match", "12345abcde"))
+        this.mockMvc.perform(get(V3_ENDPOINT, 400, TestData.URI_HASH)
+                .header("If-Match", TestData.ETAG_VALUE))
                 .andExpect(status().isOk());
 
-        //for invalid Etag : test
-        this.mockMvc.perform(get("/thumbnail/v3/{size}/{url}", 200, TEST_URL).header("If-Match", "test"))
+        this.mockMvc.perform(get(V3_ENDPOINT, 400, TestData.URI_HASH)
+                .header("If-Match", "test"))
                 .andExpect(status().isPreconditionFailed());
     }
 

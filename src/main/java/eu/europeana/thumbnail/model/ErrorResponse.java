@@ -1,32 +1,40 @@
 package eu.europeana.thumbnail.model;
 
-import java.util.List;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import org.springframework.http.HttpStatus;
 
 /**
  *  Error Response class
  *  Created by Srishti Singh
  */
+@JsonPropertyOrder({"status", "error", "message"})
 public class ErrorResponse {
 
-    private  String       message;
-    private  List<String> details;
+    private  HttpStatus status;
+    private  String message;
 
     /**
      * Constructor used for initialization
+     * @param status
      * @param message
-     * @param details
      */
-    public ErrorResponse(String message, List<String> details) {
+    public ErrorResponse(HttpStatus status, String message) {
         super();
+        this.status = status;
         this.message = message;
-        this.details = details;
+    }
+
+    public int getStatus() {
+        return status.value();
+    }
+
+    public String getError() {
+        return status.getReasonPhrase();
     }
 
     public String getMessage() {
         return message;
     }
 
-    public List<String> getDetails() {
-        return details;
-    }
+
 }

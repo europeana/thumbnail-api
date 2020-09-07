@@ -1,4 +1,4 @@
-package eu.europeana.thumbnail.service.exception;
+package eu.europeana.thumbnail.exception;
 
 /**
  * Base error class for this application
@@ -20,6 +20,13 @@ public class ThumbnailException extends Exception {
      */
     public boolean doLog() {
         return true; // default we log all exceptions
+    }
+
+    /**
+     * @return boolean indicating whether we should include the stacktrace in the logs (if doLog is enabled)
+     */
+    public boolean logStacktrace() {
+        return true;
     }
 
 }
