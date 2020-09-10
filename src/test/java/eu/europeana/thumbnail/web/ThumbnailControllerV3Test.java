@@ -3,14 +3,12 @@ package eu.europeana.thumbnail.web;
 import eu.europeana.domain.Headers;
 import eu.europeana.thumbnail.config.StorageRoutes;
 import eu.europeana.thumbnail.service.MediaStorageService;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -23,7 +21,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * @author Srishti Singh on 05-09-2019.
  * @author Patrick Ehlert, major refactoring in September 2020
  */
-@RunWith(SpringJUnit4ClassRunner.class)
 @WebMvcTest({ThumbnailControllerV3.class, StorageRoutes.class})
 public class ThumbnailControllerV3Test {
 
@@ -38,7 +35,7 @@ public class ThumbnailControllerV3Test {
     private MediaStorageService mediaStorage;
 
 
-    @Before
+    @BeforeEach
     public void setup() {
         TestData.defaultSetup(storageRoutes, mediaStorage);
     }

@@ -1,11 +1,12 @@
-package eu.europeana.thumbnail.web;
+package eu.europeana.thumbnail.utils;
 
-import eu.europeana.thumbnail.utils.IiifUtils;
-import org.junit.Test;
+
+import org.junit.jupiter.api.Test;
 
 import java.net.URISyntaxException;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
+
 
 /**
  * Test class for IiifUtils

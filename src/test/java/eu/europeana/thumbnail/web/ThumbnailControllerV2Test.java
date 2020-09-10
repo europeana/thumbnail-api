@@ -4,14 +4,13 @@ import eu.europeana.domain.Headers;
 import eu.europeana.thumbnail.config.StorageRoutes;
 import eu.europeana.thumbnail.model.MediaFile;
 import eu.europeana.thumbnail.service.MediaStorageService;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.mockito.BDDMockito.given;
@@ -25,7 +24,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * @author Srishti Singh on 14-08-2019.
  * @author Patrick Ehlert, major refactoring in September 2020
  */
-@RunWith(SpringJUnit4ClassRunner.class)
 @WebMvcTest({ThumbnailControllerV2.class})
 public class ThumbnailControllerV2Test {
 
@@ -52,7 +50,7 @@ public class ThumbnailControllerV2Test {
     @MockBean
     private MediaStorageService mediaStorage;
 
-    @Before
+    @BeforeEach
     public void setup() {
         TestData.defaultSetup(storageRoutes, mediaStorage);
     }
@@ -223,6 +221,28 @@ public class ThumbnailControllerV2Test {
                 .param(URI_PARAMETER, TestData.URI)
                 .header("If-Match", "test"))
                 .andExpect(status().isPreconditionFailed());
+    }
+
+    /**
+     * Test if CORS works for normal requests and error requests
+     */
+    @org.junit.jupiter.api.Test
+    public void testCORS() throws Exception {
+        // normal (200 response) request
+        this.mockMvc.perform(get(V2_ENDPOINT)
+                .param(URI_PARAMETER, TestData.URI)
+                .header(HttpHeaders.ORIGIN, "https://test.com"))
+                .andExpect(status().isOk())
+                .andExpect(header().exists(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN))
+                .andExpect(header().string(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, "*"));
+
+        // error request
+        this.mockMvc.perform(get(V2_ENDPOINT)
+                .param(URI_PARAMETER, URI_INVALID)
+                .header(HttpHeaders.ORIGIN, "https://test.com"))
+                .andExpect(status().isBadRequest())
+                .andExpect(header().exists(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN))
+                .andExpect(header().string(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, "*"));
     }
 
 }
