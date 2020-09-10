@@ -64,9 +64,9 @@ public class IiifImageServerImpl implements MediaStorageService {
             return null;
         }
 
-        byte[] content = retrieveContent(originalUrl);
+        byte[] content = retrieveContent(imageUrl);
         if (content != null && content.length > 0) {
-            return new MediaFile(null, originalUrl, content);
+            return new MediaFile(null, imageUrl, content);
         }
         return null;
     }
