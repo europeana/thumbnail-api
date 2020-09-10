@@ -10,8 +10,8 @@ import org.springframework.http.HttpStatus;
 @JsonPropertyOrder({"status", "error", "message"})
 public class ErrorResponse {
 
-    private  HttpStatus status;
-    private  String message;
+    private final HttpStatus status;
+    private final String message;
 
     /**
      * Constructor used for initialization
