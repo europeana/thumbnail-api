@@ -10,6 +10,7 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.web.servlet.MockMvc;
@@ -18,11 +19,13 @@ import java.net.URISyntaxException;
 import java.util.*;
 
 import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.head;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.options;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 /**
@@ -207,5 +210,21 @@ public class ThumbnailControllerTest {
                 .andExpect(header().string("Content-Type", (MediaType.IMAGE_PNG_VALUE)))
                 .andExpect(header().string("Content-Length", DEFAULT_CONTENTLENGTH_VIDEO));
 
+    }
+
+
+    /**
+     * A pre-flight request is an OPTIONS request using three HTTP request headers:
+     * Access-Control-Request-Method, Access-Control-Request-Headers, and the Origin header.
+     */
+    @Test
+    public void testCorsPreFlight() throws Exception {
+        mockMvc.perform(options("/api/v2/thumbnail-by-url.json")
+                .header(HttpHeaders.ORIGIN, "https://test.com")
+                .header(HttpHeaders.ACCESS_CONTROL_REQUEST_METHOD, "GET")
+                .header(HttpHeaders.ACCESS_CONTROL_REQUEST_HEADERS, HttpHeaders.AUTHORIZATION))
+                .andExpect(header().exists(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN))
+                .andExpect(header().string(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS, containsString("GET")))
+                .andExpect(header().string(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, "*"));
     }
 }
