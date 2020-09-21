@@ -28,8 +28,7 @@
         <commonsLang3.version>3.9</commonsLang3.version>
         <jodatime.version>2.9.2</jodatime.version>
         <objectStorage.version>1.9-SNAPSHOT</objectStorage.version>
-        <!-- TODO for some reason the Swagger /api-docs endpoint is not available for newer Swagger versions -->
-        <swagger.version>2.9.2</swagger.version>
+        <swagger.version>3.0.0</swagger.version>
     </properties>
 
     <dependencyManagement>
@@ -107,7 +106,7 @@
 
         <dependency>
             <groupId>io.springfox</groupId>
-            <artifactId>springfox-swagger2</artifactId>
+            <artifactId>springfox-boot-starter</artifactId>
             <version>${swagger.version}</version>
             <exclusions>
                 <exclusion>

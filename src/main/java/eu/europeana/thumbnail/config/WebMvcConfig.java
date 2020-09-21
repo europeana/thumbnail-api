@@ -1,6 +1,8 @@
 package eu.europeana.thumbnail.config;
 
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
@@ -18,7 +20,15 @@ public class WebMvcConfig implements WebMvcConfigurer {
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
                 .allowedOrigins("*")
-                .exposedHeaders("Allow", "ETag", "Cache-Control", "Last-Modified");
+                .allowedHeaders("*")
+                .allowedMethods(HttpMethod.GET.name(),
+                                HttpMethod.HEAD.name(),
+                                HttpMethod.OPTIONS.name())
+                .exposedHeaders(HttpHeaders.ALLOW,
+                                HttpHeaders.CACHE_CONTROL,
+                                HttpHeaders.ETAG,
+                                HttpHeaders.LAST_MODIFIED)
+                .maxAge(1000L); // in seconds
     }
 
 }

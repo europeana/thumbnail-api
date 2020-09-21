@@ -27,8 +27,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest({ThumbnailControllerV2.class})
 public class ThumbnailControllerV2Test {
 
-    private static final String V2_ENDPOINT        = "/api/v2/thumbnail-by-url.json";
-    private static final String URI_PARAMETER      = "uri";
+    public static final String V2_ENDPOINT        = "/api/v2/thumbnail-by-url.json";
+    public static final String URI_PARAMETER      = "uri";
 
     private static final String URI_NO_TYPE        = "http://test.com/thumbnail";
     private static final String URI_NO_TYPE_HASH   = "700907be89102ec23950a909d51f2948";
@@ -221,28 +221,6 @@ public class ThumbnailControllerV2Test {
                 .param(URI_PARAMETER, TestData.URI)
                 .header("If-Match", "test"))
                 .andExpect(status().isPreconditionFailed());
-    }
-
-    /**
-     * Test if CORS works for normal requests and error requests
-     */
-    @org.junit.jupiter.api.Test
-    public void testCORS() throws Exception {
-        // normal (200 response) request
-        this.mockMvc.perform(get(V2_ENDPOINT)
-                .param(URI_PARAMETER, TestData.URI)
-                .header(HttpHeaders.ORIGIN, "https://test.com"))
-                .andExpect(status().isOk())
-                .andExpect(header().exists(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN))
-                .andExpect(header().string(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, "*"));
-
-        // error request
-        this.mockMvc.perform(get(V2_ENDPOINT)
-                .param(URI_PARAMETER, URI_INVALID)
-                .header(HttpHeaders.ORIGIN, "https://test.com"))
-                .andExpect(status().isBadRequest())
-                .andExpect(header().exists(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN))
-                .andExpect(header().string(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, "*"));
     }
 
 }

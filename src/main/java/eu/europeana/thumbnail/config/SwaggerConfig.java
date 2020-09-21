@@ -16,8 +16,8 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
 import java.util.Collections;
 
 /**
- * Configures swagger on all requests. Swagger Json file is availabe at <hostname>/v2/api-docs
- * and Swagger UI at <hostname>/swagger-ui.html
+ * Configures Swagger on all requests. Swagger Json file is availabe at <hostname>/v2/api-docs and at
+ * <hostname/v3/api-docs. Swagger UI is available at <hostname>/swagger-ui/
  *
  * @author Srishti Singh
  * Created on 12-08-2019
@@ -29,10 +29,18 @@ public class SwaggerConfig {
 
     private BuildInfo buildInfo;
 
+    /**
+     * Initialize Swagger with API build information
+     * @param buildInfo object for retrieving build information
+     */
     public SwaggerConfig(BuildInfo buildInfo) {
         this.buildInfo = buildInfo;
     }
 
+    /**
+     * Initialize Swagger Documentation
+     * @return Swagger Docket for this API
+     */
     @Bean
     public Docket api() {
         return new Docket(DocumentationType.SWAGGER_2)
@@ -51,20 +59,5 @@ public class SwaggerConfig {
                 null,
                 new Contact("API team", "https://api.europeana.eu", "api@europeana.eu"),
                 "EUPL 1.2", "https://www.eupl.eu", Collections.emptyList());
-    }
-
-    /**
-     * For some reason the default Spring-Boot way of configuring Cors using the CorsFilter in WebMvcConfig class doesn't
-     * work, so we configure it separately for Swagger here (solution copied from https://stackoverflow.com/a/45685909)
-     */
-    @Bean
-    public CorsFilter corsFilterSwagger() {
-        CorsConfiguration config = new CorsConfiguration();
-        config.addAllowedOrigin("*");
-        config.setMaxAge(1000L);
-
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/v2/api-docs", config);
-        return new CorsFilter(source);
     }
 }
