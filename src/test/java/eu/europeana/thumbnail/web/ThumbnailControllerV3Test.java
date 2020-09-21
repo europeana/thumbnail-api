@@ -3,6 +3,7 @@ package eu.europeana.thumbnail.web;
 import eu.europeana.domain.Headers;
 import eu.europeana.thumbnail.config.StorageRoutes;
 import eu.europeana.thumbnail.service.MediaStorageService;
+import eu.europeana.thumbnail.service.StoragesService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,16 +29,16 @@ public class ThumbnailControllerV3Test {
     private static final String UTF8_CHARSET = ";charset=UTF-8";
 
     @Autowired
-    private MockMvc             mockMvc;
+    private MockMvc mockMvc;
     @MockBean
-    private StorageRoutes       storageRoutes;
+    private StoragesService storageService;
     @MockBean
     private MediaStorageService mediaStorage;
 
 
     @BeforeEach
     public void setup() {
-        TestData.defaultSetup(storageRoutes, mediaStorage);
+        TestData.defaultSetup(storageService, mediaStorage);
     }
 
     /**

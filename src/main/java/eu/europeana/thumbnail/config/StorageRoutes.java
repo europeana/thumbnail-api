@@ -1,8 +1,8 @@
 package eu.europeana.thumbnail.config;
 
 import eu.europeana.features.S3ObjectStorageClient;
-import eu.europeana.thumbnail.service.MediaStorageService;
 import eu.europeana.thumbnail.exception.ConfigurationException;
+import eu.europeana.thumbnail.service.MediaStorageService;
 import eu.europeana.thumbnail.service.impl.IiifImageServerImpl;
 import eu.europeana.thumbnail.service.impl.MediaStorageServiceImpl;
 import org.apache.logging.log4j.LogManager;
@@ -45,15 +45,18 @@ public class StorageRoutes {
     private static final String PROPERTY_SEPARATOR = ".";
     private static final String VALUE_SEPARATOR    = ",";
 
-
     private String defaultRoute;
 
     // The list of MediaStorageServices has to be an ordered list, so we can guarantee proper order of retrieval!
-    private Map<String, ArrayList<MediaStorageService>> routeToStorageService = new HashMap<>();
+    private Map<String, List<MediaStorageService>> routeToStorages = new HashMap<>();
     private Map<String, MediaStorageService> storageNameToService = new HashMap<>();
 
     private Environment environment;
 
+    /**
+     * Initialize configuration of routes and corresponding media storages.
+     * @param environment Spring-Boot environment to load the configuration from
+     */
     public StorageRoutes(Environment environment) {
         this.environment = environment;
     }
@@ -81,8 +84,9 @@ public class StorageRoutes {
                 String[] storages = environment.getProperty(routePropStorage).split(VALUE_SEPARATOR);
                 for (String route : routes) {
                     // trim to remove spaces
-                    LOG.info("Adding route {} with storage(s) {}", route.trim(), storages);
-                    routeToStorageService.put(route.trim(), generateStorageServices(storages));
+                    String cleanRoute = route.trim();
+                    LOG.info("Adding route {} with storage(s) {}", cleanRoute, storages);
+                    routeToStorages.put(cleanRoute, generateStorageServices(storages));
                 }
             } else {
                 throw new ConfigurationException(("No storage defined for route(s)" + routes));
@@ -93,7 +97,7 @@ public class StorageRoutes {
             routeKeyName = routeKeyNr + PROPERTY_SEPARATOR + PROP_ROUTE_NAME;
         }
 
-        if (routeToStorageService.isEmpty()) {
+        if (routeToStorages.isEmpty()) {
             throw new ConfigurationException("No routes and storages configured!");
         }
     }
@@ -137,39 +141,19 @@ public class StorageRoutes {
     }
 
     /**
-     * Given a route (request hostname) return a list of storages to retrieve the thumbnail from
-     * @param route the highest level domain name or FQDN
-     * @return list of MediaStorageService
+     * Returns the first loaded route as a default (in case there is no match with other routes).
+     * @return String containing the default route
      */
-    public List<MediaStorageService> getStorageService(String route) {
-        // make sure we use only the highest level part for matching and not the FQDN
-        String topLevelName = getTopLevelName(route);
-
-        // exact matching
-        List<MediaStorageService> result = routeToStorageService.get(topLevelName);
-        if (result != null) {
-            LOG.debug("Route {} - found exact match", topLevelName);
-            return result;
-        }
-
-        // fallback 1: try to match with "contains"
-        for (Map.Entry<String, ArrayList<MediaStorageService>> entry : routeToStorageService.entrySet()) {
-            if (topLevelName.contains(entry.getKey())) {
-                LOG.debug("Route {} - matched with {}", topLevelName, entry.getKey());
-                return entry.getValue();
-            }
-        }
-
-        // fallback 2: use default, but log warning
-        LOG.warn("Route {} - no configured storage found, using default", topLevelName);
-        return routeToStorageService.get(defaultRoute);
+    public String getDefaultRoute() {
+        return defaultRoute;
     }
 
-    private String getTopLevelName(String route) {
-        int i = route.indexOf('.');
-        if (i >= 0) {
-            return route.substring(0, i);
-        }
-        return route;
+    /**
+     * Returns a map of route names (top-level FQDN) and a list of storages services, ordered by priority.
+     * @return Map of route names and ordered media storage service
+     */
+    public Map<String, List<MediaStorageService>> getRoutesMap() {
+        return routeToStorages;
     }
+
 }

@@ -12,7 +12,7 @@ import java.security.NoSuchAlgorithmException;
  * @author Patrick Ehlert
  * Created on 2 sep 2020
  */
-public class HashUtils {
+public final class HashUtils {
 
     private static MessageDigest messageDigest;
     static {

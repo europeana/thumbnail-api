@@ -1,7 +1,8 @@
 package eu.europeana.thumbnail.web;
 
-import eu.europeana.thumbnail.config.StorageRoutes;
+import eu.europeana.thumbnail.model.ImageSize;
 import eu.europeana.thumbnail.model.MediaFile;
+import eu.europeana.thumbnail.service.StoragesService;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
@@ -31,14 +32,14 @@ import java.io.InputStream;
  */
 @RestController
 @Validated
-public class ThumbnailControllerV2 extends BaseController {
+public class ThumbnailControllerV2 extends AbstractController {
 
     private static final Logger LOG = LogManager.getLogger(ThumbnailControllerV2.class);
 
     private static final String  INVALID_URL_MESSAGE = "INVALID URL";
 
-    public ThumbnailControllerV2(StorageRoutes storageRoutes) {
-        super(storageRoutes);
+    public ThumbnailControllerV2(StoragesService storagesService) {
+        super(storagesService);
     }
 
     /**
@@ -64,8 +65,7 @@ public class ThumbnailControllerV2 extends BaseController {
             LOG.debug("Url = {}, size = {}, type = {}", url, size, type);
         }
 
-        Integer width = (StringUtils.equalsIgnoreCase(size, "w200") || StringUtils.equalsIgnoreCase(size, "200") ? 200 : 400);
-        MediaFile mediaFile = retrieveThumbnail(request, null, url, width);
+        MediaFile mediaFile = retrieveThumbnail(request, null, url, getWidth(size));
         ResponseEntity<byte[]> result = generateResponse(webRequest, response, mediaFile);
 
         // if there is no image, we return the default 'type' icon
@@ -77,6 +77,13 @@ public class ThumbnailControllerV2 extends BaseController {
 
         logRequestDuration(startTime, "Url = " + url + ", status = " + response.getStatus());
         return result;
+    }
+
+    private int getWidth(String size) {
+        if (StringUtils.equalsIgnoreCase(size, "w200") || StringUtils.equalsIgnoreCase(size, "200")) {
+            return ImageSize.MEDIUM.getWidth();
+        }
+        return ImageSize.LARGE.getWidth();
     }
 
     /**
@@ -96,21 +103,27 @@ public class ThumbnailControllerV2 extends BaseController {
     }
 
     private byte[] getDefaultThumbnailForNotFoundResourceByType(final String type) {
+        String defaultImageName;
         switch (StringUtils.upperCase(type)) {
             case "IMAGE":
-                return getDefaultImage("/images/EU_thumbnails_image.png");
+                defaultImageName = "EU_thumbnails_image.png";
+                break;
             case "SOUND":
-                return getDefaultImage("/images/EU_thumbnails_sound.png");
+                defaultImageName = "EU_thumbnails_sound.png";
+                break;
             case "VIDEO":
-                return getDefaultImage("/images/EU_thumbnails_video.png");
+                defaultImageName = "EU_thumbnails_video.png";
+                break;
             case "TEXT":
-                return getDefaultImage("/images/EU_thumbnails_text.png");
+                defaultImageName = "EU_thumbnails_text.png";
+                break;
             case "3D":
-                return getDefaultImage("/images/EU_thumbnails_3d.png");
+                defaultImageName = "EU_thumbnails_3d.png";
+                break;
             default:
-                return getDefaultImage("/images/EU_thumbnails_image.png");
+                defaultImageName = "EU_thumbnails_image.png";
         }
-
+        return getDefaultImage("/images/" + defaultImageName);
     }
 
 

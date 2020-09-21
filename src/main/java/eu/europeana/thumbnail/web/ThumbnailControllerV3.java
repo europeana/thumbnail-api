@@ -1,7 +1,7 @@
 package eu.europeana.thumbnail.web;
 
-import eu.europeana.thumbnail.config.StorageRoutes;
 import eu.europeana.thumbnail.model.MediaFile;
+import eu.europeana.thumbnail.service.StoragesService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.http.ResponseEntity;
@@ -26,14 +26,14 @@ import javax.validation.constraints.Pattern;
 @RestController
 @RequestMapping("/thumbnail")
 @Validated
-public class ThumbnailControllerV3 extends BaseController {
+public class ThumbnailControllerV3 extends AbstractController {
 
     private static final Logger LOG = LogManager.getLogger(ThumbnailControllerV3.class);
 
     private static final String SIZE_ERROR_MESSAGE = "Invalid size. Supported values are 200 and 400";
 
-    public ThumbnailControllerV3(StorageRoutes storageRoutes) {
-        super(storageRoutes);
+    public ThumbnailControllerV3(StoragesService storagesService) {
+        super(storagesService);
     }
 
     /**

@@ -3,6 +3,7 @@ package eu.europeana.thumbnail;
 import org.apache.logging.log4j.LogManager;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 
 /**
@@ -19,8 +20,6 @@ public class ThumbnailApplication extends SpringBootServletInitializer {
      *
      * @param args main application paramaters
      */
-    @SuppressWarnings("squid:S2095")
-    // to avoid sonarqube false positive (see https://stackoverflow.com/a/37073154/741249)
     public static void main(String[] args) {
         // When deploying to Cloud Foundry, this will log the instance index number, IP and GUID
         LogManager.getLogger(ThumbnailApplication.class)
@@ -30,6 +29,11 @@ public class ThumbnailApplication extends SpringBootServletInitializer {
                         System.getenv("CF_INSTANCE_IP"));
 
         SpringApplication.run(ThumbnailApplication.class, args);
+    }
+
+    @Override
+    protected SpringApplicationBuilder configure(SpringApplicationBuilder application) {
+        return application.sources(ThumbnailApplication.class);
     }
 
 }

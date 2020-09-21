@@ -8,7 +8,7 @@ import java.util.Locale;
  * @author Patrick Ehlert
  * Created on 2 sep 2020
  */
-public class IiifUtils {
+public final class IiifUtils {
 
     private static final String  IIIF_HOST_NAME = "iiif.europeana.eu";
 

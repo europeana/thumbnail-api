@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 
 /**
@@ -84,7 +85,8 @@ public class IiifImageServerImpl implements MediaStorageService {
             byte[] data = out.toByteArray();
 
             // verify that we got an image and not an error/redirect
-            if (data.length == 0 || new String(data).toLowerCase(Locale.GERMAN).startsWith("<html>")) {
+            if (data.length == 0 || new String(data, StandardCharsets.UTF_8).toLowerCase(Locale.GERMAN)
+                    .startsWith("<html>")) {
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("IIIF Image server returned error message: {}", String.valueOf(data));
                 }

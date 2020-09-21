@@ -3,6 +3,9 @@ package eu.europeana.thumbnail.service;
 import eu.europeana.domain.ObjectMetadata;
 import eu.europeana.thumbnail.model.MediaFile;
 
+/**
+ * Service for retrieving media (e.g. thumbnails) from an object storage like Amazons S3 or IBM Cloud S3
+ */
 public interface MediaStorageService {
 
     /**

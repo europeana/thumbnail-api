@@ -1,9 +1,9 @@
 package eu.europeana.thumbnail.web;
 
-import eu.europeana.thumbnail.config.StorageRoutes;
 import eu.europeana.thumbnail.model.ImageSize;
 import eu.europeana.thumbnail.model.MediaFile;
 import eu.europeana.thumbnail.service.MediaStorageService;
+import eu.europeana.thumbnail.service.StoragesService;
 import eu.europeana.thumbnail.utils.ControllerUtils;
 import eu.europeana.thumbnail.utils.HashUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -26,15 +26,15 @@ import java.util.Locale;
  * @author Patrick Ehlert
  * Created on 2 sep 2020
  */
-public abstract class BaseController {
+public abstract class AbstractController {
 
-    private static final Logger LOG = LogManager.getLogger(BaseController.class);
-    private static final long DURATION_CONVERTER  = 1_000_000l;
+    private static final Logger LOG = LogManager.getLogger(AbstractController.class);
+    private static final long DURATION_CONVERTER  = 1_000_000L;
 
-    protected StorageRoutes storageRoutes;
+    protected StoragesService storagesService;
 
-    public BaseController(StorageRoutes storageRoutes) {
-        this.storageRoutes = storageRoutes;
+    public AbstractController(StoragesService storagesService) {
+        this.storagesService = storagesService;
     }
 
     /**
@@ -62,7 +62,7 @@ public abstract class BaseController {
         }
 
         MediaFile result = null;
-        List<MediaStorageService> mediaStorageServices = storageRoutes.getStorageService(serverName);
+        List<MediaStorageService> mediaStorageServices = storagesService.getStorages(serverName);
         for (MediaStorageService mss : mediaStorageServices) {
             result = mss.retrieveAsMediaFile(id, originalUrl);
             if (result == null) {
@@ -88,7 +88,7 @@ public abstract class BaseController {
 
     private String addWidth(final String id, final Integer resourceWidth) {
         String width = ImageSize.LARGE.name();
-        if (resourceWidth != null && resourceWidth == 200) {
+        if (resourceWidth != null && resourceWidth == ImageSize.MEDIUM.getWidth()) {
             width = ImageSize.MEDIUM.name();
         }
         return id + "-" + width;

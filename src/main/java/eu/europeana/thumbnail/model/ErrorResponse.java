@@ -15,8 +15,8 @@ public class ErrorResponse {
 
     /**
      * Constructor used for initialization
-     * @param status
-     * @param message
+     * @param status http status
+     * @param message error message
      */
     public ErrorResponse(HttpStatus status, String message) {
         super();

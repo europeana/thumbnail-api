@@ -1,10 +1,10 @@
 package eu.europeana.thumbnail.web;
 
 import eu.europeana.domain.ObjectMetadata;
-import eu.europeana.thumbnail.config.StorageRoutes;
 import eu.europeana.thumbnail.model.ImageSize;
 import eu.europeana.thumbnail.model.MediaFile;
 import eu.europeana.thumbnail.service.MediaStorageService;
+import eu.europeana.thumbnail.service.StoragesService;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -36,7 +36,7 @@ public class TestData {
     public static final byte[] MEDIUM_CONTENT     = MEDIUM_FILE.getBytes();
 
 
-    public static void defaultSetup(StorageRoutes storageRoutes, MediaStorageService mediaStorage) {
+    public static void defaultSetup(StoragesService storagesService, MediaStorageService mediaStorage) {
         ObjectMetadata metaData = new ObjectMetadata();
         metaData.setLastModified(TestData.LAST_MODIFIED_DATE);
         metaData.setETag(TestData.ETAG);
@@ -55,6 +55,6 @@ public class TestData {
 
         List<MediaStorageService> storages = new ArrayList<>();
         storages.add(mediaStorage);
-        given(storageRoutes.getStorageService(anyString())).willReturn(storages);
+        given(storagesService.getStorages(anyString())).willReturn(storages);
     }
 }

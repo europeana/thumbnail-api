@@ -1,6 +1,7 @@
 package eu.europeana.thumbnail.config;
 
 import eu.europeana.thumbnail.service.MediaStorageService;
+import eu.europeana.thumbnail.service.StoragesService;
 import eu.europeana.thumbnail.web.TestData;
 import eu.europeana.thumbnail.web.ThumbnailControllerV2;
 import eu.europeana.thumbnail.web.ThumbnailControllerV2Test;
@@ -24,15 +25,15 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class CorsConfigTest {
 
     @Autowired
-    private MockMvc             mockMvc;
+    private MockMvc mockMvc;
     @MockBean
-    private StorageRoutes       storageRoutes;
+    private StoragesService storagesService;
     @MockBean
     private MediaStorageService mediaStorage;
 
     @BeforeEach
     public void setup() {
-        TestData.defaultSetup(storageRoutes, mediaStorage);
+        TestData.defaultSetup(storagesService, mediaStorage);
     }
 
     /**

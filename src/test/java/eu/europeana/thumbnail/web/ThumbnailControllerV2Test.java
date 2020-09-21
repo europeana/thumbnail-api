@@ -1,15 +1,14 @@
 package eu.europeana.thumbnail.web;
 
 import eu.europeana.domain.Headers;
-import eu.europeana.thumbnail.config.StorageRoutes;
 import eu.europeana.thumbnail.model.MediaFile;
 import eu.europeana.thumbnail.service.MediaStorageService;
+import eu.europeana.thumbnail.service.StoragesService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -44,15 +43,15 @@ public class ThumbnailControllerV2Test {
     private static final String DEFAULT_VIDEO_LENGTH = "1932";
 
     @Autowired
-    private MockMvc             mockMvc;
+    private MockMvc mockMvc;
     @MockBean
-    private StorageRoutes       storageRoutes;
+    private StoragesService storagesService;
     @MockBean
     private MediaStorageService mediaStorage;
 
     @BeforeEach
     public void setup() {
-        TestData.defaultSetup(storageRoutes, mediaStorage);
+        TestData.defaultSetup(storagesService, mediaStorage);
     }
 
     /**
