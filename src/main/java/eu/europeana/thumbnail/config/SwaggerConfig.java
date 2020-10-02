@@ -13,33 +13,48 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
 import java.util.Collections;
 
 /**
- * Configures swagger on all requests. Swagger Json file is availabe at <hostname>/v2/api-docs and if you add
- * Swagger UI package the <hostname>/swagger-ui.html
+ * Configures Swagger on all requests. Swagger Json file is availabe at <hostname>/v2/api-docs and at
+ * <hostname/v3/api-docs. Swagger UI is available at <hostname>/swagger-ui/
  *
  * @author Srishti Singh
  * Created on 12-08-2019
+ * @author Patrick Ehlert (major refactoring in sep 2020)
  */
 @Configuration
 @EnableSwagger2
 public class SwaggerConfig {
 
-    @Bean
-    public Docket api() {
-        return new Docket(DocumentationType.SWAGGER_2).select()
-                                                      .apis(RequestHandlerSelectors.basePackage("eu.europeana.thumbnail"))
-                                                      .paths(PathSelectors.any())
-                                                      .build();
+    private BuildInfo buildInfo;
+
+    /**
+     * Initialize Swagger with API build information
+     * @param buildInfo object for retrieving build information
+     */
+    public SwaggerConfig(BuildInfo buildInfo) {
+        this.buildInfo = buildInfo;
     }
 
-    @SuppressWarnings("squid:UnusedPrivateMethod")
+    /**
+     * Initialize Swagger Documentation
+     * @return Swagger Docket for this API
+     */
+    @Bean
+    public Docket api() {
+        return new Docket(DocumentationType.SWAGGER_2)
+                .apiInfo(apiInfo())
+                .select()
+                .apis(RequestHandlerSelectors.basePackage("eu.europeana.thumbnail"))
+                .paths(PathSelectors.any())
+                .build();
+    }
+
     private ApiInfo apiInfo() {
-        return new ApiInfo("Europeana-Thumbnail-API",
-                           "Generate thumbnail",
-                           null,
-                           null,
-                           new Contact("APIs team", "www.europeana.eu", "api@europeana.eu"),
-                           "EUPL 1.2",
-                           "API license URL",
-                           Collections.emptyList());
+        return new ApiInfo(
+                buildInfo.getAppName(),
+                buildInfo.getAppDescription(),
+                buildInfo.getAppVersion() + "(build " + buildInfo.getBuildNumber() + ")",
+                null,
+                new Contact("API team", "https://api.europeana.eu", "api@europeana.eu"),
+                "EUPL 1.2", "https://www.eupl.eu", Collections.emptyList());
     }
 }

@@ -1,0 +1,8 @@
+# Settings for local testing
+server.port: 8081
+
+server:
+  error:
+    include-message: always
+    include-exception: false
+    include-stacktrace: on_trace_param

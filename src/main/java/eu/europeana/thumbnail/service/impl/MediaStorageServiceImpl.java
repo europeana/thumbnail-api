@@ -15,65 +15,59 @@ import java.io.InputStream;
 import java.util.Optional;
 
 /**
- * Service for retrieving media (e.g. thumbnails) from an object storage like Amazons S3 or IBM Cloud S3
+ * @see eu.europeana.thumbnail.service.MediaStorageService
  */
 public class MediaStorageServiceImpl implements MediaStorageService {
 
     private static final Logger LOG = LogManager.getLogger(MediaStorageServiceImpl.class);
 
+    private String name;
     private ObjectStorageClient objectStorageClient;
 
-    public MediaStorageServiceImpl(ObjectStorageClient objectStorageClient) {
+    public MediaStorageServiceImpl(String name, ObjectStorageClient objectStorageClient) {
+        this.name = name;
         this.objectStorageClient = objectStorageClient;
     }
 
     /**
-     * @see eu.europeana.thumbnail.service.MediaStorageService#checkIfExists(String)
+     * @see MediaStorageService#checkIfExists(String)
      */
     @Override
     public Boolean checkIfExists(String id) {
-
         return objectStorageClient.isAvailable(id);
     }
 
     /**
-     * @see eu.europeana.thumbnail.service.MediaStorageService#retrieveAsMediaFile(String, String, boolean)
+     * @see MediaStorageService#retrieveAsMediaFile(String, String)
      */
     @Override
-    public MediaFile retrieveAsMediaFile(String id, String originalUrl, boolean withContent) {
-        StorageObject storageObject = retrieveAsStorageObject(id, withContent);
+    public MediaFile retrieveAsMediaFile(String id, String originalUrl) {
+        LOG.debug("Retrieving file with id {}, url = {}", id, originalUrl);
+        StorageObject storageObject = retrieveAsStorageObject(id, true);
         if (storageObject == null) {
             return null;
         }
 
         byte[] content = null;
-        if (withContent) {
-            try {
-                content = convertPayloadToByteArray(storageObject.getPayload());
-            } catch (IOException e) {
-                LOG.error("Error reading media file contents {}", id, e);
-            }
+        try {
+            content = convertPayloadToByteArray(storageObject.getPayload());
+        } catch (IOException e) {
+            LOG.error("Error reading media file contents, id = {}, url = {}", id, originalUrl, e);
         }
-
-        return new MediaFile(storageObject.getName(), originalUrl, content, storageObject.getMetadata());
+        if (content != null && content.length > 0) {
+            return new MediaFile(storageObject.getName(), originalUrl, content, storageObject.getMetadata());
+        }
+        return null;
     }
 
-    /**
-     * @see eu.europeana.thumbnail.service.MediaStorageService#retrieveAsStorageObject(String, boolean)
-     */
-    @Override
-    public StorageObject retrieveAsStorageObject(String id, boolean withContent) {
+    private StorageObject retrieveAsStorageObject(String id, boolean withContent) {
         final Optional<StorageObject> optStorageObject = withContent ? objectStorageClient.get(id) : objectStorageClient
                 .getWithoutBody(id);
 
         return optStorageObject.orElse(null);
     }
 
-    /**
-     * @see eu.europeana.thumbnail.service.MediaStorageService#convertPayloadToByteArray(Payload)
-     */
-    @Override
-    public byte[] convertPayloadToByteArray(Payload payload) throws IOException {
+    private byte[] convertPayloadToByteArray(Payload payload) throws IOException {
         byte[] result;
         try (InputStream in = payload.openStream()) {
             result = IOUtils.toByteArray(in);
@@ -82,19 +76,26 @@ public class MediaStorageServiceImpl implements MediaStorageService {
     }
 
     /**
-     * @see eu.europeana.thumbnail.service.MediaStorageService#retrieveContent(String)
+     * @see MediaStorageService#retrieveContent(String)
      */
     @Override
     public byte[] retrieveContent(String id) {return objectStorageClient.getContent(id); }
 
     /**
-     * @see eu.europeana.thumbnail.service.MediaStorageService#retrieveMetaData(String)
+     * @see MediaStorageService#retrieveMetaData(String)
      */
     @Override
     public ObjectMetadata retrieveMetaData(String id) {
         return objectStorageClient.getMetaData(id);
     }
 
+    /**
+     * @see MediaStorageService#getName()
+     */
+    @Override
+    public String getName() {
+        return name;
+    }
 }
 
 

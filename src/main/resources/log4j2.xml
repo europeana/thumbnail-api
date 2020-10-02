@@ -13,7 +13,10 @@
         <Root level="INFO">
             <AppenderRef ref="Console"/>
         </Root>
-        <Logger name="eu.europeana.thumbnail.web.ThumbnailController" level="INFO"/>
+        <Logger name="eu.europeana.thumbnail.config.StorageRoutes" level="INFO"/>
+        <Logger name="eu.europeana.thumbnail.service.StoragesService" level="INFO"/>
+        <Logger name="eu.europeana.thumbnail.web.AbstractController" level="INFO"/>
+        <Logger name="eu.europeana.thumbnail.web.ThumbnailControllerV2" level="INFO"/>
         <Logger name="eu.europeana.thumbnail.web.ThumbnailControllerV3" level="INFO"/>
     </Loggers>
 </Configuration>

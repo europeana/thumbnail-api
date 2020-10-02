@@ -2,6 +2,7 @@ package eu.europeana.thumbnail.utils;
 
 import eu.europeana.thumbnail.model.MediaFile;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.http.HttpHeaders;
 import org.springframework.web.context.request.WebRequest;
 
 import javax.servlet.http.HttpServletResponse;
@@ -26,9 +27,9 @@ public final class ControllerUtils {
      *
      * @param response The response to add the encoding and headers to
      */
-    public static void addResponseHeaders(HttpServletResponse response) {
-        response.addHeader("Allow", ALLOWED);
-        response.addHeader("Cache-Control", NOCACHE);
+    public static void addDefaultResponseHeaders(HttpServletResponse response) {
+        response.addHeader(HttpHeaders.ALLOW, ALLOWED);
+        response.addHeader(HttpHeaders.CACHE_CONTROL, NOCACHE);
     }
 
     /**

@@ -1,60 +1,51 @@
 package eu.europeana.thumbnail.service;
 
-import eu.europeana.thumbnail.model.MediaFile;
 import eu.europeana.domain.ObjectMetadata;
-import eu.europeana.domain.StorageObject;
-import org.jclouds.io.Payload;
+import eu.europeana.thumbnail.model.MediaFile;
 
-import java.io.IOException;
-
+/**
+ * Service for retrieving media (e.g. thumbnails) from an object storage like Amazons S3 or IBM Cloud S3
+ */
 public interface MediaStorageService {
-        /**
-         * Checks if a particular file with the provided id is present in the media storage
-         * @param id the id of the file
-         * @return true if the file is present, false if it is not
-         */
-        Boolean checkIfExists(String id);
 
-        /**
-         * Retrieves a file from media storage with or without the content.
-         * @param id the id of the file
-         * @param originalUrl
-         * @param withContent boolean which indicates whether the actual contents should be retrieved, or
-         *                    only the metadata of the file
-         * @return an object which contains all the metadata of the file and optionally the actual content
-         */
-        MediaFile retrieveAsMediaFile(String id, String originalUrl, boolean withContent);
+    /**
+     * Checks if a particular file with the provided id is present in the media storage
+     *
+     * @param id the id of the file
+     * @return true if the file is present, false if it is not
+     */
+    Boolean checkIfExists(String id);
 
-        /**
-         * Retrieves a file from media storage with or without the content.
-         * Note that this method is a bit faster than retrieveAsMediaFile, but does require you to process a payload to
-         * access the actual file content (@see convertPayloadToByteArray) which makes it equally fast.
-         * @param id the id of the file
-         * @param withContent boolean which indicates whether the actual contents should be retrieved, or
-         *                    only the metadata of the file
-         * @return an object which contains all the metadata of the file and optionally the actual content
-         */
-        StorageObject retrieveAsStorageObject(String id, boolean withContent);
+    /**
+     * Retrieves a file from media storage given it's id
+     *
+     * @param id the id of the file
+     * @param originalUrl the original url of the file, optional for S3 storage, required for IiifImageServer
+     * @return an object which contains all the metadata and image content, or null if  there was an error
+     */
+    MediaFile retrieveAsMediaFile(String id, String originalUrl);
 
-        /**
-         * Helper class to convert payload to an array of bytes
-         * @param payload
-         * @return array of bytes representing the payload object
-         */
-        byte[] convertPayloadToByteArray(Payload payload) throws IOException;
+    /**
+     * Retrieves only the content of a media file (so no metadata)
+     *
+     * @param id the id of the file
+     * @return an array of bytes representing only the media content of the file
+     */
+    byte[] retrieveContent(String id);
 
-        /**
-         * Retrieves only the content of a media file (so no metadata)
-         * @param id the id of the file
-         * @return an array of bytes representing only the media content of the file
-         */
-        byte[] retrieveContent(String id);
+    /**
+     * Retrieves only the metadata of a media file
+     *
+     * @param id the id of the file
+     * @return ObjectMetadata object
+     */
+    ObjectMetadata retrieveMetaData(String id);
 
-        /**
-         * Retrieves only the metadata of a media file
-         * @param id the id of the file
-         * @return ObjectMetadata object
-         */
-        ObjectMetadata retrieveMetaData(String id);
-    }
+    /**
+     * Return the name of this storage, as used in the configuration
+     *
+     * @return name of this storage
+     */
+    String getName();
 
+}
