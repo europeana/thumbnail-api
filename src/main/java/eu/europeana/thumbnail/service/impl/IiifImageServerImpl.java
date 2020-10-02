@@ -50,8 +50,7 @@ public class IiifImageServerImpl implements MediaStorageService {
      * @return
      */
     @Override
-    public MediaFile retrieveAsMediaFile(String id,
-              @Pattern(regexp = "^(https?|ftp)://.*$", message = INVALID_URL_MESSAGE) String originalUrl) {
+    public MediaFile retrieveAsMediaFile(String id, String originalUrl) {
         LOG.debug("Retrieving file from IIIF image server with id {}, url = {}", id, originalUrl);
         if (StringUtils.isEmpty(originalUrl)) {
             LOG.debug("No originalUrl provided, skipping retrieval from IIIF Image server");
@@ -76,7 +75,8 @@ public class IiifImageServerImpl implements MediaStorageService {
     }
 
     @Override
-    public byte[] retrieveContent(String originalUrl) {
+    public byte[] retrieveContent(
+            @Pattern(regexp = "^(https?|ftp)://.*$", message = INVALID_URL_MESSAGE) String originalUrl) {
         try (InputStream in = new BufferedInputStream(new URL(originalUrl).openStream());
              ByteArrayOutputStream out = new ByteArrayOutputStream()) {
             byte[] buf = new byte[1024];
