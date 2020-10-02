@@ -12,6 +12,7 @@ import java.security.NoSuchAlgorithmException;
  * @author Patrick Ehlert
  * Created on 2 sep 2020
  */
+@SuppressWarnings("findsecbugs:WEAK_MESSAGE_DIGEST_MD5") // we have to use MD5, security is not an issue here
 public final class HashUtils {
 
     private static MessageDigest messageDigest;
@@ -32,7 +33,6 @@ public final class HashUtils {
      * @param resourceUrl
      * @return
      */
-    @SuppressWarnings("findsecbugs:WEAK_MESSAGE_DIGEST_MD5") // we have to use MD5, security is not an issue here
     public static String getMD5(String resourceUrl) {
         messageDigest.reset();
         messageDigest.update(resourceUrl.getBytes(StandardCharsets.UTF_8));

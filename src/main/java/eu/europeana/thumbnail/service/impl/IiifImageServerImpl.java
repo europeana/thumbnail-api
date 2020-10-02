@@ -10,6 +10,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import javax.validation.constraints.Pattern;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -32,6 +33,7 @@ public class IiifImageServerImpl implements MediaStorageService {
     public static final String STORAGE_NAME = "IIIF-IS";
 
     private static final Logger LOG = LogManager.getLogger(IiifImageServerImpl.class);
+    private static final String INVALID_URL_MESSAGE = "Not a valid url";
 
     @Override
     public Boolean checkIfExists(String id) {
@@ -48,7 +50,8 @@ public class IiifImageServerImpl implements MediaStorageService {
      * @return
      */
     @Override
-    public MediaFile retrieveAsMediaFile(String id, String originalUrl) {
+    public MediaFile retrieveAsMediaFile(String id,
+              @Pattern(regexp = "^(https?|ftp)://.*$", message = INVALID_URL_MESSAGE) String originalUrl) {
         LOG.debug("Retrieving file from IIIF image server with id {}, url = {}", id, originalUrl);
         if (StringUtils.isEmpty(originalUrl)) {
             LOG.debug("No originalUrl provided, skipping retrieval from IIIF Image server");

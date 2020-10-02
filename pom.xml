@@ -10,7 +10,7 @@
     </parent>
 
     <artifactId>thumbnail-api</artifactId>
-    <version>0.3-SNAPSHOT</version>
+    <version>0.4-SNAPSHOT</version>
     <packaging>war</packaging>
 
     <name>Europeana Thumbnail API</name>
@@ -158,6 +158,13 @@
                         </goals>
                     </execution>
                 </executions>
+            </plugin>
+
+            <!-- JUnit 5 requires Surefire version 2.22.0 or higher -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.22.0</version>
             </plugin>
         </plugins>
     </build>
