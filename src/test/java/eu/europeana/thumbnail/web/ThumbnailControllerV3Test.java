@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -22,6 +23,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * @author Srishti Singh on 05-09-2019.
  * @author Patrick Ehlert, major refactoring in September 2020
  */
+@TestPropertySource("classpath:testroutes.properties")
 @WebMvcTest({ThumbnailControllerV3.class, StorageRoutes.class})
 public class ThumbnailControllerV3Test {
 
