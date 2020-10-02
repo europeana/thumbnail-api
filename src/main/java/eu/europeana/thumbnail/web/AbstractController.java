@@ -105,7 +105,7 @@ public abstract class AbstractController {
         ControllerUtils.addDefaultResponseHeaders(response);
 
         if (mediaFile == null) {
-            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
 
         // Normally we let Spring determine the Content-type based on the Accept headers in the request, but here we set
