@@ -20,6 +20,7 @@ public class ThumbnailException extends EuropeanaApiException {
     /**
      * @return boolean indicating whether this type of exception should be logged or not
      */
+    @Override
     public boolean doLog() {
         return true; // default we log all exceptions
     }
