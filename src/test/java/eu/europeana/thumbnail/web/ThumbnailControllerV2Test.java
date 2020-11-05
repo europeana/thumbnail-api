@@ -4,6 +4,7 @@ import eu.europeana.domain.Headers;
 import eu.europeana.thumbnail.model.MediaFile;
 import eu.europeana.thumbnail.service.MediaStorageService;
 import eu.europeana.thumbnail.service.StoragesService;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +13,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
+import static org.junit.Assert.assertTrue;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.head;
@@ -163,17 +165,22 @@ public class ThumbnailControllerV2Test {
      */
     @Test
     public void test_400_InvalidURL() throws Exception {
-        this.mockMvc.perform(get(V2_ENDPOINT)
+        String error = this.mockMvc.perform(get(V2_ENDPOINT)
                 .param(URI_PARAMETER, URI_INVALID))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("status").value(400))
-                .andExpect(jsonPath("error").value("Bad Request"))
-                .andExpect(jsonPath("message").isNotEmpty());
+                .andExpect(content().string(""))
+                .andReturn().getResolvedException().getMessage();
 
-        this.mockMvc.perform(head(V2_ENDPOINT)
+        assertTrue(StringUtils.contains(error, ThumbnailControllerV2.INVALID_URL_MESSAGE));
+
+        error =  this.mockMvc.perform(head(V2_ENDPOINT)
                 .param(URI_PARAMETER, URI_INVALID))
                 .andExpect(status().isBadRequest())
-                .andExpect(content().string(""));
+                .andExpect(content().string(""))
+                .andExpect(header().string("Content-Length", "0"))
+                .andReturn().getResolvedException().getMessage();
+
+        assertTrue(StringUtils.contains(error, ThumbnailControllerV2.INVALID_URL_MESSAGE));
     }
 
     @Test

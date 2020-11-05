@@ -1,11 +1,13 @@
 package eu.europeana.thumbnail.exception;
 
+import eu.europeana.api.commons.error.EuropeanaApiException;
+
 /**
  * Base error class for this application
  * @author Srishti Singh
  * Created on 12-08-2019
  */
-public class ThumbnailException extends Exception {
+public class ThumbnailException extends EuropeanaApiException {
 
     public ThumbnailException(String msg, Throwable t) {
         super(msg, t);

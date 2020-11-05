@@ -36,7 +36,7 @@ public class ThumbnailControllerV2 extends AbstractController {
 
     private static final Logger LOG = LogManager.getLogger(ThumbnailControllerV2.class);
 
-    private static final String  INVALID_URL_MESSAGE = "INVALID URL";
+    protected static final String  INVALID_URL_MESSAGE = "INVALID URL";
 
     public ThumbnailControllerV2(StoragesService storagesService) {
         super(storagesService);

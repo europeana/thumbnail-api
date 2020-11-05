@@ -1,18 +1,11 @@
 package eu.europeana.thumbnail.exception;
 
-import eu.europeana.thumbnail.model.ErrorResponse;
+import eu.europeana.api.commons.error.EuropeanaGlobalExceptionHandler;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
-
-import javax.servlet.http.HttpServletResponse;
-import javax.validation.ConstraintViolationException;
-import java.nio.charset.StandardCharsets;
 
 /**
  * Global exception handler that catches all errors and logs the interesting ones
@@ -22,7 +15,7 @@ import java.nio.charset.StandardCharsets;
  */
 @ControllerAdvice
 @ResponseBody
-public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
+public class GlobalExceptionHandler extends EuropeanaGlobalExceptionHandler {
 
     private static final Logger LOG         = LogManager.getLogger(GlobalExceptionHandler.class);
 
@@ -42,12 +35,5 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
             }
         }
         throw e;
-    }
-
-    @ExceptionHandler(ConstraintViolationException.class)
-    public final ResponseEntity<ErrorResponse> handleConstraintViolation(HttpServletResponse response, ConstraintViolationException ex) {
-        response.setCharacterEncoding(StandardCharsets.UTF_8.name());
-        ErrorResponse error = new ErrorResponse(HttpStatus.BAD_REQUEST, ex.getMessage());
-        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
     }
 }

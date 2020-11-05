@@ -23,6 +23,8 @@ public class TestData {
 
     public static final String URI                = "https://test.europeana.eu/thumbnail.jpg";
     public static final String URI_HASH           = "7463a193a468a1ff1a0c0f7d5933e54b";
+    public static final String INVALID_ID           = ".jpg";
+
     public static final Date   LAST_MODIFIED_DATE = new Date(1600000000000L);
     public static final String LAST_MODIFIED_TEXT = "Sun, 13 Sep 2020 12:26:40 GMT";
     public static final String ETAG               = "1234test";
