@@ -1,5 +1,6 @@
 package eu.europeana.thumbnail.web;
 
+import eu.europeana.thumbnail.exception.ThumbnailInvalidUrlException;
 import eu.europeana.thumbnail.model.MediaFile;
 import eu.europeana.thumbnail.service.StoragesService;
 import org.apache.logging.log4j.LogManager;
@@ -14,7 +15,6 @@ import org.springframework.web.context.request.WebRequest;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.validation.ConstraintViolationException;
 import javax.validation.constraints.Pattern;
 
 /**
@@ -47,8 +47,8 @@ public class ThumbnailControllerV3 extends AbstractController {
      * @return responseEntity
      */
     @GetMapping(value = "/v3//{id}")
-    public ResponseEntity<byte[]> thumbnailByUrlV3InvalidUrl(){
-        throw new ConstraintViolationException(URL_ERROR_MESSAGE, null);
+    public ResponseEntity<byte[]> thumbnailByUrlV3InvalidUrl() throws ThumbnailInvalidUrlException {
+        throw new ThumbnailInvalidUrlException(URL_ERROR_MESSAGE);
     }
 
     /**
@@ -57,8 +57,8 @@ public class ThumbnailControllerV3 extends AbstractController {
      * @return responseEntity
      */
     @GetMapping(value = "/v3")
-    public ResponseEntity<byte[]> thumbnailByUrlV3EmptyUrl(){
-        throw new ConstraintViolationException(URL_ERROR_MESSAGE, null);
+    public ResponseEntity<byte[]> thumbnailByUrlV3EmptyUrl() throws ThumbnailInvalidUrlException {
+        throw new ThumbnailInvalidUrlException(URL_ERROR_MESSAGE);
     }
 
     /**
@@ -73,7 +73,7 @@ public class ThumbnailControllerV3 extends AbstractController {
             @PathVariable(value = "size", required = false)
             @Pattern(regexp = "^(200|400)$", message = SIZE_ERROR_MESSAGE) String size,
             @PathVariable(value = "id") String id,
-            WebRequest webRequest, HttpServletRequest request, HttpServletResponse response) {
+            WebRequest webRequest, HttpServletRequest request, HttpServletResponse response) throws ThumbnailInvalidUrlException {
         long startTime = 0;
         if (LOG.isDebugEnabled()) {
             startTime = System.nanoTime();
@@ -85,7 +85,7 @@ public class ThumbnailControllerV3 extends AbstractController {
         int i = id.lastIndexOf('.');
         // if there is no id present, return 400 Bad Request
         if (i == 0) {
-           throw new ConstraintViolationException(ID_ERROR_MESSAGE, null);
+           throw new ThumbnailInvalidUrlException(ID_ERROR_MESSAGE);
         }
         if (i > 0) {
             idWithoutExtension = id.substring(0, i);
