@@ -1,5 +1,7 @@
 package eu.europeana.thumbnail.web;
 
+import eu.europeana.api.commons.error.EuropeanaApiException;
+import eu.europeana.thumbnail.exception.ThumbnailNotFoundException;
 import eu.europeana.thumbnail.model.ImageSize;
 import eu.europeana.thumbnail.model.MediaFile;
 import eu.europeana.thumbnail.service.StoragesService;
@@ -22,6 +24,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.validation.constraints.Pattern;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Optional;
 
 /**
  * Retrieves image thumbnails.
@@ -58,21 +61,22 @@ public class ThumbnailControllerV2 extends AbstractController {
                 @Pattern(regexp = "^(https?|ftp)://.*$", message = INVALID_URL_MESSAGE) String url,
             @RequestParam(value = "size", required = false, defaultValue = "w400") String size,
             @RequestParam(value = "type", required = false, defaultValue = "IMAGE") String type,
-            WebRequest webRequest, HttpServletRequest request, HttpServletResponse response) {
+            WebRequest webRequest, HttpServletRequest request, HttpServletResponse response) throws EuropeanaApiException {
         long startTime = 0;
         if (LOG.isDebugEnabled()) {
             startTime = System.nanoTime();
             LOG.debug("Url = {}, size = {}, type = {}", url, size, type);
         }
 
-        MediaFile mediaFile = retrieveThumbnail(request, null, url, getWidth(size));
-        ResponseEntity<byte[]> result = generateResponse(webRequest, response, mediaFile);
-
+        Optional<MediaFile> mediaFile = retrieveThumbnail(request, null, url, getWidth(size));
+        ResponseEntity<byte[]> result;
         // if there is no image, we return the default 'type' icon
-        if (result != null && result.getStatusCode() == HttpStatus.NOT_FOUND) {
+        if (mediaFile.isEmpty()) {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.IMAGE_PNG);
             result = new ResponseEntity<>(getDefaultThumbnailForNotFoundResourceByType(type), headers, HttpStatus.OK);
+        } else {
+            result = generateResponse(webRequest, response, mediaFile.get());
         }
 
         logRequestDuration(startTime, "Url = " + url + ", status = " + response.getStatus());

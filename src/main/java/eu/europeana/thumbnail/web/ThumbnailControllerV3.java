@@ -1,10 +1,13 @@
 package eu.europeana.thumbnail.web;
 
+import eu.europeana.api.commons.error.EuropeanaApiException;
 import eu.europeana.thumbnail.exception.ThumbnailInvalidUrlException;
+import eu.europeana.thumbnail.exception.ThumbnailNotFoundException;
 import eu.europeana.thumbnail.model.MediaFile;
 import eu.europeana.thumbnail.service.StoragesService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,6 +19,7 @@ import org.springframework.web.context.request.WebRequest;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.constraints.Pattern;
+import java.util.Optional;
 
 /**
  * Retrieves image thumbnails for version 3
@@ -73,7 +77,7 @@ public class ThumbnailControllerV3 extends AbstractController {
             @PathVariable(value = "size", required = false)
             @Pattern(regexp = "^(200|400)$", message = SIZE_ERROR_MESSAGE) String size,
             @PathVariable(value = "id") String id,
-            WebRequest webRequest, HttpServletRequest request, HttpServletResponse response) throws ThumbnailInvalidUrlException {
+            WebRequest webRequest, HttpServletRequest request, HttpServletResponse response) throws EuropeanaApiException {
         long startTime = 0;
         if (LOG.isDebugEnabled()) {
             startTime = System.nanoTime();
@@ -93,9 +97,13 @@ public class ThumbnailControllerV3 extends AbstractController {
             LOG.debug("Thumbnail cleaned id = {}, extension = {}", idWithoutExtension, extension);
         }
 
-        MediaFile mediaFile = retrieveThumbnail(request, idWithoutExtension, extension, Integer.valueOf(size));
-        ResponseEntity<byte[]> result = generateResponse(webRequest, response, mediaFile);
+        Optional<MediaFile> mediaFile = retrieveThumbnail(request, idWithoutExtension, extension, Integer.valueOf(size));
+        if (mediaFile.isEmpty()) {
+            logRequestDuration(startTime, "Id = " + id + ", status = " + HttpStatus.NOT_FOUND);
+            throw new ThumbnailNotFoundException();
+        }
 
+        ResponseEntity<byte[]> result = generateResponse(webRequest, response, mediaFile.get());
         logRequestDuration(startTime, "Id = " + id + ", status = " + response.getStatus());
         return result;
     }
