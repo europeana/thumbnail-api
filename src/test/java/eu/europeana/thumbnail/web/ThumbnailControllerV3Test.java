@@ -4,6 +4,7 @@ import eu.europeana.domain.Headers;
 import eu.europeana.thumbnail.config.StorageRoutes;
 import eu.europeana.thumbnail.service.MediaStorageService;
 import eu.europeana.thumbnail.service.StoragesService;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +17,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.head;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Test class for Thumbnail V3 controller
@@ -94,16 +96,20 @@ public class ThumbnailControllerV3Test {
      */
     @Test
     public void test_400_InvalidSize() throws Exception {
-        this.mockMvc.perform(get(V3_ENDPOINT, 456, TestData.URI_HASH))
+        String error = this.mockMvc.perform(get(V3_ENDPOINT, 456, TestData.URI_HASH))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("status").value(400))
-                .andExpect(jsonPath("error").value("Bad Request"))
-                .andExpect(jsonPath("message").isNotEmpty());
+                .andExpect(content().string(""))
+                .andReturn().getResolvedException().getMessage();
 
-        this.mockMvc.perform(head(V3_ENDPOINT, 456, TestData.URI_HASH))
+        assertTrue(StringUtils.contains(error, ThumbnailControllerV3.SIZE_ERROR_MESSAGE));
+
+        error = this.mockMvc.perform(head(V3_ENDPOINT, 456, TestData.URI_HASH))
                 .andExpect(status().isBadRequest())
-                .andExpect(header().string("Content-Type", (MediaType.APPLICATION_JSON_VALUE) + UTF8_CHARSET))
-                .andExpect(content().string(""));
+                .andExpect(content().string(""))
+                .andExpect(header().string("Content-Length", "0"))
+                .andReturn().getResolvedException().getMessage();
+
+        assertTrue(StringUtils.contains(error, ThumbnailControllerV3.SIZE_ERROR_MESSAGE));
     }
 
     @Test
@@ -144,4 +150,73 @@ public class ThumbnailControllerV3Test {
                 .andExpect(status().isPreconditionFailed());
     }
 
+    @Test
+    public void test_emptyIDOnlyWithExtension() throws Exception {
+        String error = this.mockMvc.perform(get(V3_ENDPOINT, 400, TestData.INVALID_ID))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string(""))
+                .andReturn().getResolvedException().getMessage();
+
+        assertTrue(StringUtils.contains(error, ThumbnailControllerV3.ID_ERROR_MESSAGE));
+
+        error = this.mockMvc.perform(head(V3_ENDPOINT, 400, TestData.INVALID_ID))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string(""))
+                .andExpect(header().string("Content-Length", "0"))
+                .andReturn().getResolvedException().getMessage();
+
+        assertTrue(StringUtils.contains(error, ThumbnailControllerV3.ID_ERROR_MESSAGE));
+    }
+
+    @Test
+    public void test_GetEmptyPathVariables() throws Exception {
+        String error = this.mockMvc.perform(get(V3_ENDPOINT, 400, ""))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string(""))
+                .andReturn().getResolvedException().getMessage();
+
+        assertTrue(StringUtils.contains(error, ThumbnailControllerV3.URL_ERROR_MESSAGE));
+
+        error = this.mockMvc.perform(get(V3_ENDPOINT, "", TestData.URI_HASH))
+                   .andExpect(status().isBadRequest())
+                   .andExpect(content().string(""))
+                   .andReturn().getResolvedException().getMessage();
+
+        assertTrue(StringUtils.contains(error, ThumbnailControllerV3.URL_ERROR_MESSAGE));
+
+
+        error = this.mockMvc.perform(get(V3_ENDPOINT, "", ""))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string(""))
+                .andReturn().getResolvedException().getMessage();
+
+        assertTrue(StringUtils.contains(error, ThumbnailControllerV3.URL_ERROR_MESSAGE));
+
+    }
+
+    @Test
+    public void test_HeadEmptyPathVariables() throws Exception {
+
+        String error = this.mockMvc.perform(get(V3_ENDPOINT, 400, ""))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string(""))
+                .andReturn().getResolvedException().getMessage();
+
+        assertTrue(StringUtils.contains(error, ThumbnailControllerV3.URL_ERROR_MESSAGE));
+
+        error = this.mockMvc.perform(get(V3_ENDPOINT, "", TestData.URI_HASH))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string(""))
+                .andReturn().getResolvedException().getMessage();
+
+        assertTrue(StringUtils.contains(error, ThumbnailControllerV3.URL_ERROR_MESSAGE));
+
+        error = this.mockMvc.perform(get(V3_ENDPOINT, "", ""))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string(""))
+                .andReturn().getResolvedException().getMessage();
+
+        assertTrue(StringUtils.contains(error, ThumbnailControllerV3.URL_ERROR_MESSAGE));
+
+    }
 }

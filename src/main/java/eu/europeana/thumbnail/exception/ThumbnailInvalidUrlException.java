@@ -1,23 +1,30 @@
 package eu.europeana.thumbnail.exception;
 
+import eu.europeana.api.commons.error.EuropeanaApiException;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.ResponseStatus;
+
 /**
- * Base error class for this application
+ * Exception class to catch invalid url exceptions
  * @author Srishti Singh
  * Created on 12-08-2019
+ * Modified on 10-12-2020
  */
-public class ThumbnailException extends Exception {
+@ResponseStatus(value = HttpStatus.BAD_REQUEST)
+public class ThumbnailInvalidUrlException extends EuropeanaApiException {
 
-    public ThumbnailException(String msg, Throwable t) {
+    public ThumbnailInvalidUrlException(String msg, Throwable t) {
         super(msg, t);
     }
 
-    public ThumbnailException(String msg) {
+    public ThumbnailInvalidUrlException(String msg) {
         super(msg);
     }
 
     /**
      * @return boolean indicating whether this type of exception should be logged or not
      */
+    @Override
     public boolean doLog() {
         return true; // default we log all exceptions
     }

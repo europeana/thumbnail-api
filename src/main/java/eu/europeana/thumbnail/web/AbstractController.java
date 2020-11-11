@@ -13,13 +13,14 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.lang.Nullable;
+import org.springframework.lang.NonNull;
 import org.springframework.web.context.request.WebRequest;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 
 /**
  * Basic functionality shared by both the V2 and V3 controller
@@ -44,9 +45,9 @@ public abstract class AbstractController {
      *               the Id should not already contain the desired width
      * @param originalUrl the original url of the image, this is used to determine the Content-Type of the response
      * @param width the requested with of the image, can be 200, 400
-     * @return MediaFile or null if the file cannot be retrieved
+     * @return Optional containing the MediaFile, or an empty optional if the file cannot be retrieved
      */
-    protected MediaFile retrieveThumbnail(HttpServletRequest request, String fileId, String originalUrl, Integer width) {
+    protected Optional<MediaFile> retrieveThumbnail(HttpServletRequest request, String fileId, String originalUrl, Integer width) {
         // calculate hash (if necessary)
         String id = fileId;
         if (StringUtils.isEmpty(fileId)) {
@@ -72,7 +73,7 @@ public abstract class AbstractController {
                 break;
             }
         }
-        return result;
+        return Optional.ofNullable(result);
     }
 
     /**
@@ -101,12 +102,8 @@ public abstract class AbstractController {
      * @param mediaFile the mediaFile that was found or null (if null a 404 is generated)
      * @return responseEntity (for 200 and 404 responses), or null (for 304 or 412 responses in which case reponse servlet is modified)
      */
-    protected ResponseEntity<byte[]> generateResponse(WebRequest webRequest, HttpServletResponse response, @Nullable MediaFile mediaFile) {
+    protected ResponseEntity<byte[]> generateResponse(WebRequest webRequest, HttpServletResponse response, @NonNull MediaFile mediaFile) {
         ControllerUtils.addDefaultResponseHeaders(response);
-
-        if (mediaFile == null) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
 
         // Normally we let Spring determine the Content-type based on the Accept headers in the request, but here we set
         // the type dynamically to either jpeg or png depending on the type of thumbnail that we retrieved.

@@ -12,7 +12,7 @@ import org.springframework.boot.web.servlet.support.SpringBootServletInitializer
  * @author Srishti Singh
  * Created on 12-08-2019
  */
-@SpringBootApplication
+@SpringBootApplication(scanBasePackages = {"eu.europeana.api", "eu.europeana.thumbnail"})
 public class ThumbnailApplication extends SpringBootServletInitializer {
 
     /**
