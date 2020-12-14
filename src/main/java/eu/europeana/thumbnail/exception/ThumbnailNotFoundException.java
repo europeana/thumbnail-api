@@ -7,7 +7,6 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 /**
  * Error thrown when a requested MediaFile cannot be found.
  */
-@ResponseStatus(value = HttpStatus.NOT_FOUND)
 public class ThumbnailNotFoundException extends EuropeanaApiException {
     public ThumbnailNotFoundException() {
         super("Media file not found");
@@ -16,5 +15,10 @@ public class ThumbnailNotFoundException extends EuropeanaApiException {
     @Override
     public boolean doLog() {
         return false;
+    }
+
+    @Override
+    public HttpStatus getResponseStatus() {
+        return HttpStatus.NOT_FOUND;
     }
 }

@@ -2,7 +2,6 @@ package eu.europeana.thumbnail.exception;
 
 import eu.europeana.api.commons.error.EuropeanaApiException;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.ResponseStatus;
 
 /**
  * Exception class to catch invalid url exceptions
@@ -10,7 +9,6 @@ import org.springframework.web.bind.annotation.ResponseStatus;
  * Created on 12-08-2019
  * Modified on 10-12-2020
  */
-@ResponseStatus(value = HttpStatus.BAD_REQUEST)
 public class ThumbnailInvalidUrlException extends EuropeanaApiException {
 
     public ThumbnailInvalidUrlException(String msg, Throwable t) {
@@ -36,4 +34,8 @@ public class ThumbnailInvalidUrlException extends EuropeanaApiException {
         return true;
     }
 
+    @Override
+    public HttpStatus getResponseStatus() {
+        return HttpStatus.BAD_REQUEST;
+    }
 }
