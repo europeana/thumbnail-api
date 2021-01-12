@@ -5,6 +5,7 @@ import eu.europeana.thumbnail.model.MediaFile;
 import eu.europeana.thumbnail.service.MediaStorageService;
 import eu.europeana.thumbnail.service.StoragesService;
 import org.apache.commons.lang3.StringUtils;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -165,22 +166,18 @@ public class ThumbnailControllerV2Test {
      */
     @Test
     public void test_400_InvalidURL() throws Exception {
-        String error = this.mockMvc.perform(get(V2_ENDPOINT)
+       this.mockMvc.perform(get(V2_ENDPOINT)
                 .param(URI_PARAMETER, URI_INVALID))
                 .andExpect(status().isBadRequest())
-                .andExpect(content().string(""))
-                .andReturn().getResolvedException().getMessage();
+               .andExpect(jsonPath("$.message", Matchers.containsString(ThumbnailControllerV2.INVALID_URL_MESSAGE)));
 
-        assertTrue(StringUtils.contains(error, ThumbnailControllerV2.INVALID_URL_MESSAGE));
 
-        error =  this.mockMvc.perform(head(V2_ENDPOINT)
+
+ this.mockMvc.perform(head(V2_ENDPOINT)
                 .param(URI_PARAMETER, URI_INVALID))
-                .andExpect(status().isBadRequest())
-                .andExpect(content().string(""))
-                .andExpect(header().string("Content-Length", "0"))
-                .andReturn().getResolvedException().getMessage();
+                .andExpect(status().isBadRequest());
 
-        assertTrue(StringUtils.contains(error, ThumbnailControllerV2.INVALID_URL_MESSAGE));
+
     }
 
     @Test

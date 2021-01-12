@@ -5,6 +5,7 @@ import eu.europeana.thumbnail.config.StorageRoutes;
 import eu.europeana.thumbnail.service.MediaStorageService;
 import eu.europeana.thumbnail.service.StoragesService;
 import org.apache.commons.lang3.StringUtils;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,7 +30,7 @@ import static org.junit.Assert.assertTrue;
 @WebMvcTest({ThumbnailControllerV3.class, StorageRoutes.class})
 public class ThumbnailControllerV3Test {
 
-    private static final String V3_ENDPOINT  = "/thumbnail/v3/{size}/{url}";
+    private static final String V3_ENDPOINT = "/thumbnail/v3/{size}/{url}";
     private static final String UTF8_CHARSET = ";charset=UTF-8";
 
     @Autowired
@@ -83,12 +84,10 @@ public class ThumbnailControllerV3Test {
     @Test
     public void test_404_NotFound() throws Exception {
         this.mockMvc.perform(get(V3_ENDPOINT, 400, "hashNotFound"))
-                .andExpect(status().isNotFound())
-                .andExpect(content().string(""));
+                .andExpect(status().isNotFound());
 
-        this.mockMvc.perform(head(V3_ENDPOINT, 400,  "hashNotFound"))
-                .andExpect(status().isNotFound())
-                .andExpect(content().string(""));
+        this.mockMvc.perform(head(V3_ENDPOINT, 400, "hashNotFound"))
+                .andExpect(status().isNotFound());
     }
 
     /**
@@ -96,24 +95,17 @@ public class ThumbnailControllerV3Test {
      */
     @Test
     public void test_400_InvalidSize() throws Exception {
-        String error = this.mockMvc.perform(get(V3_ENDPOINT, 456, TestData.URI_HASH))
+        this.mockMvc.perform(get(V3_ENDPOINT, 456, TestData.URI_HASH))
                 .andExpect(status().isBadRequest())
-                .andExpect(content().string(""))
-                .andReturn().getResolvedException().getMessage();
+                .andExpect(jsonPath("$.message", Matchers.containsString(ThumbnailControllerV3.SIZE_ERROR_MESSAGE)));
 
-        assertTrue(StringUtils.contains(error, ThumbnailControllerV3.SIZE_ERROR_MESSAGE));
 
-        error = this.mockMvc.perform(head(V3_ENDPOINT, 456, TestData.URI_HASH))
-                .andExpect(status().isBadRequest())
-                .andExpect(content().string(""))
-                .andExpect(header().string("Content-Length", "0"))
-                .andReturn().getResolvedException().getMessage();
-
-        assertTrue(StringUtils.contains(error, ThumbnailControllerV3.SIZE_ERROR_MESSAGE));
+        this.mockMvc.perform(head(V3_ENDPOINT, 456, TestData.URI_HASH))
+                .andExpect(status().isBadRequest());
     }
 
     @Test
-    public void test_304_NotModified() throws Exception  {
+    public void test_304_NotModified() throws Exception {
         // Check if Last-Modified and eTag are present from first request
         this.mockMvc.perform(get(V3_ENDPOINT, 400, TestData.URI_HASH))
                 .andExpect(status().isOk())
@@ -152,71 +144,46 @@ public class ThumbnailControllerV3Test {
 
     @Test
     public void test_emptyIDOnlyWithExtension() throws Exception {
-        String error = this.mockMvc.perform(get(V3_ENDPOINT, 400, TestData.INVALID_ID))
+       this.mockMvc.perform(get(V3_ENDPOINT, 400, TestData.INVALID_ID))
                 .andExpect(status().isBadRequest())
-                .andExpect(content().string(""))
-                .andReturn().getResolvedException().getMessage();
+                .andExpect(jsonPath("$.message", Matchers.containsString(ThumbnailControllerV3.ID_ERROR_MESSAGE)));
 
-        assertTrue(StringUtils.contains(error, ThumbnailControllerV3.ID_ERROR_MESSAGE));
 
-        error = this.mockMvc.perform(head(V3_ENDPOINT, 400, TestData.INVALID_ID))
-                .andExpect(status().isBadRequest())
-                .andExpect(content().string(""))
-                .andExpect(header().string("Content-Length", "0"))
-                .andReturn().getResolvedException().getMessage();
+     this.mockMvc.perform(head(V3_ENDPOINT, 400, TestData.INVALID_ID))
+                .andExpect(status().isBadRequest());
 
-        assertTrue(StringUtils.contains(error, ThumbnailControllerV3.ID_ERROR_MESSAGE));
     }
 
     @Test
     public void test_GetEmptyPathVariables() throws Exception {
-        String error = this.mockMvc.perform(get(V3_ENDPOINT, 400, ""))
+        this.mockMvc.perform(get(V3_ENDPOINT, 400, ""))
                 .andExpect(status().isBadRequest())
-                .andExpect(content().string(""))
-                .andReturn().getResolvedException().getMessage();
-
-        assertTrue(StringUtils.contains(error, ThumbnailControllerV3.URL_ERROR_MESSAGE));
-
-        error = this.mockMvc.perform(get(V3_ENDPOINT, "", TestData.URI_HASH))
-                   .andExpect(status().isBadRequest())
-                   .andExpect(content().string(""))
-                   .andReturn().getResolvedException().getMessage();
-
-        assertTrue(StringUtils.contains(error, ThumbnailControllerV3.URL_ERROR_MESSAGE));
+                .andExpect(jsonPath("$.message", Matchers.containsString(ThumbnailControllerV3.URL_ERROR_MESSAGE)));
 
 
-        error = this.mockMvc.perform(get(V3_ENDPOINT, "", ""))
+        this.mockMvc.perform(get(V3_ENDPOINT, "", TestData.URI_HASH))
                 .andExpect(status().isBadRequest())
-                .andExpect(content().string(""))
-                .andReturn().getResolvedException().getMessage();
+                .andExpect(jsonPath("$.message", Matchers.containsString(ThumbnailControllerV3.URL_ERROR_MESSAGE)));
 
-        assertTrue(StringUtils.contains(error, ThumbnailControllerV3.URL_ERROR_MESSAGE));
-
+        this.mockMvc.perform(get(V3_ENDPOINT, "", ""))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message", Matchers.containsString(ThumbnailControllerV3.URL_ERROR_MESSAGE)));
     }
 
     @Test
     public void test_HeadEmptyPathVariables() throws Exception {
 
-        String error = this.mockMvc.perform(get(V3_ENDPOINT, 400, ""))
-                .andExpect(status().isBadRequest())
-                .andExpect(content().string(""))
-                .andReturn().getResolvedException().getMessage();
+        this.mockMvc.perform(get(V3_ENDPOINT, 400, ""))
+                .andExpect(status().isBadRequest());
 
-        assertTrue(StringUtils.contains(error, ThumbnailControllerV3.URL_ERROR_MESSAGE));
 
-        error = this.mockMvc.perform(get(V3_ENDPOINT, "", TestData.URI_HASH))
-                .andExpect(status().isBadRequest())
-                .andExpect(content().string(""))
-                .andReturn().getResolvedException().getMessage();
+        this.mockMvc.perform(get(V3_ENDPOINT, "", TestData.URI_HASH))
+                .andExpect(status().isBadRequest());
 
-        assertTrue(StringUtils.contains(error, ThumbnailControllerV3.URL_ERROR_MESSAGE));
 
-        error = this.mockMvc.perform(get(V3_ENDPOINT, "", ""))
-                .andExpect(status().isBadRequest())
-                .andExpect(content().string(""))
-                .andReturn().getResolvedException().getMessage();
+        this.mockMvc.perform(get(V3_ENDPOINT, "", ""))
+                .andExpect(status().isBadRequest());
 
-        assertTrue(StringUtils.contains(error, ThumbnailControllerV3.URL_ERROR_MESSAGE));
 
     }
 }

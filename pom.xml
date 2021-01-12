@@ -28,7 +28,7 @@
         <jodatime.version>2.9.2</jodatime.version>
         <objectStorage.version>1.9</objectStorage.version>
         <swagger.version>3.0.0</swagger.version>
-        <api-commons.version>0.2.11</api-commons.version>
+        <api-commons.version>0.2.14-SNAPSHOT</api-commons.version>
     </properties>
 
     <dependencyManagement>

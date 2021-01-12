@@ -1,5 +1,8 @@
 package eu.europeana.thumbnail.config;
 
+import eu.europeana.api.commons.error.EuropeanaApiErrorAttributes;
+import org.springframework.boot.web.servlet.error.ErrorAttributes;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -31,4 +34,12 @@ public class WebMvcConfig implements WebMvcConfigurer {
                 .maxAge(1000L); // in seconds
     }
 
+
+    /**
+     * Use custom fields in Error responses
+     */
+    @Bean
+    public ErrorAttributes errorAttributes() {
+        return new EuropeanaApiErrorAttributes();
+    }
 }
