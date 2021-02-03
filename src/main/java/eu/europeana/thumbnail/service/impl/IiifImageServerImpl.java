@@ -9,6 +9,8 @@ import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.stereotype.Component;
+import org.springframework.validation.annotation.Validated;
 
 import javax.validation.constraints.Pattern;
 import java.io.BufferedInputStream;
@@ -28,6 +30,8 @@ import java.util.Locale;
  * @author Patrick Ehlert
  * Created on 2 sep 2020
  */
+@Validated
+@Component
 public class IiifImageServerImpl implements MediaStorageService {
 
     public static final String STORAGE_NAME = "IIIF-IS";
