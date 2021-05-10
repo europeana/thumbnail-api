@@ -226,4 +226,28 @@ public class ThumbnailControllerV2Test {
                 .andExpect(status().isPreconditionFailed());
     }
 
+    @Test
+    public void test_ValidURls() throws Exception {
+
+        this.mockMvc.perform(get(V2_ENDPOINT)
+                .param(URI_PARAMETER, TestData.URI))
+                .andExpect(status().isOk());
+
+        this.mockMvc.perform(get(V2_ENDPOINT)
+                .param(URI_PARAMETER, TestData.URI_HTTP))
+                .andExpect(status().isOk());
+
+        this.mockMvc.perform(get(V2_ENDPOINT)
+                .param(URI_PARAMETER, TestData.URI_URN))
+                .andExpect(status().isOk());
+
+        this.mockMvc.perform(get(V2_ENDPOINT)
+                .param(URI_PARAMETER, TestData.URI_FTP))
+                .andExpect(status().isOk());
+
+        this.mockMvc.perform(get(V2_ENDPOINT)
+                .param(URI_PARAMETER, TestData.MEDIUM_FILE))
+                .andExpect(status().isBadRequest());
+    }
+
 }

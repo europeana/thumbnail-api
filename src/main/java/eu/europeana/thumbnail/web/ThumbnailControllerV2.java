@@ -58,7 +58,7 @@ public class ThumbnailControllerV2 extends AbstractController {
     @GetMapping(value = {"/api/v2/thumbnail-by-url.json", "/thumbnail/v2/url.json"})
     public ResponseEntity<byte[]> thumbnailByUrlV2(
             @RequestParam(value = "uri")
-                @Pattern(regexp = "^(https?|ftp)://.*$", message = INVALID_URL_MESSAGE) String url,
+                @Pattern(regexp = "^((https?|ftp)://|urn).*$", message = INVALID_URL_MESSAGE) String url,
             @RequestParam(value = "size", required = false, defaultValue = "w400") String size,
             @RequestParam(value = "type", required = false, defaultValue = "IMAGE") String type,
             WebRequest webRequest, HttpServletRequest request, HttpServletResponse response) throws EuropeanaApiException {
