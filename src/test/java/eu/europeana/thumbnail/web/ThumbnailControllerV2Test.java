@@ -4,7 +4,6 @@ import eu.europeana.domain.Headers;
 import eu.europeana.thumbnail.model.MediaFile;
 import eu.europeana.thumbnail.service.MediaStorageService;
 import eu.europeana.thumbnail.service.StoragesService;
-import org.apache.commons.lang3.StringUtils;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -14,7 +13,6 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
-import static org.junit.Assert.assertTrue;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.head;
@@ -226,4 +224,27 @@ public class ThumbnailControllerV2Test {
                 .andExpect(status().isPreconditionFailed());
     }
 
+    @Test
+    public void test_ValidURls() throws Exception {
+
+        this.mockMvc.perform(get(V2_ENDPOINT)
+                .param(URI_PARAMETER, TestData.URI))
+                .andExpect(status().isOk());
+
+        this.mockMvc.perform(get(V2_ENDPOINT)
+                .param(URI_PARAMETER, TestData.URI_HTTP))
+                .andExpect(status().isOk());
+
+        this.mockMvc.perform(get(V2_ENDPOINT)
+                .param(URI_PARAMETER, TestData.URI_URN))
+                .andExpect(status().isOk());
+
+        this.mockMvc.perform(get(V2_ENDPOINT)
+                .param(URI_PARAMETER, TestData.URI_FTP))
+                .andExpect(status().isOk());
+
+        this.mockMvc.perform(get(V2_ENDPOINT)
+                .param(URI_PARAMETER, TestData.MEDIUM_FILE))
+                .andExpect(status().isBadRequest());
+    }
 }

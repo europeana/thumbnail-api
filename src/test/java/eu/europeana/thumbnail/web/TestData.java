@@ -36,7 +36,9 @@ public class TestData {
     public static final byte[] LARGE_CONTENT      = LARGE_FILE.getBytes();
     public static final String MEDIUM_FILE        = "test data";
     public static final byte[] MEDIUM_CONTENT     = MEDIUM_FILE.getBytes();
-
+    public static final String URI_HTTP               = "http://test.europeana.eu/thumbnail.jpg";
+    public static final String URI_URN                = "urn:soundcloud:43668849";
+    public static final String URI_FTP                = "ftp://test.europeana.eu/thumbnail.jpg";
 
     public static void defaultSetup(StoragesService storagesService, MediaStorageService mediaStorage) {
         ObjectMetadata metaData = new ObjectMetadata();
