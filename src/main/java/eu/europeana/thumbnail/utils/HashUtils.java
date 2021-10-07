@@ -1,6 +1,9 @@
 package eu.europeana.thumbnail.utils;
 
+import eu.europeana.thumbnail.exception.ThumbnailInvalidUrlException;
+import eu.europeana.thumbnail.web.ThumbnailControllerV2;
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -15,6 +18,7 @@ import java.security.NoSuchAlgorithmException;
 @SuppressWarnings("findsecbugs:WEAK_MESSAGE_DIGEST_MD5") // we have to use MD5, security is not an issue here
 public final class HashUtils {
 
+    private static final Logger LOG = LogManager.getLogger(HashUtils.class);
     private static MessageDigest messageDigest;
     static {
         try {
@@ -33,14 +37,22 @@ public final class HashUtils {
      * @param resourceUrl
      * @return
      */
-    public static String getMD5(String resourceUrl) {
-        messageDigest.reset();
-        messageDigest.update(resourceUrl.getBytes(StandardCharsets.UTF_8));
-        final byte[] resultByte = messageDigest.digest();
-        StringBuilder sb = new StringBuilder();
-        for (byte aResultByte : resultByte) {
-            sb.append(Integer.toString((aResultByte & 0xff) + 0x100, 16).substring(1));
+    public static String getMD5(String resourceUrl) throws ThumbnailInvalidUrlException {
+        LOG.info("Calculating hash for {} ", resourceUrl );
+        try {
+            messageDigest.reset();
+            messageDigest.update(resourceUrl.getBytes(StandardCharsets.UTF_8));
+            LOG.debug("Message digest status state : {}", messageDigest.toString() );
+            final byte[] resultByte = messageDigest.digest();
+            StringBuilder sb = new StringBuilder();
+            for (byte aResultByte : resultByte) {
+                sb.append(Integer.toString((aResultByte & 0xff) + 0x100, 16).substring(1));
+            }
+            return sb.toString();
+        } catch (ArrayIndexOutOfBoundsException e) {
+            e.printStackTrace();
+            LOG.error("error calculating hash for {} with message digest : ", resourceUrl, messageDigest.toString());
+            throw new ThumbnailInvalidUrlException(" Array out of bound index error" + resourceUrl);
         }
-        return sb.toString();
     }
 }

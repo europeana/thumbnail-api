@@ -1,5 +1,6 @@
 package eu.europeana.thumbnail.web;
 
+import eu.europeana.thumbnail.exception.ThumbnailInvalidUrlException;
 import eu.europeana.thumbnail.model.ImageSize;
 import eu.europeana.thumbnail.model.MediaFile;
 import eu.europeana.thumbnail.service.MediaStorageService;
@@ -47,7 +48,7 @@ public abstract class AbstractController {
      * @param width the requested with of the image, can be 200, 400
      * @return Optional containing the MediaFile, or an empty optional if the file cannot be retrieved
      */
-    protected Optional<MediaFile> retrieveThumbnail(HttpServletRequest request, String fileId, String originalUrl, Integer width) {
+    protected Optional<MediaFile> retrieveThumbnail(HttpServletRequest request, String fileId, String originalUrl, Integer width) throws ThumbnailInvalidUrlException {
         // calculate hash (if necessary)
         String id = fileId;
         if (StringUtils.isEmpty(fileId)) {
@@ -83,7 +84,7 @@ public abstract class AbstractController {
      * @param resourceUrl  url of the original image
      * @return id of the thumbnail as it is stored in S3 (but with width indication)
      */
-    private String computeId(final String resourceUrl) {
+    private String computeId(final String resourceUrl) throws ThumbnailInvalidUrlException {
         return HashUtils.getMD5(resourceUrl);
     }
 
