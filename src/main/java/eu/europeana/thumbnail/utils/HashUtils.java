@@ -38,11 +38,10 @@ public final class HashUtils {
      * @return
      */
     public static String getMD5(String resourceUrl) throws ThumbnailInvalidUrlException {
-        LOG.info("Calculating hash for {} ", resourceUrl );
         try {
             messageDigest.reset();
             messageDigest.update(resourceUrl.getBytes(StandardCharsets.UTF_8));
-            LOG.debug("Message digest status state : {}", messageDigest.toString() );
+            LOG.info("Message digest status state : {}. Calculating hash for {}", messageDigest.toString() , resourceUrl);
             final byte[] resultByte = messageDigest.digest();
             StringBuilder sb = new StringBuilder();
             for (byte aResultByte : resultByte) {
