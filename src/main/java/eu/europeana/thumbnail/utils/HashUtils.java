@@ -15,15 +15,6 @@ import java.security.NoSuchAlgorithmException;
 @SuppressWarnings("findsecbugs:WEAK_MESSAGE_DIGEST_MD5") // we have to use MD5, security is not an issue here
 public final class HashUtils {
 
-    private static MessageDigest messageDigest;
-    static {
-        try {
-            messageDigest = MessageDigest.getInstance("MD5");
-        } catch (NoSuchAlgorithmException e) {
-            LogManager.getLogger().error("Could not find MD5 algorithm", e);
-        }
-    }
-
     private HashUtils() {
         // empty constructor to prevent initialization
     }
@@ -33,14 +24,19 @@ public final class HashUtils {
      * @param resourceUrl
      * @return
      */
-    public static String getMD5(String resourceUrl) {
-        messageDigest.reset();
-        messageDigest.update(resourceUrl.getBytes(StandardCharsets.UTF_8));
-        final byte[] resultByte = messageDigest.digest();
-        StringBuilder sb = new StringBuilder();
-        for (byte aResultByte : resultByte) {
-            sb.append(Integer.toString((aResultByte & 0xff) + 0x100, 16).substring(1));
+    public static String getMD5(String resourceUrl){
+        try {
+            MessageDigest messageDigest = MessageDigest.getInstance("MD5");
+            messageDigest.update(resourceUrl.getBytes(StandardCharsets.UTF_8));
+            final byte[] resultByte = messageDigest.digest();
+            StringBuilder sb = new StringBuilder();
+            for (byte aResultByte : resultByte) {
+                sb.append(Integer.toString((aResultByte & 0xff) + 0x100, 16).substring(1));
+            }
+            return sb.toString();
+        } catch (NoSuchAlgorithmException e) {
+            LogManager.getLogger().error("Could not find MD5 algorithm", e);
         }
-        return sb.toString();
+        return "";
     }
 }
