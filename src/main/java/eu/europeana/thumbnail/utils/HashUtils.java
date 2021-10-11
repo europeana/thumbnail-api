@@ -12,7 +12,6 @@ import java.security.NoSuchAlgorithmException;
  * @author Patrick Ehlert
  * Created on 2 sep 2020
  */
-@SuppressWarnings("findsecbugs:WEAK_MESSAGE_DIGEST_MD5") // we have to use MD5, security is not an issue here
 public final class HashUtils {
 
     private HashUtils() {
@@ -21,8 +20,8 @@ public final class HashUtils {
 
     /**
      * Return MD5 hash of the provided string (usually an image url)
-     * @param resourceUrl
-     * @return
+     * @param resourceUrl url for which hash needs to generated
+     * @return MD5 hash value
      */
     public static String getMD5(String resourceUrl){
         try {
