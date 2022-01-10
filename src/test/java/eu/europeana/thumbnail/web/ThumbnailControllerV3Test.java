@@ -4,11 +4,11 @@ import eu.europeana.domain.Headers;
 import eu.europeana.thumbnail.config.StorageRoutes;
 import eu.europeana.thumbnail.service.MediaStorageService;
 import eu.europeana.thumbnail.service.StoragesService;
-import org.apache.commons.lang3.StringUtils;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
@@ -18,7 +18,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.head;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-import static org.junit.Assert.assertTrue;
 
 /**
  * Test class for Thumbnail V3 controller
@@ -28,6 +27,7 @@ import static org.junit.Assert.assertTrue;
  */
 @TestPropertySource("classpath:testroutes.properties")
 @WebMvcTest({ThumbnailControllerV3.class, StorageRoutes.class})
+@AutoConfigureMockMvc
 public class ThumbnailControllerV3Test {
 
     private static final String V3_ENDPOINT = "/thumbnail/v3/{size}/{url}";
