@@ -6,3 +6,18 @@ server:
     include-message: always
     include-exception: false
     include-stacktrace: on_trace_param
+
+  # Enabling http2 should increase performance in most cases, but best to check if it really does
+  # Note that it only works when using https.
+  http2:
+    enabled: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: info
+
+  info:
+    env:
+      enabled: true
