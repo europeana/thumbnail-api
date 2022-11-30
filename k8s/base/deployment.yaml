@@ -1,0 +1,34 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: thumbnail-api-deployment
+spec:
+  # selector.matchLabels provided via Kustomize
+  template:
+    spec:
+      containers:
+        - name: thumbnail-api
+          image: europeana/thumbnail-api
+          ports:
+            - containerPort: 8080
+          livenessProbe:
+            httpGet:
+              port: 8080
+              path: /actuator/info
+            initialDelaySeconds: 30
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              port: 8080
+              path: /actuator/info
+            initialDelaySeconds: 30
+            periodSeconds: 30
+          volumeMounts:
+            - name: secret
+              mountPath: "/usr/local/tomcat/webapps/ROOT/WEB-INF/classes/thumbnail.user.properties"
+              readOnly: true
+              subPath: thumbnail.user.properties
+      volumes:
+        - name: secret
+          secret:
+            secretName: thumbnail-api-secret

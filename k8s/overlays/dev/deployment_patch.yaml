@@ -1,0 +1,11 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: thumbnail-api-deployment
+spec:
+  template:
+    spec:
+      containers:
+        - name: thumbnail-api
+          # required to use local image
+          imagePullPolicy: Never
