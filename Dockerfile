@@ -1,4 +1,4 @@
-# Builds a docker image from the Maven war. Requires 'mvn package' to have been run beforehand
+# Builds a docker image from a locally built Maven war. Requires 'mvn package' to have been run beforehand
 FROM tomcat:9.0-jdk11
 LABEL Author="Europeana Foundation <development@europeana.eu>"
 WORKDIR /usr/local/tomcat/webapps

@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: thumbnail-api-deployment
 spec:
-  # selector.matchLabels provided via Kustomize
+  # selector.matchLabels is provided via Kustomize
   template:
     spec:
       containers:
