@@ -6,4 +6,4 @@ spec:
   # selector provided via kustomize
   ports:
     - name: http
-      port: 8080
+      port: 80
