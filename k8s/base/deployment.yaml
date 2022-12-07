@@ -10,16 +10,16 @@ spec:
         - name: thumbnail-api
           image: europeana/thumbnail-api
           ports:
-            - containerPort: 8080
+            - containerPort: 80
           livenessProbe:
             httpGet:
-              port: 8080
+              port: 80
               path: /actuator/info
             initialDelaySeconds: 30
             periodSeconds: 30
           readinessProbe:
             httpGet:
-              port: 8080
+              port: 80
               path: /actuator/info
             initialDelaySeconds: 30
             periodSeconds: 30
