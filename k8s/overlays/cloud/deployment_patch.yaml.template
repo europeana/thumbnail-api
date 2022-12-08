@@ -7,8 +7,8 @@ spec:
   template:
     metadata:
       annotations:
-        fluentd/include: ${COLLECT_LOGS}
-        fluentd/multiline: true
+        fluentd/include: '${COLLECT_LOGS}'
+        fluentd/multiline: 'true'
     spec:
       containers:
         - name: thumbnail-api
