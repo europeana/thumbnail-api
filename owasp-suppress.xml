@@ -7,12 +7,6 @@
       ]]></notes>
         <packageUrl regex="true">^pkg:maven/org\.apache\.jclouds\.api/openstack\-swift@.*$</packageUrl>
         <cve>CVE-2016-0738</cve>
-    </suppress>
-    <suppress>
-        <notes><![CDATA[
-   file name: openstack-swift-2.4.0.jar
-   ]]></notes>
-        <packageUrl regex="true">^pkg:maven/org\.apache\.jclouds\.api/openstack\-swift@.*$</packageUrl>
         <cve>CVE-2017-16613</cve>
     </suppress>
     <suppress>
@@ -20,20 +14,10 @@
    file name: openstack-keystone-2.4.0.jar
    ]]></notes>
         <packageUrl regex="true">^pkg:maven/org\.apache\.jclouds\.api/openstack\-keystone@.*$</packageUrl>
+        <!-- updated the version in object storage but this still exists-->
         <cve>CVE-2020-12689</cve>
-    </suppress>
-    <suppress>
-        <notes><![CDATA[
-   file name: openstack-keystone-2.4.0.jar
-   ]]></notes>
-        <packageUrl regex="true">^pkg:maven/org\.apache\.jclouds\.api/openstack\-keystone@.*$</packageUrl>
+        <cve>CVE-2021-3563</cve>
         <cve>CVE-2020-12690</cve>
-    </suppress>
-    <suppress>
-        <notes><![CDATA[
-   file name: openstack-keystone-2.4.0.jar
-   ]]></notes>
-        <packageUrl regex="true">^pkg:maven/org\.apache\.jclouds\.api/openstack\-keystone@.*$</packageUrl>
         <cve>CVE-2020-12691</cve>
     </suppress>
     <!-- Object storage library is a false warning, issue refers to a different library with the same name -->
@@ -44,5 +28,140 @@
         <packageUrl regex="true">^pkg:maven/eu\.europeana/object\-storage@.*$</packageUrl>
         <cve>CVE-2021-20291</cve>
     </suppress>
-
+    <!-- present in the latest version -->
+    <suppress>
+        <notes><![CDATA[
+   file name: snakeyaml-1.33.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org.yaml/snakeyaml@.*$</packageUrl>
+        <cve>CVE-2022-1471</cve>
+    </suppress>
+    <!-- Coming from spring boot starter web. Upgrading this needs configuration and code changes  and latest version still has vulnerabilities-->
+    <suppress>
+        <notes><![CDATA[
+   file name: tomcat-embed-core-9.0.55.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org.apache.tomcat.embed/tomcat-embed-core@.*$</packageUrl>
+        <cve>CVE-2022-23181</cve>
+        <cve>CVE-2022-42252</cve>
+        <cve>CVE-2022-29885</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: tomcat-embed-websocket-9.0.55.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org.apache.tomcat.embed/tomcat-embed-websocket@.*$</packageUrl>
+        <cve>CVE-2022-23181</cve>
+        <cve>CVE-2022-42252</cve>
+        <cve>CVE-2022-29885</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+      file name: spring-web-5.3.13.jar
+      ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org.springframework/spring-web@.*$</packageUrl>
+        <cve>CVE-2016-1000027</cve>
+    </suppress>
+    <!-- Upgrading to latest version breaks the functionality. Works till the version -5.3.24, but the vulnerability still exists even in this version-->
+    <suppress>
+        <notes><![CDATA[
+      file name: spring-core-5.3.13.jar
+      ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org.springframework/spring-core@.*$</packageUrl>
+        <cve>CVE-2022-22965</cve>
+        <cve>CVE-2016-1000027</cve>
+    </suppress>
+    <!-- Upgrading to latest version breaks the functionality.-->
+    <suppress>
+        <notes><![CDATA[
+      file name: spring-core-5.3.13.jar
+      ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org.springframework/spring-core@.*$</packageUrl>
+        <cve>CVE-2018-11040</cve>
+        <cve>CVE-2016-1000027</cve>
+        <cve>CVE-2022-22965</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+      file name: spring-plugin-core-2.0.0.RELEASE.jar
+      ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org.springframework.plugin/spring-plugin-core@.*$</packageUrl>
+        <cve>CVE-2018-11040</cve>
+        <cve>CVE-2016-1000027</cve>
+        <cve>CVE-2022-22965</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+      file name: spring-plugin-metadata-2.0.0.RELEASE.jar
+      ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org.springframework.plugin/spring-plugin-metadata@.*$</packageUrl>
+        <cve>CVE-2018-11040</cve>
+        <cve>CVE-2016-1000027</cve>
+        <cve>CVE-2022-22965</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+      file name: spring-security-core-5.4.9.jar
+      ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org.springframework.security/spring-security-core@.*$</packageUrl>
+        <cve>CVE-2022-22978</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+      file name: spring-aop-5.3.13.jar
+      ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org.springframework/spring-aop@.*$</packageUrl>
+        <cve>CVE-2022-22965</cve>
+        <cve>CVE-2016-1000027</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+      file name: spring-jcl-5.3.13.jar
+      ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org.springframework/spring-jcl@.*$</packageUrl>
+        <cve>CVE-2022-22965</cve>
+        <cve>CVE-2016-1000027</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+      file name: spring-jcl-5.3.13.jar
+      ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org.springframework/spring-jcl@.*$</packageUrl>
+        <cve>CVE-2022-22965</cve>
+        <cve>CVE-2016-1000027</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+      file name: spring-beans-5.3.13.jar
+      ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org.springframework/spring-beans@.*$</packageUrl>
+        <cve>CVE-2022-22965</cve>
+        <cve>CVE-2016-1000027</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+      file name: spring-context-5.3.13.jar
+      ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org.springframework/spring-context@.*$</packageUrl>
+        <cve>CVE-2022-22965</cve>
+        <cve>CVE-2016-1000027</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+      file name: spring-expression-5.3.13.jar
+      ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org.springframework/spring-expression@.*$</packageUrl>
+        <cve>CVE-2022-22965</cve>
+        <cve>CVE-2016-1000027</cve>
+    </suppress>
+<!--    Upgrading breaks the Amazon ws services with error Could not initialize class com.amazonaws.services.s3.S3CredentialsProviderChain-->
+    <suppress>
+        <notes><![CDATA[
+      file name: jackson-databind-2.11.4.jar
+      ]]></notes>
+        <packageUrl regex="true">^pkg:maven/com.fasterxml.jackson.core/jackson-databind@.*$</packageUrl>
+        <cve>CVE-2020-36518</cve>
+        <cve>CVE-2022-42003</cve>
+        <cve>CVE-2022-42004</cve>
+    </suppress>
 </suppressions>
