@@ -157,8 +157,7 @@ public class ThumbnailControllerV3Test {
     @Test
     public void test_GetEmptyPathVariables() throws Exception {
         this.mockMvc.perform(get(V3_ENDPOINT, 400, ""))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.message", Matchers.containsString(ThumbnailControllerV3.URL_ERROR_MESSAGE)));
+                .andExpect(status().is4xxClientError());
 
 
         this.mockMvc.perform(get(V3_ENDPOINT, "", TestData.URI_HASH))
@@ -166,15 +165,14 @@ public class ThumbnailControllerV3Test {
                 .andExpect(jsonPath("$.message", Matchers.containsString(ThumbnailControllerV3.URL_ERROR_MESSAGE)));
 
         this.mockMvc.perform(get(V3_ENDPOINT, "", ""))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.message", Matchers.containsString(ThumbnailControllerV3.URL_ERROR_MESSAGE)));
+                .andExpect(status().is4xxClientError());
     }
 
     @Test
     public void test_HeadEmptyPathVariables() throws Exception {
 
         this.mockMvc.perform(get(V3_ENDPOINT, 400, ""))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().is4xxClientError());
 
 
         this.mockMvc.perform(get(V3_ENDPOINT, "", TestData.URI_HASH))
@@ -182,7 +180,7 @@ public class ThumbnailControllerV3Test {
 
 
         this.mockMvc.perform(get(V3_ENDPOINT, "", ""))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().is4xxClientError());
 
 
     }

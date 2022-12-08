@@ -25,12 +25,11 @@
         <object-storage.version>1.10</object-storage.version>
         <api-commons.version>0.3.9</api-commons.version>
 
-        <spring-boot.version>2.4.13</spring-boot.version>
+        <spring-boot.version>2.6.13</spring-boot.version>
+        <springdoc.version>1.6.13</springdoc.version>
         <commonsIO.version>2.7</commonsIO.version>
         <commonsLang3.version>3.9</commonsLang3.version>
         <jodatime.version>2.9.2</jodatime.version>
-        <swagger.version>3.0.0</swagger.version>
-        <log4j2.version>2.17.1</log4j2.version>
     </properties>
 
     <dependencyManagement>
@@ -82,26 +81,22 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-log4j2</artifactId>
         </dependency>
-        <!-- All log4j components specifically added to override spring-boot-starter-log4j2 -->
         <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-core</artifactId>
-            <version>${log4j2.version}</version>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-ui</artifactId>
+            <version>${springdoc.version}</version>
+        </dependency>
+
+        <!-- At the moment API commons requires us to import spring security, should refactor that -->
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-core</artifactId>
+            <version>5.7.5</version>
         </dependency>
         <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-api</artifactId>
-            <version>${log4j2.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-slf4j-impl</artifactId>
-            <version>${log4j2.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-jul</artifactId>
-            <version>${log4j2.version}</version>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-crypto</artifactId>
+            <version>5.7.5</version>
         </dependency>
 
         <dependency>
@@ -132,23 +127,6 @@
             <groupId>eu.europeana</groupId>
             <artifactId>object-storage</artifactId>
             <version>${object-storage.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>io.springfox</groupId>
-            <artifactId>springfox-boot-starter</artifactId>
-            <version>${swagger.version}</version>
-            <exclusions>
-                <exclusion>
-                    <artifactId>slf4j-api</artifactId>
-                    <groupId>org.slf4j</groupId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>io.springfox</groupId>
-            <artifactId>springfox-swagger-ui</artifactId>
-            <version>${swagger.version}</version>
         </dependency>
 
         <!-- test dependencies -->
@@ -182,7 +160,7 @@
                      To skip (e.g. during debugging) use 'mvn clean package')-->
                 <groupId>org.owasp</groupId>
                 <artifactId>dependency-check-maven</artifactId>
-                <version>7.3.0</version>
+                <version>7.4.0</version>
                 <configuration>
                     <failBuildOnCVSS>8</failBuildOnCVSS>
                     <assemblyAnalyzerEnabled>false</assemblyAnalyzerEnabled>

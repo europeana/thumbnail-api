@@ -45,4 +45,22 @@
         <cve>CVE-2021-20291</cve>
     </suppress>
 
+    <!-- Input is validated -->
+    <suppress>
+        <notes><![CDATA[
+   file name: spring-web-5.3.23.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.springframework/spring\-web@.*$</packageUrl>
+        <cve>CVE-2016-1000027</cve>
+    </suppress>
+
+    <!-- No yaml is being parsed -->
+    <suppress>
+        <notes><![CDATA[
+   file name: snakeyaml-1.29.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.yaml/snakeyaml@.*$</packageUrl>
+        <vulnerabilityName>CVE-2022-1471</vulnerabilityName>
+    </suppress>
+
 </suppressions>

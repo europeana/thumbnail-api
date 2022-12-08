@@ -5,7 +5,7 @@ server:
   error:
     include-message: always
     include-exception: false
-    include-stacktrace: on_trace_param
+    include-stacktrace: on_param
 
 management:
   endpoints:
@@ -16,3 +16,10 @@ management:
   info:
     env:
       enabled: true
+
+# Creates a redirect from /console to /swagger-ui/index.html
+springdoc:
+  swagger-ui:
+    path: /console
+  # Don't include Error controller in API commons
+  paths-to-exclude: /error
