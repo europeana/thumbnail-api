@@ -1,0 +1,11 @@
+resources:
+  - deployment.yaml
+
+commonLabels:
+  app: thumbnail-api
+
+# expects files to be in the same directory
+secretGenerator:
+  - name: thumbnail-api-secret
+    files:
+      - thumbnail.user.properties
