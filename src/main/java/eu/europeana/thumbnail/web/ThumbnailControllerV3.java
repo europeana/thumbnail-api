@@ -107,12 +107,4 @@ public class ThumbnailControllerV3 extends AbstractController {
         logRequestDuration(startTime, "Id = " + id + ", status = " + response.getStatus());
         return result;
     }
-
-    // TODO remove temporary endpoint to test logging errors and appliation logs in Kubernetes
-    @GetMapping(value = "/v3/error")
-    public void tmpGenerateLogs() {
-        LOG.info("This is an application INFO log");
-        LOG.info("This is an application ERROR log");
-        throw new IllegalStateException("This is a test exception");
-    }
 }
