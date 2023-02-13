@@ -5,15 +5,15 @@
     <parent>
         <groupId>eu.europeana</groupId>
         <artifactId>europeana-parent-pom</artifactId>
-        <version>2.3</version>
+        <version>2.4</version>
     </parent>
 
     <artifactId>thumbnail-api</artifactId>
     <version>0.8-SNAPSHOT</version>
     <packaging>war</packaging>
 
-    <name>Europeana Thumbnail API</name>
-    <description>Spring-Boot2 application for Thumbnail API</description>
+    <name>Thumbnail API</name>
+    <description>Spring-Boot2 application for providing CHO thumbnail images</description>
 
     <properties>
         <java.version>11</java.version>
