@@ -10,6 +10,8 @@ spec:
     - hosts:
         - ${K8S_HOSTNAME1}
         - ${K8S_HOSTNAME2}
+        - ${K8S_HOSTNAME3}
+        - ${K8S_HOSTNAME4}
       secretName: ${K8S_SECRETNAME}
   rules:
     - host: ${K8S_HOSTNAME1}
@@ -23,6 +25,26 @@ spec:
                 port:
                   number: 80
     - host: ${K8S_HOSTNAME2}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: thumbnail-api-service
+                port:
+                  number: 80
+    - host: ${K8S_HOSTNAME3}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: thumbnail-api-service
+                port:
+                  number: 80
+    - host: ${K8S_HOSTNAME4}
       http:
         paths:
           - path: /
