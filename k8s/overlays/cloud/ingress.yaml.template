@@ -8,10 +8,21 @@ spec:
   ingressClassName: public-iks-k8s-nginx
   tls:
     - hosts:
-        - ${K8S_HOSTNAME}
+        - ${K8S_HOSTNAME1}
+        - ${K8S_HOSTNAME2}
       secretName: ${K8S_SECRETNAME}
   rules:
-    - host: ${K8S_HOSTNAME}
+    - host: ${K8S_HOSTNAME1}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: thumbnail-api-service
+                port:
+                  number: 80
+    - host: ${K8S_HOSTNAME2}
       http:
         paths:
           - path: /
