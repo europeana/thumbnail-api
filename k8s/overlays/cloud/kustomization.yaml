@@ -8,4 +8,4 @@ patchesStrategicMerge:
   - deployment_patch.yaml
 
 commonLabels:
-  app: translation_tmp
+  app: translation-tmp

@@ -1,7 +1,7 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: translation_tmp-ingress
+  name: translation-tmp-ingress
   annotations:
     ${K8S_INGRESS_ANNOTATIONS}
 spec:
@@ -18,6 +18,6 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: translation_tmp-service
+                name: translation-tmp-service
                 port:
                   number: 80

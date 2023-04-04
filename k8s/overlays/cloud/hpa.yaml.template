@@ -1,14 +1,14 @@
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
-  name: translation_tmp-hpa
+  name: translation-tmp-hpa
 spec:
   maxReplicas: ${MAX_REPLICAS}
   minReplicas: ${MIN_REPLICAS}
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
-    name: translation_tmp-deployment
+    name: translation-tmp-deployment
   behavior:
     scaleDown:
       stabilizationWindowSeconds: 900
