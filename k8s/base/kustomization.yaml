@@ -2,7 +2,7 @@ resources:
   - deployment.yaml
 
 commonLabels:
-  app: thumbnail-api
+  app: translation_tmp
 
 # expects files to be in the same directory
 secretGenerator:

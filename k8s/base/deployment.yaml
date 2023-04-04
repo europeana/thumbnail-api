@@ -1,14 +1,14 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: thumbnail-api-deployment
+  name: translation_tmp-deployment
 spec:
   # selector.matchLabels is provided via Kustomize
   template:
     spec:
       containers:
-        - name: thumbnail-api
-          image: europeana/thumbnail-api
+        - name: translation_tmp
+          image: europeana/translation_tmp
           ports:
             - containerPort: 8080
           livenessProbe:

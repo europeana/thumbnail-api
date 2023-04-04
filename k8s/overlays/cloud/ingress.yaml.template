@@ -1,7 +1,7 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: thumbnail-api-ingress
+  name: translation_tmp-ingress
   annotations:
     ${K8S_INGRESS_ANNOTATIONS}
 spec:
@@ -9,9 +9,6 @@ spec:
   tls:
     - hosts:
         - ${K8S_HOSTNAME1}
-        - ${K8S_HOSTNAME2}
-        - ${K8S_HOSTNAME3}
-        - ${K8S_HOSTNAME4}
       secretName: ${K8S_SECRETNAME}
   rules:
     - host: ${K8S_HOSTNAME1}
@@ -21,36 +18,6 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: thumbnail-api-service
-                port:
-                  number: 80
-    - host: ${K8S_HOSTNAME2}
-      http:
-        paths:
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: thumbnail-api-service
-                port:
-                  number: 80
-    - host: ${K8S_HOSTNAME3}
-      http:
-        paths:
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: thumbnail-api-service
-                port:
-                  number: 80
-    - host: ${K8S_HOSTNAME4}
-      http:
-        paths:
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: thumbnail-api-service
+                name: translation_tmp-service
                 port:
                   number: 80
