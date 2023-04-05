@@ -83,7 +83,7 @@ public class ThumbnailControllerV3 extends AbstractController {
             startTime = System.nanoTime();
             LOG.debug("Thumbnail id = {}, size = {}", id, size);
         }
-        LOG.info("rid:/" + size + "/" + id + " start");
+        LOG.info("id:/" + size + "/" + id + " start");
 
         String idWithoutExtension = id;
         String extension = null;
@@ -103,12 +103,12 @@ public class ThumbnailControllerV3 extends AbstractController {
             logRequestDuration(startTime, "Id = " + id + ", status = " + HttpStatus.NOT_FOUND);
             throw new ThumbnailNotFoundException();
         }
-        LOG.info("rid:/" + size + "/" + id + " dcDescription en sc:10 dc:1 fd:3");
+        LOG.info("id:/" + size + "/" + id + " 10 0 1123 dcDescription en");
 
         ResponseEntity<byte[]> result = generateResponse(webRequest, response, mediaFile.get());
         logRequestDuration(startTime, "Id = " + id + ", status = " + response.getStatus());
 
-        LOG.info("rid:/" + size + "/" + id + " done");
+        LOG.info("id:/" + size + "/" + id + " done");
         return result;
     }
 }
