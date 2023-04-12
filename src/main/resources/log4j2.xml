@@ -16,10 +16,10 @@
         <Logger name="eu.europeana.thumbnail.config.StorageRoutes" level="INFO"/>
 
         <!-- Set to debug to see how routes are resolved and linked to configured storages-->
-        <Logger name="eu.europeana.thumbnail.service.StoragesService" level="DEBUG"/>
+        <Logger name="eu.europeana.thumbnail.service.StoragesService" level="INFO"/>
 
         <!-- Set to debug to see in what storage a file was found (or not) and log processing time -->
-        <Logger name="eu.europeana.thumbnail.web.AbstractController" level="DEBUG"/>
+        <Logger name="eu.europeana.thumbnail.web.AbstractController" level="INFO"/>
 
         <Logger name="eu.europeana.thumbnail.web.ThumbnailControllerV2" level="INFO"/>
         <Logger name="eu.europeana.thumbnail.web.ThumbnailControllerV3" level="INFO"/>
