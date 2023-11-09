@@ -51,6 +51,17 @@
             <groupId>eu.europeana.api.commons</groupId>
             <artifactId>commons-error</artifactId>
             <version>${api-commons.version}</version>
+            <!-- remove  vulnerable one, override with latest version-->
+            <exclusions>
+                <exclusion>
+                    <groupId>org.springframework.security</groupId>
+                    <artifactId>spring-security-core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.springframework.security</groupId>
+                    <artifactId>spring-security-crypto</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
@@ -88,16 +99,18 @@
             <version>${springdoc.version}</version>
         </dependency>
 
-        <!-- At the moment API commons requires us to import spring security, should refactor that -->
+        <!-- At the moment API commons requires us to import spring security, should refactor that
+         updated version have more vulnerabilities hence added 5.8.8
+          and the latest version over 6 used java 17 -->
         <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-core</artifactId>
-            <version>5.7.5</version>
+            <version>5.8.8</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-crypto</artifactId>
-            <version>5.7.5</version>
+            <version>5.8.8</version>
         </dependency>
 
         <dependency>

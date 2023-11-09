@@ -62,5 +62,83 @@
         <packageUrl regex="true">^pkg:maven/org\.yaml/snakeyaml@.*$</packageUrl>
         <vulnerabilityName>CVE-2022-1471</vulnerabilityName>
     </suppress>
-
+<!--    requires update to Spring boot 3. If a application is deployed
+ to CF could be susceptible to a security bypass -->
+    <suppress>
+        <notes><![CDATA[
+   file name: spring-boot-2.6.13.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org.springframework.boot/spring-boot@.*$</packageUrl>
+        <vulnerabilityName>CVE-2023-20873</vulnerabilityName>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: spring-boot-starter-web-2.6.13.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org.springframework.boot/spring-boot-starter-web@.*$</packageUrl>
+        <vulnerabilityName>CVE-2023-20873</vulnerabilityName>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: spring-boot-starter-2.6.13.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org.springframework.boot/spring-boot-starter@.*$</packageUrl>
+        <vulnerabilityName>CVE-2023-20873</vulnerabilityName>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: spring-boot-actuator-2.6.13.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org.springframework.boot/spring-boot-actuator@.*$</packageUrl>
+        <vulnerabilityName>CVE-2023-20873</vulnerabilityName>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: spring-boot-starter-json-2.6.13.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org.springframework.boot/spring-boot-starter-json@.*$</packageUrl>
+        <vulnerabilityName>CVE-2023-20873</vulnerabilityName>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: spring-boot-autoconfigure-2.6.13.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org.springframework.boot/spring-boot-autoconfigure@.*$</packageUrl>
+        <vulnerabilityName>CVE-2023-20873</vulnerabilityName>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: spring-boot-starter-log4j2-2.6.13.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org.springframework.boot/spring-boot-starter-log4j2@.*$</packageUrl>
+        <vulnerabilityName>CVE-2023-20873</vulnerabilityName>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: spring-boot-starter-tomcat-2.6.13.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org.springframework.boot/spring-boot-starter-tomcat@.*$</packageUrl>
+        <vulnerabilityName>CVE-2023-20873</vulnerabilityName>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: spring-boot-starter-actuator-2.6.13.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org.springframework.boot/spring-boot-starter-actuator@.*$</packageUrl>
+        <vulnerabilityName>CVE-2023-20873</vulnerabilityName>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: spring-boot-starter-validation-2.6.13.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org.springframework.boot/spring-boot-starter-validation@.*$</packageUrl>
+        <vulnerabilityName>CVE-2023-20873</vulnerabilityName>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: spring-boot-actuator-autoconfigure-2.6.13.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org.springframework.boot/spring-boot-actuator-autoconfigure@.*$</packageUrl>
+        <vulnerabilityName>CVE-2023-20873</vulnerabilityName>
+    </suppress>
 </suppressions>
