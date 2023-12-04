@@ -29,7 +29,6 @@ public class ThumbnailApplication extends SpringBootServletInitializer {
                         System.getenv("CF_INSTANCE_IP"));
 
         SpringApplication.run(ThumbnailApplication.class, args);
-        System.out.println("testing");
     }
 
     @Override
