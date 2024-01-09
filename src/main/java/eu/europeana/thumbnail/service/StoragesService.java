@@ -58,6 +58,7 @@ public class StoragesService {
 
     private String getTopLevelName(String route) {
         int i = route.indexOf('.');
+        System.out.println(i);
         if (i >= 0) {
             return route.substring(0, i);
         }
