@@ -129,4 +129,27 @@ public class ThumbnailControllerV2 extends AbstractController {
     }
 
 
+    @GetMapping(value = {"/api/error"})
+    public void tmp_test_error() {
+        generateTestError();
+    }
+
+    @GetMapping(value = {"/api/error2"})
+    public void tmp_test_error_caused_by() {
+        try {
+            generateTestError();
+        } catch (RuntimeException e) {
+            throw new RuntimeException("This is an error with a root cause", e);
+        }
+    }
+
+    public void generateTestError() {
+        throw new RuntimeException("This is a error generated for testing purposes");
+    }
+
+    @GetMapping(value = {"/api/multiline"})
+    public String tmp_test_multilinelog() {
+        LOG.info("This is a multi-line\n\nlog\n.");
+        return "Ok. Multi-line log generated";
+    }
 }
