@@ -70,6 +70,9 @@ public abstract class AbstractController {
                 LOG.debug("File {} not present in storage {}", id, mss.getName());
             } else {
                 LOG.debug("File {} found in storage {}", id, mss.getName());
+                if ("uim-prod".equals(mss.getName())) {
+                    LOG.info("File with url {} and id {} found in old Amazon S3 storage", originalUrl, id);
+                }
                 break;
             }
         }
