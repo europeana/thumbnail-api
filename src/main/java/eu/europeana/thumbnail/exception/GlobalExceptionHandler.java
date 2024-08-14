@@ -1,6 +1,6 @@
 package eu.europeana.thumbnail.exception;
 
-import eu.europeana.api.commons.error.EuropeanaGlobalExceptionHandler;
+import eu.europeana.api.commons_sb3.error.EuropeanaGlobalExceptionHandler;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ResponseBody;
 

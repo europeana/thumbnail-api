@@ -3,9 +3,9 @@ server.port: 8081
 
 server:
   error:
-    include-message: always
-    include-exception: false
-    include-stacktrace: on_param
+    include-message: always            # with on_param only shown when using 'message' option
+    include-stacktrace: on_param       # with on_param only shown when using 'trace' option
+    include-exception: true
 
 management:
   endpoints:
@@ -21,7 +21,7 @@ management:
     health:
       probes:
         enabled: true
-      show-details: always
+      show-details: never
 
   health:
     livenessState:
@@ -33,5 +33,5 @@ management:
 springdoc:
   swagger-ui:
     path: /console
-  # Don't include Error controller in API commons
+  # Don't include Error controller
   paths-to-exclude: /error

@@ -1,6 +1,6 @@
 package eu.europeana.thumbnail.config;
 
-import eu.europeana.api.commons.error.EuropeanaApiErrorAttributes;
+import eu.europeana.api.commons_sb3.error.EuropeanaApiErrorAttributes;
 import org.springframework.boot.web.servlet.error.ErrorAttributes;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
