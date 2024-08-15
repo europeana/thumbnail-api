@@ -7,44 +7,4 @@
         <vulnerabilityName>CVE-2024-22262</vulnerabilityName>
     </suppress>
 
-    <!-- We are not using openstack Swift, will be removed from object storage -->
-    <suppress>
-        <notes><![CDATA[
-      file name: openstack-swift-2.4.0.jar
-      ]]></notes>
-        <packageUrl regex="true">^pkg:maven/org\.apache\.jclouds\.api/openstack\-swift@.*$</packageUrl>
-        <cve>CVE-2016-0738</cve>
-    </suppress>
-    <suppress>
-        <notes><![CDATA[
-   file name: openstack-swift-2.4.0.jar
-   ]]></notes>
-        <packageUrl regex="true">^pkg:maven/org\.apache\.jclouds\.api/openstack\-swift@.*$</packageUrl>
-        <cve>CVE-2017-16613</cve>
-    </suppress>
-    <suppress>
-        <notes><![CDATA[
-   file name: openstack-keystone-2.4.0.jar
-   ]]></notes>
-        <packageUrl regex="true">^pkg:maven/org\.apache\.jclouds\.api/openstack\-keystone@.*$</packageUrl>
-        <cve>CVE-2020-12689</cve>
-    </suppress>
-    <suppress>
-        <notes><![CDATA[
-   file name: openstack-keystone-2.4.0.jar
-   ]]></notes>
-        <packageUrl regex="true">^pkg:maven/org\.apache\.jclouds\.api/openstack\-keystone@.*$</packageUrl>
-        <cve>CVE-2020-12690</cve>
-    </suppress>
-    <suppress>
-        <notes><![CDATA[
-   file name: openstack-keystone-2.4.0.jar
-   ]]></notes>
-        <packageUrl regex="true">^pkg:maven/org\.apache\.jclouds\.api/openstack\-keystone@.*$</packageUrl>
-        <cve>CVE-2020-12691</cve>
-    </suppress>
-
-
-
-
 </suppressions>

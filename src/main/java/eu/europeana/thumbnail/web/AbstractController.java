@@ -1,23 +1,23 @@
 package eu.europeana.thumbnail.web;
 
 import eu.europeana.thumbnail.model.ImageSize;
-import eu.europeana.thumbnail.model.MediaFile;
+import eu.europeana.thumbnail.model.MediaStream;
 import eu.europeana.thumbnail.service.MediaStorageService;
 import eu.europeana.thumbnail.service.StoragesService;
 import eu.europeana.thumbnail.utils.ControllerUtils;
 import eu.europeana.thumbnail.utils.HashUtils;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.http.HttpHeaders;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.lang.NonNull;
 import org.springframework.web.context.request.WebRequest;
 
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
@@ -34,7 +34,7 @@ public abstract class AbstractController {
 
     protected StoragesService storagesService;
 
-    public AbstractController(StoragesService storagesService) {
+    protected AbstractController(StoragesService storagesService) {
         this.storagesService = storagesService;
     }
 
@@ -47,7 +47,7 @@ public abstract class AbstractController {
      * @param width the requested with of the image, can be 200, 400
      * @return Optional containing the MediaFile, or an empty optional if the file cannot be retrieved
      */
-    protected Optional<MediaFile> retrieveThumbnail(HttpServletRequest request, String fileId, String originalUrl, Integer width) {
+    protected Optional<MediaStream> retrieveThumbnail(HttpServletRequest request, String fileId, String originalUrl, Integer width) {
         // calculate hash (if necessary)
         String id = fileId;
         if (StringUtils.isEmpty(fileId)) {
@@ -62,14 +62,15 @@ public abstract class AbstractController {
             serverName = serverName + ":" + request.getServerPort();
         }
 
-        MediaFile result = null;
+        MediaStream result = null;
         List<MediaStorageService> mediaStorageServices = storagesService.getStorages(serverName);
         for (MediaStorageService mss : mediaStorageServices) {
-            result = mss.retrieveAsMediaFile(id, originalUrl);
+            result = mss.retrieve(id, originalUrl);
             if (result == null) {
                 LOG.debug("File {} not present in storage {}", id, mss.getName());
             } else {
                 LOG.debug("File {} found in storage {}", id, mss.getName());
+                // Temporarily added so we can get insight in how many images requested in production are not in IBM S3
                 if ("uim-prod".equals(mss.getName())) {
                     LOG.info("File with url {} and id {} found in old Amazon S3 storage", originalUrl, id);
                 }
@@ -105,13 +106,8 @@ public abstract class AbstractController {
      * @param mediaFile the mediaFile that was found or null (if null a 404 is generated)
      * @return responseEntity (for 200 and 404 responses), or null (for 304 or 412 responses in which case reponse servlet is modified)
      */
-    protected ResponseEntity<byte[]> generateResponse(WebRequest webRequest, HttpServletResponse response, @NonNull MediaFile mediaFile) {
+    protected ResponseEntity<InputStreamResource> generateResponse(WebRequest webRequest, HttpServletResponse response, @NonNull MediaStream mediaFile) {
         ControllerUtils.addDefaultResponseHeaders(response);
-
-        // Normally we let Spring determine the Content-type based on the Accept headers in the request, but here we set
-        // the type dynamically to either jpeg or png depending on the type of thumbnail that we retrieved.
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(getMediaType(mediaFile.getOriginalUrl()));
 
         // Check if we should return the full response, or a 304
         // The check below automatically sets an ETag and last-Modified in our response header and returns a 304
@@ -126,7 +122,21 @@ public abstract class AbstractController {
             return null;
         }
 
-        return new ResponseEntity<>(mediaFile.getContent(), headers, HttpStatus.OK);
+        InputStreamResource result = new InputStreamResource(mediaFile.getContent());
+        // Normally we let Spring determine the Content-type based on the Accept headers in the request, but here we set
+        // the type dynamically to either jpeg or png depending on the type of thumbnail that we retrieved.
+        MediaType mediaType = getMediaType(mediaFile.getOriginalUrl());
+
+        if (mediaFile.hasMetadata()) {
+            return ResponseEntity.ok()
+                    .contentType(mediaType)
+                    .contentLength(mediaFile.getContentLength())
+                    .body(result);
+        }
+        // avoid sending contentLength 0 if there is no metadata
+        return ResponseEntity.ok()
+                .contentType(mediaType)
+                .body(result);
     }
 
     /**
