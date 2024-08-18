@@ -9,6 +9,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.TestPropertySource;
 
 import static io.restassured.RestAssured.given;
 import static org.junit.jupiter.api.Assertions.*;
@@ -18,6 +19,7 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
  * Test json error responses
  */
 @SpringBootTest(webEnvironment = RANDOM_PORT)
+@TestPropertySource("classpath:testroutes.properties")
 public class ExceptionControllerTest {
 
     @LocalServerPort
