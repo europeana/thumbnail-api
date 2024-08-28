@@ -12,8 +12,8 @@ import jakarta.servlet.http.HttpServletResponse;
  */
 public final class ControllerUtils {
 
-    private static final String ALLOWED    = "GET, HEAD";
-    private static final String NOCACHE    = "no-cache";
+    private static final String ALLOW_VALUE = "GET, HEAD";
+    private static final String CACHE_CONTROL_VALUE = "public, max-age=604800, must-revalidate";
     private static final String IFMATCH    = "If-Match";
     private static final String ANY        = "*";
     private static final String GZIPSUFFIX = "-gzip";
@@ -28,8 +28,8 @@ public final class ControllerUtils {
      * @param response The response to add the encoding and headers to
      */
     public static void addDefaultResponseHeaders(HttpServletResponse response) {
-        response.addHeader(HttpHeaders.ALLOW, ALLOWED);
-        response.addHeader(HttpHeaders.CACHE_CONTROL, NOCACHE);
+        response.addHeader(HttpHeaders.ALLOW, ALLOW_VALUE);
+        response.addHeader(HttpHeaders.CACHE_CONTROL, CACHE_CONTROL_VALUE);
     }
 
     /**
