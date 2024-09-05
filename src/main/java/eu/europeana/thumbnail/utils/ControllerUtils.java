@@ -1,19 +1,19 @@
 package eu.europeana.thumbnail.utils;
 
-import eu.europeana.thumbnail.model.MediaFile;
+import eu.europeana.thumbnail.model.MediaStream;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpHeaders;
 import org.springframework.web.context.request.WebRequest;
 
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * Class containing a number of useful controller utilities (mainly for setting headers)
  */
 public final class ControllerUtils {
 
-    private static final String ALLOWED    = "GET, HEAD";
-    private static final String NOCACHE    = "no-cache";
+    private static final String ALLOW_VALUE = "GET, HEAD";
+    private static final String CACHE_CONTROL_VALUE = "public, max-age=604800, must-revalidate";
     private static final String IFMATCH    = "If-Match";
     private static final String ANY        = "*";
     private static final String GZIPSUFFIX = "-gzip";
@@ -28,8 +28,8 @@ public final class ControllerUtils {
      * @param response The response to add the encoding and headers to
      */
     public static void addDefaultResponseHeaders(HttpServletResponse response) {
-        response.addHeader(HttpHeaders.ALLOW, ALLOWED);
-        response.addHeader(HttpHeaders.CACHE_CONTROL, NOCACHE);
+        response.addHeader(HttpHeaders.ALLOW, ALLOW_VALUE);
+        response.addHeader(HttpHeaders.CACHE_CONTROL, CACHE_CONTROL_VALUE);
     }
 
     /**
@@ -42,7 +42,7 @@ public final class ControllerUtils {
      * otherwise false
      */
 
-    public static boolean checkForPrecondition(MediaFile mediaFile, WebRequest webRequest) {
+    public static boolean checkForPrecondition(MediaStream mediaFile, WebRequest webRequest) {
         return (StringUtils.isNotBlank(webRequest.getHeader(IFMATCH)) &&
                 (!doesAnyETagMatch(webRequest.getHeader(IFMATCH), mediaFile.getETag())));
     }
@@ -54,7 +54,7 @@ public final class ControllerUtils {
      * @param webRequest webrequest object
      * @return boolean   is modified yes / no
      */
-    public static boolean checkForNotModified(MediaFile mediaFile, WebRequest webRequest) {
+    public static boolean checkForNotModified(MediaStream mediaFile, WebRequest webRequest) {
         if (mediaFile.getLastModified() != null && mediaFile.getETag() != null) {
             return webRequest.checkNotModified(StringUtils.removeEndIgnoreCase(mediaFile.getETag(), GZIPSUFFIX),
                                                mediaFile.getLastModified().getMillis());

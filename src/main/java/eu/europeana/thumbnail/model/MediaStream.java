@@ -1,26 +1,25 @@
 package eu.europeana.thumbnail.model;
 
-import eu.europeana.domain.ObjectMetadata;
+import com.amazonaws.services.s3.model.ObjectMetadata;
 import org.joda.time.DateTime;
 
+import java.io.InputStream;
+
 /**
- * Wrapping class around a media object retrieved from object storage
+ * Wrapping class around an object retrieved from object storage.
  */
-public class MediaFile {
+public class MediaStream {
 
     private final String id;
-
     private final String originalUrl;
-
-    private final byte[] content;
-
+    private final InputStream content;
     private final ObjectMetadata metaData;
 
-    public MediaFile(String id, String originalUrl, byte[] content) {
+    public MediaStream(String id, String originalUrl, InputStream content) {
         this(id, originalUrl, content, null);
     }
 
-    public MediaFile(String id, String originalUrl, byte[] content, ObjectMetadata metadata) {
+    public MediaStream(String id, String originalUrl, InputStream content, ObjectMetadata metadata) {
         this.id = id;
         this.originalUrl = originalUrl;
         this.content = content;
@@ -42,27 +41,34 @@ public class MediaFile {
     }
 
     /**
-     * @return actual content as byte array
+     * @return actual content as stream
      */
-    public byte[] getContent() {
+    public InputStream getContent() {
         return content;
+    }
+
+    /**
+     * @return true if the mediastream has metadata, otherwise false
+     */
+    public boolean hasMetadata() {
+        return (metaData != null);
     }
 
     /**
      * @return Length of the content in number of bytes
      */
-    public int getContentLength() {
-        if (content == null) {
+    public long getContentLength() {
+        if (metaData == null) {
             return 0;
         }
-        return content.length;
+        return metaData.getContentLength();
     }
 
     /**
      * @return date when the file was last modified (if available)
      */
     public DateTime getLastModified() {
-        if (metaData == null) {
+        if (metaData == null || metaData.getLastModified() == null) {
             return null;
         }
         return new DateTime(metaData.getLastModified().getTime());
@@ -77,6 +83,7 @@ public class MediaFile {
         }
         return metaData.getETag();
     }
+
 
 }
 

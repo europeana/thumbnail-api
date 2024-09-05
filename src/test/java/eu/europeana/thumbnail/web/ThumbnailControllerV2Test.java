@@ -1,15 +1,16 @@
 package eu.europeana.thumbnail.web;
 
-import eu.europeana.domain.Headers;
-import eu.europeana.thumbnail.model.MediaFile;
+import com.amazonaws.services.s3.Headers;
+import eu.europeana.thumbnail.model.MediaStream;
 import eu.europeana.thumbnail.service.MediaStorageService;
 import eu.europeana.thumbnail.service.StoragesService;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
@@ -48,6 +49,8 @@ public class ThumbnailControllerV2Test {
     private static final String DEFAULT_IMAGE_LENGTH = "2319";
     private static final String DEFAULT_VIDEO_LENGTH = "1932";
 
+    private static final Logger LOG = LogManager.getLogger(ThumbnailControllerV2Test.class);
+
     @Autowired
     private MockMvc mockMvc;
     @MockBean
@@ -60,6 +63,15 @@ public class ThumbnailControllerV2Test {
         TestData.defaultSetup(storagesService, mediaStorage);
     }
 
+    // KNOWN ISSUES: ever since migrating to SB3 and using streams there are 2 weird issues with reading the body in
+    // unit tests.
+    // 1. When a single test method is run in IntelliJ (e.g. test_200_Ok() or test_200_ContentType()) HEAD requests
+    //    become a GET request so the content check for these HEAD requests fails
+    // 2. When running all tests in this class in IntelliJ then HEAD requests work fine, but in test_200_Ok the expected
+    //    content for the second GET request (with MEDIUM data) is empty despite us specifying an expected value.
+    //    As a workaround we read the MEDIUM_STREAM before the test and strangely then the problem disappears.
+    // It looks like these are bugs (either in IntelliJ or in Mockito)
+
     /**
      * Test normal 200 Ok requests
      */
@@ -67,37 +79,48 @@ public class ThumbnailControllerV2Test {
     public void test_200_Ok() throws Exception {
         // minimal request with only uri
         this.mockMvc.perform(get(V2_ENDPOINT)
-                .param(URI_PARAMETER, TestData.URI))
+                    .param(URI_PARAMETER, TestData.URI))
                 .andExpect(status().isOk())
                 .andExpect(header().string("Content-Type", (MediaType.IMAGE_JPEG_VALUE)))
-                .andExpect(header().string("Content-Length", String.valueOf(TestData.LARGE_FILE.length())))
-                .andExpect(content().bytes(TestData.LARGE_CONTENT));
+                .andExpect(header().string("Content-Length", String.valueOf(TestData.LARGE_CONTENT.length())))
+                .andExpect(content().bytes(TestData.LARGE_STREAM.readAllBytes()));
 
         // head request should return the same, but with empty content
         this.mockMvc.perform(head(V2_ENDPOINT)
-                .param(URI_PARAMETER, TestData.URI))
+                    .param(URI_PARAMETER, TestData.URI))
                 .andExpect(status().isOk())
                 .andExpect(header().string("Content-Type", (MediaType.IMAGE_JPEG_VALUE)))
-                .andExpect(header().string("Content-Length", String.valueOf(TestData.LARGE_FILE.length())))
-                .andExpect(content().string(""));
+                .andExpect(header().string("Content-Length", String.valueOf(TestData.LARGE_CONTENT.length())))
+                .andExpect(content().bytes(new byte[0]));
+
+        // HACK: if we don't read MEDIUM_STREAM here it will be empty in the last line of the test case below!?!?!?
+        byte[] expected2 = TestData.MEDIUM_STREAM.readAllBytes();
+        LOG.info("Expected medium data = {}", expected2);
+        this.mockMvc.perform(get(V2_ENDPOINT)
+                        .param(URI_PARAMETER, TestData.URI)
+                        .param("size", "w200"))
+                .andExpect(status().isOk())
+                .andExpect(header().string("Content-Type", (MediaType.IMAGE_JPEG_VALUE)))
+                .andExpect(header().string("Content-Length", String.valueOf(TestData.MEDIUM_CONTENT.length())))
+                .andExpect(content().bytes(TestData.MEDIUM_STREAM.readAllBytes()));
 
         // specify smaller size
         this.mockMvc.perform(get(V2_ENDPOINT)
-                .param(URI_PARAMETER, TestData.URI)
-                .param("size", "w200"))
+                    .param(URI_PARAMETER, TestData.URI)
+                    .param("size", "w200"))
                 .andExpect(status().isOk())
                 .andExpect(header().string("Content-Type", (MediaType.IMAGE_JPEG_VALUE)))
-                .andExpect(header().string("Content-Length", String.valueOf(TestData.MEDIUM_FILE.length())))
-                .andExpect(content().bytes(TestData.MEDIUM_CONTENT));
+                .andExpect(header().string("Content-Length", String.valueOf(TestData.MEDIUM_CONTENT.length())))
+                .andExpect(content().bytes(TestData.MEDIUM_STREAM.readAllBytes()));
 
         // specify big size
         this.mockMvc.perform(head(V2_ENDPOINT)
-                .param(URI_PARAMETER, TestData.URI)
-                .param("size", "w400"))
+                    .param(URI_PARAMETER, TestData.URI)
+                    .param("size", "w400"))
                 .andExpect(status().isOk())
                 .andExpect(header().string("Content-Type", (MediaType.IMAGE_JPEG_VALUE)))
-                .andExpect(header().string("Content-Length", String.valueOf(TestData.LARGE_FILE.length())))
-                .andExpect(content().string(""));
+                .andExpect(header().string("Content-Length", String.valueOf(TestData.LARGE_CONTENT.length())))
+                .andExpect(content().bytes(new byte[0]));
     }
 
     /**
@@ -105,30 +128,30 @@ public class ThumbnailControllerV2Test {
      */
     @Test
     public void test_200_ContentType() throws Exception {
-        given(mediaStorage.retrieveAsMediaFile(URI_NO_TYPE_HASH + TestData.SIZE_LARGE, URI_NO_TYPE)).willReturn(
-                new MediaFile(URI_NO_TYPE_HASH + TestData.SIZE_LARGE, URI_NO_TYPE, TestData.LARGE_CONTENT));
-        given(mediaStorage.retrieveAsMediaFile(URI_PNG_HASH + TestData.SIZE_LARGE, URI_PNG)).willReturn(
-                new MediaFile(URI_PNG_HASH + TestData.SIZE_LARGE, URI_PNG, TestData.LARGE_CONTENT));
-        given(mediaStorage.retrieveAsMediaFile(URI_PDF_HASH + TestData.SIZE_LARGE, URI_PDF)).willReturn(
-                new MediaFile(URI_PDF_HASH + TestData.SIZE_LARGE, URI_PDF, TestData.LARGE_CONTENT));
+        given(mediaStorage.retrieve(URI_NO_TYPE_HASH + TestData.SIZE_LARGE, URI_NO_TYPE)).willReturn(
+                new MediaStream(URI_NO_TYPE_HASH + TestData.SIZE_LARGE, URI_NO_TYPE, TestData.LARGE_STREAM));
+        given(mediaStorage.retrieve(URI_PNG_HASH + TestData.SIZE_LARGE, URI_PNG)).willReturn(
+                new MediaStream(URI_PNG_HASH + TestData.SIZE_LARGE, URI_PNG, TestData.LARGE_STREAM));
+        given(mediaStorage.retrieve(URI_PDF_HASH + TestData.SIZE_LARGE, URI_PDF)).willReturn(
+                new MediaStream(URI_PDF_HASH + TestData.SIZE_LARGE, URI_PDF, TestData.LARGE_STREAM));
 
         this.mockMvc.perform(get(V2_ENDPOINT)
-                .param(URI_PARAMETER, URI_NO_TYPE))
+                    .param(URI_PARAMETER, URI_NO_TYPE))
                 .andExpect(status().isOk())
                 .andExpect(header().string("Content-Type", (MediaType.IMAGE_JPEG_VALUE)))
-                .andExpect(content().bytes(TestData.LARGE_CONTENT));
+                .andExpect(content().bytes(TestData.LARGE_STREAM.readAllBytes()));
 
         this.mockMvc.perform(head(V2_ENDPOINT)
-                .param(URI_PARAMETER, URI_PNG))
+                    .param(URI_PARAMETER, URI_PNG))
                 .andExpect(status().isOk())
                 .andExpect(header().string("Content-Type", (MediaType.IMAGE_PNG_VALUE)))
-                .andExpect(content().string(""));
+                .andExpect(content().bytes(new byte[0]));
 
         this.mockMvc.perform(get(V2_ENDPOINT)
-                .param(URI_PARAMETER, URI_PDF))
+                    .param(URI_PARAMETER, URI_PDF))
                 .andExpect(status().isOk())
                 .andExpect(header().string("Content-Type", (MediaType.IMAGE_PNG_VALUE)))
-                .andExpect(content().bytes(TestData.LARGE_CONTENT));
+                .andExpect(content().bytes(TestData.LARGE_STREAM.readAllBytes()));
     }
 
     /**
@@ -170,17 +193,13 @@ public class ThumbnailControllerV2Test {
     @Test
     public void test_400_InvalidURL() throws Exception {
        this.mockMvc.perform(get(V2_ENDPOINT)
-                .param(URI_PARAMETER, URI_INVALID))
-                .andExpect(status().isBadRequest())
+                    .param(URI_PARAMETER, URI_INVALID))
+               .andExpect(status().isBadRequest())
                .andExpect(jsonPath("$.message", Matchers.containsString(ThumbnailControllerV2.INVALID_URL_MESSAGE)));
 
-
-
- this.mockMvc.perform(head(V2_ENDPOINT)
-                .param(URI_PARAMETER, URI_INVALID))
-                .andExpect(status().isBadRequest());
-
-
+       this.mockMvc.perform(head(V2_ENDPOINT)
+                       .param(URI_PARAMETER, URI_INVALID))
+               .andExpect(status().isBadRequest());
     }
 
     @Test
@@ -241,15 +260,15 @@ public class ThumbnailControllerV2Test {
                 .andExpect(status().isOk());
 
         this.mockMvc.perform(get(V2_ENDPOINT)
-                .param(URI_PARAMETER, TestData.URI_URN))
+                    .param(URI_PARAMETER, TestData.URI_URN))
                 .andExpect(status().isOk());
 
         this.mockMvc.perform(get(V2_ENDPOINT)
-                .param(URI_PARAMETER, TestData.URI_FTP))
+                    .param(URI_PARAMETER, TestData.URI_FTP))
                 .andExpect(status().isOk());
 
         this.mockMvc.perform(get(V2_ENDPOINT)
-                .param(URI_PARAMETER, TestData.MEDIUM_FILE))
+                    .param(URI_PARAMETER, TestData.MEDIUM_CONTENT))
                 .andExpect(status().isBadRequest());
     }
 }

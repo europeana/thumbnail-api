@@ -5,32 +5,31 @@
     <parent>
         <groupId>eu.europeana</groupId>
         <artifactId>europeana-parent-pom</artifactId>
-        <version>2.4</version>
+        <version>2.5</version>
     </parent>
 
     <artifactId>thumbnail-api</artifactId>
-    <version>0.7.2-SNAPSHOT</version>
+    <version>0.8.0-SNAPSHOT</version>
     <packaging>war</packaging>
 
     <name>Thumbnail API</name>
-    <description>Spring-Boot2 application for providing CHO thumbnail images</description>
+    <description>Spring-Boot application for providing CHO thumbnail images</description>
 
     <properties>
-        <java.version>11</java.version>
+        <java.version>17</java.version>
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <sonar.organization>europeana</sonar.organization>
 
-        <object-storage.version>1.10</object-storage.version>
-        <api-commons.version>0.3.9</api-commons.version>
+        <object-storage.version>2.1-SNAPSHOT</object-storage.version>
+        <api-commons-sb3.version>0.1.0</api-commons-sb3.version>
 
-        <spring-boot.version>2.6.13</spring-boot.version>
-        <springdoc.version>1.6.13</springdoc.version>
-        <commonsIO.version>2.7</commonsIO.version>
-        <commonsLang3.version>3.9</commonsLang3.version>
-        <jodatime.version>2.9.2</jodatime.version>
+        <spring-boot.version>3.2.4</spring-boot.version>
+        <springdoc-openapi.version>2.6.0</springdoc-openapi.version>
+        <commonsIO.version>2.16.1</commonsIO.version>
+        <commonsLang3.version>3.16.0</commonsLang3.version>
+        <jodatime.version>2.12.7</jodatime.version>
     </properties>
 
     <dependencyManagement>
@@ -47,22 +46,6 @@
     </dependencyManagement>
 
     <dependencies>
-        <dependency>
-            <groupId>eu.europeana.api.commons</groupId>
-            <artifactId>commons-error</artifactId>
-            <version>${api-commons.version}</version>
-            <!-- remove  vulnerable one, override with latest version-->
-            <exclusions>
-                <exclusion>
-                    <groupId>org.springframework.security</groupId>
-                    <artifactId>spring-security-core</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.springframework.security</groupId>
-                    <artifactId>spring-security-crypto</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
 
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -93,30 +76,26 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-log4j2</artifactId>
         </dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.springdoc/springdoc-openapi-starter-webmvc-ui -->
         <dependency>
             <groupId>org.springdoc</groupId>
-            <artifactId>springdoc-openapi-ui</artifactId>
-            <version>${springdoc.version}</version>
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+            <version>2.6.0</version>
         </dependency>
 
-        <!-- At the moment API commons requires us to import spring security, should refactor that
-         updated version have more vulnerabilities hence added 5.8.8
-          and the latest version over 6 used java 17 -->
+        <!-- Use commons so we always return errors in json format -->
         <dependency>
-            <groupId>org.springframework.security</groupId>
-            <artifactId>spring-security-core</artifactId>
-            <version>5.8.8</version>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.security</groupId>
-            <artifactId>spring-security-crypto</artifactId>
-            <version>5.8.8</version>
+            <groupId>eu.europeana.api</groupId>
+            <artifactId>commons-sb3-error</artifactId>
+            <version>${api-commons-sb3.version}</version>
         </dependency>
 
+        <!-- https://mvnrepository.com/artifact/jakarta.xml.bind/jakarta.xml.bind-api -->
         <dependency>
-            <groupId>javax.xml.bind</groupId>
-            <artifactId>jaxb-api</artifactId>
-            <version>2.2.11</version>
+            <groupId>jakarta.xml.bind</groupId>
+            <artifactId>jakarta.xml.bind-api</artifactId>
+            <version>4.0.2</version>
         </dependency>
          <!-- Last-Modified dates -->
         <dependency>
@@ -149,16 +128,24 @@
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/org.mockito/mockito-core -->
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
-            <version>3.3.0</version>
+            <version>5.12.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>com.github.tomakehurst</groupId>
-            <artifactId>wiremock-standalone</artifactId>
-            <version>2.27.2</version>
+            <artifactId>wiremock-jre8</artifactId>
+            <version>2.35.1</version>
+            <scope>test</scope>
+        </dependency>
+        <!-- For testing error response contents (not possible with Mockito)-->
+        <dependency>
+            <groupId>io.rest-assured</groupId>
+            <artifactId>rest-assured</artifactId>
+            <version>5.4.0</version>
             <scope>test</scope>
         </dependency>
 
@@ -174,7 +161,7 @@
                      To skip (e.g. during debugging) use 'mvn clean package')-->
                 <groupId>org.owasp</groupId>
                 <artifactId>dependency-check-maven</artifactId>
-                <version>9.2.0</version>
+                <version>10.0.3</version>
                 <configuration>
                     <nvdApiKeyEnvironmentVariable>NVD_APIKEY</nvdApiKeyEnvironmentVariable>
                     <!-- see EA-3505 why we host the known exploited vulnerabilties file ourselves -->

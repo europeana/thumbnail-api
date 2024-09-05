@@ -1,18 +1,19 @@
 package eu.europeana.thumbnail.config;
 
+import com.amazonaws.ClientConfiguration;
 import eu.europeana.features.S3ObjectStorageClient;
 import eu.europeana.thumbnail.exception.ConfigurationException;
 import eu.europeana.thumbnail.service.MediaStorageService;
 import eu.europeana.thumbnail.service.impl.IiifImageServerImpl;
 import eu.europeana.thumbnail.service.impl.MediaStorageServiceImpl;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
-import org.springframework.util.StringUtils;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -134,7 +135,9 @@ public class StorageRoutes {
         String endpoint = environment.getProperty(storageName + PROPERTY_SEPARATOR + PROP_S3_ENDPOINT);
         if (StringUtils.isEmpty(endpoint)) {
             LOG.debug("Creating Amazon storage client {}...", storageName);
-            return new MediaStorageServiceImpl(storageName, new S3ObjectStorageClient(key, secret, region, bucket));
+            // 14 aug 2024 we disabled the validateAfterInactivity to check if it's still required
+            //ClientConfiguration config = new ClientConfiguration().withValidateAfterInactivityMillis(2000);
+            return new MediaStorageServiceImpl(storageName, new S3ObjectStorageClient(key, secret, region, bucket)); //, config));
         }
         LOG.debug("Creating IBM storage client {}...", storageName);
         return new MediaStorageServiceImpl(storageName, new S3ObjectStorageClient(key, secret, region, bucket, endpoint));

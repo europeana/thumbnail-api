@@ -1,11 +1,13 @@
 package eu.europeana.thumbnail.web;
 
-import eu.europeana.domain.ObjectMetadata;
+import com.amazonaws.services.s3.model.ObjectMetadata;
 import eu.europeana.thumbnail.model.ImageSize;
-import eu.europeana.thumbnail.model.MediaFile;
+import eu.europeana.thumbnail.model.MediaStream;
 import eu.europeana.thumbnail.service.MediaStorageService;
 import eu.europeana.thumbnail.service.StoragesService;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -32,33 +34,59 @@ public class TestData {
 
     public static final String SIZE_LARGE         = "-" + ImageSize.LARGE.name();
     public static final String SIZE_MEDIUM        = "-" + ImageSize.MEDIUM.name();
-    public static final String LARGE_FILE         = "This is some dummy text data instead of an actual image file";
-    public static final byte[] LARGE_CONTENT      = LARGE_FILE.getBytes();
-    public static final String MEDIUM_FILE        = "test data";
-    public static final byte[] MEDIUM_CONTENT     = MEDIUM_FILE.getBytes();
-    public static final String URI_HTTP               = "http://test.europeana.eu/thumbnail.jpg";
-    public static final String URI_URN                = "urn:soundcloud:43668849";
-    public static final String URI_FTP                = "ftp://test.europeana.eu/thumbnail.jpg";
+    public static final String LARGE_CONTENT = "This is some dummy text data instead of an actual image file\n" +
+            "And here is another line just to make the content a bit larger";
+    public static final InputStream LARGE_STREAM = new ByteArrayInputStream(LARGE_CONTENT.getBytes());
+    public static final String MEDIUM_CONTENT        = "medium-sized test data";
+    public static final InputStream MEDIUM_STREAM = new ByteArrayInputStream(MEDIUM_CONTENT.getBytes());
+    public static final String URI_HTTP           = "http://test.europeana.eu/thumbnail.jpg";
+    public static final String URI_URN            = "urn:soundcloud:43668849";
+    public static final String URI_FTP            = "ftp://test.europeana.eu/thumbnail.jpg";
+
+    public static final boolean initialized = false;
 
     public static void defaultSetup(StoragesService storagesService, MediaStorageService mediaStorage) {
-        ObjectMetadata metaData = new ObjectMetadata();
-        metaData.setLastModified(TestData.LAST_MODIFIED_DATE);
-        metaData.setETag(TestData.ETAG);
+        // HACK: this method is called often, but here we make sure we only run it once
+        if (!initialized) {
+            ObjectMetadataMock metaDataLarge = new ObjectMetadataMock();
+            metaDataLarge.setContentLength(TestData.LARGE_CONTENT.getBytes().length);
+            metaDataLarge.setLastModified(LAST_MODIFIED_DATE);
+            metaDataLarge.setETag(TestData.ETAG);
 
-        // for v2 we send id and originalUrl
-        given(mediaStorage.retrieveAsMediaFile(TestData.URI_HASH + TestData.SIZE_LARGE, TestData.URI)).willReturn(
-                new MediaFile(TestData.URI_HASH + TestData.SIZE_LARGE, TestData.URI, TestData.LARGE_CONTENT, metaData));
-        given(mediaStorage.retrieveAsMediaFile(TestData.URI_HASH + TestData.SIZE_MEDIUM, TestData.URI)).willReturn(
-                new MediaFile(TestData.URI_HASH + TestData.SIZE_MEDIUM, TestData.URI, TestData.MEDIUM_CONTENT, metaData));
+            ObjectMetadataMock metaDataMedium = new ObjectMetadataMock();
+            metaDataMedium.setContentLength(TestData.MEDIUM_CONTENT.getBytes().length);
+            metaDataMedium.setLastModified(LAST_MODIFIED_DATE);
+            metaDataMedium.setETag(TestData.ETAG);
 
-        // for v3 we send only id since originalUrl is not known
-        given(mediaStorage.retrieveAsMediaFile(TestData.URI_HASH + TestData.SIZE_LARGE, null)).willReturn(
-                new MediaFile(TestData.URI_HASH + TestData.SIZE_LARGE, null, TestData.LARGE_CONTENT, metaData));
-        given(mediaStorage.retrieveAsMediaFile(TestData.URI_HASH + TestData.SIZE_MEDIUM, null)).willReturn(
-                new MediaFile(TestData.URI_HASH + TestData.SIZE_MEDIUM, null, TestData.MEDIUM_CONTENT, metaData));
+            // for v2 we send id and originalUrl
+            given(mediaStorage.retrieve(TestData.URI_HASH + TestData.SIZE_LARGE, TestData.URI)).willReturn(
+                    new MediaStream(TestData.URI_HASH + TestData.SIZE_LARGE, TestData.URI, TestData.LARGE_STREAM, metaDataLarge));
+            given(mediaStorage.retrieve(TestData.URI_HASH + TestData.SIZE_MEDIUM, TestData.URI)).willReturn(
+                    new MediaStream(TestData.URI_HASH + TestData.SIZE_MEDIUM, TestData.URI, TestData.MEDIUM_STREAM, metaDataMedium));
 
-        List<MediaStorageService> storages = new ArrayList<>();
-        storages.add(mediaStorage);
-        given(storagesService.getStorages(anyString())).willReturn(storages);
+            // for v3 we send only id since originalUrl is not known
+            given(mediaStorage.retrieve(TestData.URI_HASH + TestData.SIZE_LARGE, null)).willReturn(
+                    new MediaStream(TestData.URI_HASH + TestData.SIZE_LARGE, null, TestData.LARGE_STREAM, metaDataLarge));
+            given(mediaStorage.retrieve(TestData.URI_HASH + TestData.SIZE_MEDIUM, null)).willReturn(
+                    new MediaStream(TestData.URI_HASH + TestData.SIZE_MEDIUM, null, TestData.MEDIUM_STREAM, metaDataMedium));
+
+            List<MediaStorageService> storages = new ArrayList<>();
+            storages.add(mediaStorage);
+            given(storagesService.getStorages(anyString())).willReturn(storages);
+        }
+    }
+
+    // Amazon SDK doesn't allow us to set an ETag, so we use a wrapping object
+    private static final class ObjectMetadataMock extends ObjectMetadata {
+        private String eTag;
+
+        public void setETag(String eTag) {
+            this.eTag = eTag;
+        }
+
+        public String getETag() {
+            return this.eTag;
+        }
+
     }
 }

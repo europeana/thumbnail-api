@@ -23,6 +23,7 @@ public final class HashUtils {
      * @param resourceUrl url for which hash needs to generated
      * @return MD5 hash value
      */
+    @SuppressWarnings("java:S109")
     public static String getMD5(String resourceUrl){
         try {
             MessageDigest messageDigest = MessageDigest.getInstance("MD5");
