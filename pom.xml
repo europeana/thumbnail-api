@@ -9,7 +9,7 @@
     </parent>
 
     <artifactId>thumbnail-api</artifactId>
-    <version>0.8.0</version>
+    <version>0.8.1-SNAPSHOT</version>
     <packaging>war</packaging>
 
     <name>Thumbnail API</name>
