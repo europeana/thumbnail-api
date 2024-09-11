@@ -52,7 +52,7 @@ public class ThumbnailControllerV3 extends AbstractController {
      * @return 400 bad Request
      */
     @SuppressWarnings("java:S6856") // no point in binding {id} to a variable
-    @GetMapping(value = {"/v3/{id}", "/v3/{id}/"})
+    @GetMapping(value = {"/v3/{id}", "/v3/{id}/", "/v3//{id}", "/v3//{id}/"})
     public ResponseEntity<InputStreamResource> thumbnailByUrlV3InvalidUrl() throws ThumbnailInvalidUrlException {
         throw new ThumbnailInvalidUrlException(URL_ERROR_MESSAGE);
     }
