@@ -43,6 +43,7 @@ public class StorageRoutes {
     private static final String PROP_S3_BUCKET     = "s3.bucket";
     private static final String PROP_S3_ENDPOINT   = "s3.endpoint";
 
+    private static final String VALIDATE_CONNECTION_AFTER = "s3.validate.connection";
     private static final String PROPERTY_SEPARATOR = ".";
     private static final String VALUE_SEPARATOR    = ",";
 
@@ -133,11 +134,15 @@ public class StorageRoutes {
         String region = environment.getRequiredProperty(storageName + PROPERTY_SEPARATOR + PROP_S3_REGION);
         String bucket = environment.getRequiredProperty(storageName + PROPERTY_SEPARATOR + PROP_S3_BUCKET);
         String endpoint = environment.getProperty(storageName + PROPERTY_SEPARATOR + PROP_S3_ENDPOINT);
+        String validateAfter = environment.getProperty(VALIDATE_CONNECTION_AFTER);
+        ClientConfiguration config = new ClientConfiguration();
+        if (validateAfter != null) {
+            LOG.info("Configuration option validate connection after = {}", validateAfter);
+            config.withValidateAfterInactivityMillis(Integer.valueOf(validateAfter));
+        }
         if (StringUtils.isEmpty(endpoint)) {
             LOG.debug("Creating Amazon storage client {}...", storageName);
-            // 14 aug 2024 we disabled the validateAfterInactivity to check if it's still required
-            //ClientConfiguration config = new ClientConfiguration().withValidateAfterInactivityMillis(2000);
-            return new MediaStorageServiceImpl(storageName, new S3ObjectStorageClient(key, secret, region, bucket)); //, config));
+            return new MediaStorageServiceImpl(storageName, new S3ObjectStorageClient(key, secret, region, bucket, config));
         }
         LOG.debug("Creating IBM storage client {}...", storageName);
         return new MediaStorageServiceImpl(storageName, new S3ObjectStorageClient(key, secret, region, bucket, endpoint));
