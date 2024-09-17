@@ -43,7 +43,8 @@ public class StorageRoutes {
     private static final String PROP_S3_BUCKET     = "s3.bucket";
     private static final String PROP_S3_ENDPOINT   = "s3.endpoint";
 
-    private static final String VALIDATE_CONNECTION_AFTER = "s3.validate.connection";
+    private static final String PROP_VALIDATE_CONNECTION_AFTER = "s3.validate.connection";
+    private static final String PROP_MAX_CONNECTIONS = "s3.max.connections";
     private static final String PROPERTY_SEPARATOR = ".";
     private static final String VALUE_SEPARATOR    = ",";
 
@@ -124,6 +125,7 @@ public class StorageRoutes {
     }
 
     private MediaStorageService createNewService(String storageName) {
+        LOG.info("Setting up new client {}...", storageName);
         if (storageName.equalsIgnoreCase(IiifImageServerImpl.STORAGE_NAME)) {
             LOG.debug("Creating IIIF Image Server client {}...", storageName);
             return new IiifImageServerImpl();
@@ -134,11 +136,16 @@ public class StorageRoutes {
         String region = environment.getRequiredProperty(storageName + PROPERTY_SEPARATOR + PROP_S3_REGION);
         String bucket = environment.getRequiredProperty(storageName + PROPERTY_SEPARATOR + PROP_S3_BUCKET);
         String endpoint = environment.getProperty(storageName + PROPERTY_SEPARATOR + PROP_S3_ENDPOINT);
-        String validateAfter = environment.getProperty(VALIDATE_CONNECTION_AFTER);
+        Integer maxConnections = environment.getProperty(storageName + PROPERTY_SEPARATOR + PROP_MAX_CONNECTIONS, Integer.class, 50);
+        Integer validateAfter = environment.getProperty(storageName + PROPERTY_SEPARATOR + PROP_VALIDATE_CONNECTION_AFTER, Integer.class, -1);
         ClientConfiguration config = new ClientConfiguration();
-        if (validateAfter != null) {
-            LOG.info("Configuration option validate connection after = {}", validateAfter);
-            config.withValidateAfterInactivityMillis(Integer.valueOf(validateAfter));
+        if (maxConnections > 1) {
+            config.setMaxConnections(maxConnections);
+            LOG.info("Configured maximum connections = {}", maxConnections);
+        }
+        if (validateAfter >= 100) {
+            config.withValidateAfterInactivityMillis(validateAfter);
+            LOG.info("Configured validating connection after = {} ms", validateAfter);
         }
         if (StringUtils.isEmpty(endpoint)) {
             LOG.debug("Creating Amazon storage client {}...", storageName);
