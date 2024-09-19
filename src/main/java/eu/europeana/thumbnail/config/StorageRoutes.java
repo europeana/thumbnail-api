@@ -147,6 +147,7 @@ public class StorageRoutes {
         // we set a connection ttl as a precautionary measure. If there is a connection leak, then connections will be
         // freed eventually (instead of being marked as in use permanently)
         config.setConnectionTTL(S3_CONNECTION_TTL);
+        LOG.info("S3 connection TTL = {}", config.getConnectionTTL());
         if (maxConnections > 1) {
             config.setMaxConnections(maxConnections);
             LOG.info("Configured maximum connections = {}", config.getMaxConnections());
