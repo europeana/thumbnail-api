@@ -14,6 +14,9 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
 
 import jakarta.annotation.PostConstruct;
+
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -47,6 +50,8 @@ public class StorageRoutes {
     private static final String PROP_MAX_CONNECTIONS = "s3.max.connections";
     private static final String PROPERTY_SEPARATOR = ".";
     private static final String VALUE_SEPARATOR    = ",";
+
+    private static final long S3_CONNECTION_TTL = Duration.of(10, ChronoUnit.MINUTES).toMillis();
 
     private String defaultRoute;
 
@@ -139,13 +144,16 @@ public class StorageRoutes {
         Integer maxConnections = environment.getProperty(storageName + PROPERTY_SEPARATOR + PROP_MAX_CONNECTIONS, Integer.class, 50);
         Integer validateAfter = environment.getProperty(storageName + PROPERTY_SEPARATOR + PROP_VALIDATE_CONNECTION_AFTER, Integer.class, -1);
         ClientConfiguration config = new ClientConfiguration();
+        // we set a connection ttl as a precautionary measure. If there is a connection leak, then connections will be
+        // freed eventually (instead of being marked as in use permanently)
+        config.setConnectionTTL(S3_CONNECTION_TTL);
         if (maxConnections > 1) {
             config.setMaxConnections(maxConnections);
-            LOG.info("Configured maximum connections = {}", maxConnections);
+            LOG.info("Configured maximum connections = {}", config.getMaxConnections());
         }
         if (validateAfter >= 100) {
             config.withValidateAfterInactivityMillis(validateAfter);
-            LOG.info("Configured validating connection after = {} ms", validateAfter);
+            LOG.info("Configured validating connection after = {} ms", config.getValidateAfterInactivityMillis());
         }
         if (StringUtils.isEmpty(endpoint)) {
             LOG.debug("Creating Amazon storage client {}...", storageName);
