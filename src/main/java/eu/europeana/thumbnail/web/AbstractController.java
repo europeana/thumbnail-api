@@ -72,7 +72,7 @@ public abstract class AbstractController {
                 LOG.debug("File {} found in storage {}", id, mss.getName());
                 // Temporarily added so we can get insight in how many images requested in production are not in IBM S3
                 if ("uim-prod".equals(mss.getName())) {
-                    LOG.info("File with url {} and id {} found in old Amazon S3 storage", originalUrl, id);
+                    LOG.debug("File with url {} and id {} found in old Amazon S3 storage", originalUrl, id);
                 }
                 break;
             }
