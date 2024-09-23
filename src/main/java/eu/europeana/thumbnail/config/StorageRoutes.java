@@ -51,8 +51,6 @@ public class StorageRoutes {
     private static final String PROPERTY_SEPARATOR = ".";
     private static final String VALUE_SEPARATOR    = ",";
 
-    private static final long S3_CONNECTION_TTL = Duration.of(10, ChronoUnit.MINUTES).toMillis();
-
     private String defaultRoute;
 
     // The list of MediaStorageServices has to be an ordered list, so we can guarantee proper order of retrieval!
@@ -144,10 +142,6 @@ public class StorageRoutes {
         Integer maxConnections = environment.getProperty(storageName + PROPERTY_SEPARATOR + PROP_MAX_CONNECTIONS, Integer.class, 50);
         Integer validateAfter = environment.getProperty(storageName + PROPERTY_SEPARATOR + PROP_VALIDATE_CONNECTION_AFTER, Integer.class, -1);
         ClientConfiguration config = new ClientConfiguration();
-        // we set a connection ttl as a precautionary measure. If there is a connection leak, then connections will be
-        // freed eventually (instead of being marked as in use permanently)
-        config.setConnectionTTL(S3_CONNECTION_TTL);
-        LOG.info("S3 connection TTL = {}", config.getConnectionTTL());
         if (maxConnections > 1) {
             config.setMaxConnections(maxConnections);
             LOG.info("Configured maximum connections = {}", config.getMaxConnections());
