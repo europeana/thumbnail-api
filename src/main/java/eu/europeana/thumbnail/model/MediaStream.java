@@ -2,6 +2,7 @@ package eu.europeana.thumbnail.model;
 
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.S3Object;
+import org.apache.logging.log4j.LogManager;
 import org.joda.time.DateTime;
 
 import java.io.IOException;
@@ -125,16 +126,17 @@ public class MediaStream {
      * Failure to do so will result in connection leaks and eventually lack of connections in S3's connection pool.
      */
     public void close() {
-        try {
-            if (inputStream != null) {
-                inputStream.close();
-            } else {
-                s3object.close();
-            }
-            this.closed = true;
-        } catch (IOException e) {
-            throw new RuntimeException("Error closing s3Object " + id, e);
-        }
+        LogManager.getLogger(MediaStream.class).warn("For testing purposes we are not closing the connection!");
+//        try {
+//            if (inputStream != null) {
+//                inputStream.close();
+//            } else {
+//                s3object.close();
+//            }
+//            this.closed = true;
+//        } catch (IOException e) {
+//            throw new RuntimeException("Error closing s3Object " + id, e);
+//        }
     }
 
     public boolean isClosed() {
