@@ -40,7 +40,7 @@ public class MediaStorageServiceImpl implements MediaStorageService {
         if (obj == null) {
             return null;
         } else {
-            return new MediaStream(id, originalUrl, obj.getObjectContent().getDelegateStream(), obj.getObjectMetadata());
+            return new MediaStream(id, originalUrl, obj);
         }
     }
 

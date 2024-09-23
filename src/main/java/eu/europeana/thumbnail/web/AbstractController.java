@@ -113,16 +113,18 @@ public abstract class AbstractController {
         // The check below automatically sets an ETag and last-Modified in our response header and returns a 304
         // but only when clients include the If_Modified_Since header in their request
         if (ControllerUtils.checkForNotModified(mediaFile, webRequest)) {
+            mediaFile.close();
             return null;
         }
         // If “If-Match” is supplied, we check if the value is the same as the current “ETag” of the resource or if
         // it is “*”, if it's false we respond with HTTP 412
         if (ControllerUtils.checkForPrecondition(mediaFile, webRequest)) {
+            mediaFile.close();
             response.setStatus(HttpStatus.PRECONDITION_FAILED.value());
             return null;
         }
 
-        InputStreamResource result = new InputStreamResource(mediaFile.getContent());
+        InputStreamResource result = new InputStreamResource(mediaFile.getInputStream());
         // Normally we let Spring determine the Content-type based on the Accept headers in the request, but here we set
         // the type dynamically to either jpeg or png depending on the type of thumbnail that we retrieved.
         MediaType mediaType = getMediaType(mediaFile.getOriginalUrl());
