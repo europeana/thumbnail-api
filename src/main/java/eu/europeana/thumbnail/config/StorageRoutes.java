@@ -52,6 +52,7 @@ public class StorageRoutes {
     private static final String VALUE_SEPARATOR    = ",";
 
     private static final long S3_CONNECTION_TTL = Duration.of(10, ChronoUnit.MINUTES).toMillis();
+    private static final int S3_SOCKET_TIMEOUT = (int) Duration.of(1, ChronoUnit.MINUTES).toMillis();
 
     private String defaultRoute;
 
@@ -144,10 +145,13 @@ public class StorageRoutes {
         Integer maxConnections = environment.getProperty(storageName + PROPERTY_SEPARATOR + PROP_MAX_CONNECTIONS, Integer.class, 50);
         Integer validateAfter = environment.getProperty(storageName + PROPERTY_SEPARATOR + PROP_VALIDATE_CONNECTION_AFTER, Integer.class, -1);
         ClientConfiguration config = new ClientConfiguration();
-        // we set a connection ttl as a precautionary measure. If there is a connection leak, then connections will be
-        // freed eventually (instead of being marked as in use permanently)
+        // We wanted to set a connection ttl as a precautionary measure in case there are connection leaks. However while
+        // testing this (by disabling the call to close when retuning a 304 response) we found that setting a TTL doesn't
+        // make any difference.
         config.setConnectionTTL(S3_CONNECTION_TTL);
         LOG.info("S3 connection TTL = {}", config.getConnectionTTL());
+        config.setSocketTimeout(S3_SOCKET_TIMEOUT);
+        LOG.info("S3 socket timeout = {}", config.getSocketTimeout());
         if (maxConnections > 1) {
             config.setMaxConnections(maxConnections);
             LOG.info("Configured maximum connections = {}", config.getMaxConnections());
