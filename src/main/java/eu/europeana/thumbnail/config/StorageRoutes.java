@@ -161,7 +161,7 @@ public class StorageRoutes {
             return new MediaStorageServiceImpl(storageName, new S3ObjectStorageClient(key, secret, region, bucket, config));
         }
         LOG.debug("Creating IBM storage client {}...", storageName);
-        return new MediaStorageServiceImpl(storageName, new S3ObjectStorageClient(key, secret, region, bucket, endpoint));
+        return new MediaStorageServiceImpl(storageName, new S3ObjectStorageClient(key, secret, region, bucket, endpoint, config));
     }
 
     /**
