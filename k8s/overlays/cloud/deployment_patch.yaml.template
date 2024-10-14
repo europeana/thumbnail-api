@@ -30,7 +30,7 @@ spec:
               cpu: "${CPU_LIMIT}m"
           volumeMounts:
           - name: my-pvc-volume
-            mountPath: /pvc
+            mountPath: /mnt/pvdata
       volumes:
       - name: my-pvc-volume
         persistentVolumeClaim:

@@ -1,11 +1,12 @@
+# Dynamically create a pvc during deployment (if it doesn't exist already)
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: pvc-thumbnail-test
+  name: pvc-test
 spec:
   storageClassName: ibmc-vpc-block-general-purpose   # run `kubectl get sc` to check available types
   accessModes:
-    - ReadWriteOnce
+    - ReadWriteMany
   resources:
     requests:
       storage: 10Gi
