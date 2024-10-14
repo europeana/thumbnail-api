@@ -1,12 +1,13 @@
 package eu.europeana.thumbnail.web;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -15,6 +16,7 @@ import java.util.stream.Stream;
 @RequestMapping("/pv")
 public class PVController {
 
+    private static final Logger LOG = LogManager.getLogger(PVController.class);
     private static final String PV_FOLDER = "/mnt/pvdata";
 
 
@@ -34,6 +36,7 @@ public class PVController {
                         @RequestBody String contents) throws IOException {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(PV_FOLDER + "/" + fileName))) {
             writer.write(contents);
+            LOG.info("Writing to file {}, contents = {}", fileName, contents);
             return "Write successful";
         }
     }
