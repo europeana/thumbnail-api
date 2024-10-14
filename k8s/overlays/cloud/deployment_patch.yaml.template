@@ -28,7 +28,7 @@ spec:
             limits:
               memory: "${MEMORY_LIMIT}M"
               cpu: "${CPU_LIMIT}m"
-          volumes:
+          volumeMounts:
           - name: my-pvc-volume
             mountPath: /pvc
       volumes:
