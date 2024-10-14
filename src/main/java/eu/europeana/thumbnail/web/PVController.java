@@ -6,6 +6,7 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -40,7 +41,7 @@ public class PVController {
     @RequestMapping("read/{fileName}")
     public String read(@PathVariable(name="fileName") String fileName) throws IOException {
         try (BufferedReader reader = new BufferedReader(new FileReader(PV_FOLDER + "/" + fileName))) {
-            return read(fileName);
+            return reader.lines().map(Objects::toString).collect(Collectors.joining("\n"));
         }
     }
 
