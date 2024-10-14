@@ -2,7 +2,7 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: pvc-test
+  name: pvc-poc
 spec:
   storageClassName: ibmc-vpc-block-general-purpose   # run `kubectl get sc` to check available types
   accessModes:
