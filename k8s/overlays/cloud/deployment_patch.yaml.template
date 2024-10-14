@@ -28,3 +28,10 @@ spec:
             limits:
               memory: "${MEMORY_LIMIT}M"
               cpu: "${CPU_LIMIT}m"
+          volumes:
+          - name: my-pvc-volume
+            mountPath: /pvc
+      volumes:
+      - name: my-pvc-volume
+        persistentVolumeClaim:
+          claimName: pvc-test
