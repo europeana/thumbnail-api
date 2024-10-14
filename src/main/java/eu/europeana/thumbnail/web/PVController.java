@@ -29,7 +29,8 @@ public class PVController {
     }
 
     @PostMapping("write/{fileName}")
-    public String write(@RequestParam String fileName, @RequestBody String contents) throws IOException {
+    public String write(@PathVariable(name="fileName") String fileName,
+                        @RequestBody String contents) throws IOException {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(PV_FOLDER + "/" + fileName))) {
             writer.write(contents);
             return "Write successful";
@@ -37,14 +38,14 @@ public class PVController {
     }
 
     @RequestMapping("read/{fileName}")
-    public String read(@RequestParam String fileName) throws IOException {
+    public String read(@PathVariable(name="fileName") String fileName) throws IOException {
         try (BufferedReader reader = new BufferedReader(new FileReader(PV_FOLDER + "/" + fileName))) {
             return read(fileName);
         }
     }
 
     @DeleteMapping("delete/{fileName}")
-    public String delete(@RequestParam String fileName) {
+    public String delete(@PathVariable(name="fileName") String fileName) {
         File file = new File(PV_FOLDER + "/" + fileName);
         file.delete();
         return "Delete successful";
