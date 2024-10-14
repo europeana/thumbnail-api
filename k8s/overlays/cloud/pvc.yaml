@@ -3,9 +3,9 @@ kind: PersistentVolumeClaim
 metadata:
   name: pvc-thumbnail-test
 spec:
-  storageClassName: ibmc-vpc-block-general-purpose
+  storageClassName: ibmc-vpc-block-5iops-tier # run `kubectl get sc` to check available types
   accessModes:
-    - ReadWriteMany
+    - ReadWriteOnce
   resources:
     requests:
       storage: 10Gi
