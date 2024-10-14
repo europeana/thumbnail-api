@@ -3,7 +3,7 @@ kind: PersistentVolumeClaim
 metadata:
   name: pvc-thumbnail-test
 spec:
-  storageClassName: ibmc-vpc-block-3iops-tier
+  storageClassName: ibmc-vpc-block-general-purpose
   accessModes:
     - ReadWriteMany
   resources:
