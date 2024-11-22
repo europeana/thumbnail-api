@@ -1,9 +1,10 @@
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
   name: thumbnail-api-deployment
 spec:
   replicas: ${MIN_REPLICAS}
+  minReadySeconds: 30   # extra waiting time before pod is marked as ready after startup
   template:
     metadata:
       annotations:
@@ -29,9 +30,15 @@ spec:
               memory: "${MEMORY_LIMIT}M"
               cpu: "${CPU_LIMIT}m"
           volumeMounts:
-          - name: my-pvc-volume
+          - name: poc-pvc-claim
             mountPath: /mnt/pvdata
-      volumes:
-      - name: my-pvc-volume
-        persistentVolumeClaim:
-          claimName: pvc-poc-test
+  volumeClaimTemplates:
+  - metadata:
+      name: poc-pvc-claim
+    spec:
+      storageClassName: ibmc-vpc-block-general-purpose
+      accessModes:
+        - ReadWriteOnce
+      resources:
+        requests:
+          storage: 10Gi

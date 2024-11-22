@@ -6,7 +6,6 @@ resources:
   - service.yaml
   - ingress.yaml
   - hpa.yaml
-  - pvc.yaml
 
 patches:
   - path: deployment_patch.yaml
