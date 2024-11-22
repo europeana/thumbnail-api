@@ -9,6 +9,9 @@ resources:
 
 patches:
   - path: deployment_patch.yaml
+    target:
+      kind: StatefulSet
+      name: thumbnail-api
 
 labels:
   - includeSelectors: true
