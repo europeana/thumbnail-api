@@ -21,7 +21,7 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: thumbnail-api-service
+                name: thumbnail-api-headless-service
                 port:
                   number: 80
     - host: ${K8S_HOSTNAME2}
