@@ -1,13 +1,13 @@
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: thumbnail-api-deployment
+  name: pv-poc-deployment
 spec:
   # selector.matchLabels is provided via Kustomize
   template:
     spec:
       containers:
-        - name: thumbnail-api
+        - name: pv-poc
           image: europeana/thumbnail-api
           ports:
             - containerPort: 8080
@@ -31,4 +31,4 @@ spec:
       volumes:
         - name: secret
           secret:
-            secretName: thumbnail-api-secret
+            secretName: pv-poc-secret

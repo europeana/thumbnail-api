@@ -7,10 +7,10 @@ resources:
 labels:
   - includeSelectors: true
     pairs:
-      app: thumbnail-api
+      app: pv-poc
 
 # expects files to be in the same directory
 secretGenerator:
-  - name: thumbnail-api-secret
+  - name: pv-poc-secret
     files:
       - thumbnail.user.properties

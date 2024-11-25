@@ -10,9 +10,9 @@ patches:
   - path: deployment_patch.yaml
     target:
       kind: StatefulSet
-      name: thumbnail-api
+      name: pv-poc
 
 labels:
   - includeSelectors: true
     pairs:
-      app: thumbnail-api
+      app: pv-poc
