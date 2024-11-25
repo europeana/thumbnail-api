@@ -3,6 +3,7 @@ kind: StatefulSet
 metadata:
   name: pv-poc-statefulset
 spec:
+  serviceName: pv-poc-headless-service
   replicas: ${MIN_REPLICAS}
   minReadySeconds: 30   # extra waiting time before pod is marked as ready after startup
   template:
