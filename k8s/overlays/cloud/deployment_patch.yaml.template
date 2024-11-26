@@ -13,7 +13,7 @@ spec:
         fluentd/multiline: 'true'
     spec:
       containers:
-        - name: thumbnail-api
+        - name: pv-poc
           image: europeana/thumbnail-api
           imagePullPolicy: Always
           env:
