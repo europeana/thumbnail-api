@@ -32,7 +32,7 @@ spec:
               memory: "${MEMORY_LIMIT}M"
               cpu: "${CPU_LIMIT}m"
           volumeMounts:
-          - name: pv-poc
+          - name: pv-claim
             mountPath: /mnt/pvdata
   volumeClaimTemplates:
   - metadata:
