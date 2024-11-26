@@ -8,9 +8,6 @@ resources:
 
 patches:
 - path: deployment_patch.yaml
-#  target:
-#    kind: StatefulSet
-#    name: pv-poc
 
 labels:
   - includeSelectors: true

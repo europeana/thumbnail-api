@@ -14,6 +14,7 @@ spec:
     spec:
       containers:
         - name: thumbnail-api
+          image: europeana/thumbnail-api
           imagePullPolicy: Always
           env:
             - name: CATALINA_OPTS
@@ -35,7 +36,7 @@ spec:
             mountPath: /mnt/pvdata
   volumeClaimTemplates:
   - metadata:
-      name: pv-poc
+      name: pv-claim
     spec:
       storageClassName: ibmc-vpc-block-general-purpose
       accessModes:
