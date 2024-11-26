@@ -8,8 +8,12 @@ resources:
 
 patches:
 - path: deployment_patch.yaml
+  target:
+    kind: StatefulSet
+    name: pv-poc-statefulset
+
 
 labels:
-  - includeSelectors: true
-    pairs:
-      app: pv-poc
+- includeSelectors: true
+  pairs:
+    app: pv-poc
