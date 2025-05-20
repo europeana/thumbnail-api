@@ -27,6 +27,7 @@ import java.util.Optional;
  * @author Patrick Ehlert
  * Created on 2 sep 2020
  */
+@SuppressWarnings("javasecurity:S5145") // we only log for debug purposes, plus we validate the user input
 public abstract class AbstractController {
 
     private static final Logger LOG = LogManager.getLogger(AbstractController.class);

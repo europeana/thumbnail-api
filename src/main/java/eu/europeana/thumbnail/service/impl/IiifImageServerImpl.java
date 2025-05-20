@@ -46,9 +46,10 @@ public class IiifImageServerImpl implements MediaStorageService {
      *
      * @param id          optional, the id of the file
      * @param originalUrl the original url
-     * @return
+     * @return MediaStream if the file exists, otherwise null
      */
     @Override
+    @SuppressWarnings("javasecurity:S5145") // we only log for debug purposes, plus we validate the user input
     public MediaStream retrieve(String id, String originalUrl) {
         LOG.debug("Retrieving file from IIIF image server with id {}, url = {}", id, originalUrl);
         if (StringUtils.isEmpty(originalUrl)) {

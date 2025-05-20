@@ -60,6 +60,7 @@ public class ThumbnailControllerV2 extends AbstractController {
      * @return responseEntity
      */
     @GetMapping(value = {"/api/v2/thumbnail-by-url.json", "/thumbnail/v2/url.json"})
+    @SuppressWarnings("javasecurity:S5145") // we only log for debug purposes, plus we validate the user input
     public ResponseEntity<InputStreamResource> thumbnailByUrlV2(
             @RequestParam(value = "uri")
                 @Pattern(regexp = "^((https?|ftp)://|urn:).*$", message = INVALID_URL_MESSAGE) String url,
@@ -96,29 +97,30 @@ public class ThumbnailControllerV2 extends AbstractController {
         String defaultImageName;
         ObjectMetadata metadata = new ObjectMetadata();
         switch (StringUtils.upperCase(type)) {
-            case "IMAGE":
+            case "IMAGE" -> {
                 defaultImageName = "EU_thumbnails_image.png";
                 metadata.setContentLength(CONTENT_LENGTH_IMAGE_ICON);
-                break;
-            case "SOUND":
+            }
+            case "SOUND" -> {
                 defaultImageName = "EU_thumbnails_sound.png";
                 metadata.setContentLength(CONTENT_LENGTH_SOUND_ICON);
-                break;
-            case "VIDEO":
+            }
+            case "VIDEO" -> {
                 defaultImageName = "EU_thumbnails_video.png";
                 metadata.setContentLength(CONTENT_LENGTH_VIDEO_ICON);
-                break;
-            case "TEXT":
+            }
+            case "TEXT" -> {
                 defaultImageName = "EU_thumbnails_text.png";
                 metadata.setContentLength(CONTENT_LENGTH_TEXT_ICON);
-                break;
-            case "3D":
+            }
+            case "3D" -> {
                 defaultImageName = "EU_thumbnails_3d.png";
                 metadata.setContentLength(CONTENT_LENGTH_3D_ICON);
-                break;
-            default:
+            }
+            default -> {
                 defaultImageName = "EU_thumbnails_image.png";
                 metadata.setContentLength(CONTENT_LENGTH_IMAGE_ICON);
+            }
         }
         InputStream stream = this.getClass().getResourceAsStream("/images/" + defaultImageName);
         return new MediaStream(null, defaultImageName, stream, metadata);

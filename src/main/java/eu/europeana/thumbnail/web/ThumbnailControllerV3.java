@@ -79,6 +79,7 @@ public class ThumbnailControllerV3 extends AbstractController {
      * @return responseEntity
      */
     @GetMapping(value = {"/v3/{size}/{id}", "v3/{size}/{id}/"})
+    @SuppressWarnings("javasecurity:S5145") // we only log for debug purposes, plus we validate the user input
     public ResponseEntity<InputStreamResource> thumbnailByUrlV3(
             @PathVariable(value = "size", required = false)
             @Pattern(regexp = "^(200|400)$", message = SIZE_ERROR_MESSAGE) String size,

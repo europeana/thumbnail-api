@@ -14,8 +14,8 @@ public class MediaStorageServiceImpl implements MediaStorageService {
 
     private static final Logger LOG = LogManager.getLogger(MediaStorageServiceImpl.class);
 
-    private String name;
-    private S3ObjectStorageClient objectStorageClient;
+    private final String name;
+    private final S3ObjectStorageClient objectStorageClient;
 
     /**
      * Initialize a new MediaStorageService implementation
@@ -39,6 +39,7 @@ public class MediaStorageServiceImpl implements MediaStorageService {
      * @see MediaStorageService#retrieve(String, String)
      */
     @Override
+    @SuppressWarnings("javasecurity:S5145") // we only log for debug purposes, plus we validate the user input
     public MediaStream retrieve(String id, String originalUrl) {
         LOG.debug("Retrieving file with id {}, url = {}", id, originalUrl);
         S3Object obj = objectStorageClient.getObject(id);
