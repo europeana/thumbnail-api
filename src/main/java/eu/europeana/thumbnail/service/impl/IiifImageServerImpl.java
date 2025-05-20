@@ -73,6 +73,12 @@ public class IiifImageServerImpl implements MediaStorageService {
         return new MediaStream(id, imageUrl, content);
     }
 
+    /**
+     * Retrieve an image from the IIIF (eCloud) server.
+     * Only for Thumbnail v2
+     * @param originalUrl the "original url" (id) of the image to retrieve
+     * @return inputstream to the image if available, otherwise null
+     */
     public InputStream retrieve(
             @Pattern(regexp = "^(https?|ftp)://.*$", message = INVALID_URL_MESSAGE) String originalUrl) {
         try {

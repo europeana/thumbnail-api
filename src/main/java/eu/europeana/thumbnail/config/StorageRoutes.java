@@ -6,6 +6,7 @@ import eu.europeana.thumbnail.exception.ConfigurationException;
 import eu.europeana.thumbnail.service.MediaStorageService;
 import eu.europeana.thumbnail.service.impl.IiifImageServerImpl;
 import eu.europeana.thumbnail.service.impl.MediaStorageServiceImpl;
+import jakarta.annotation.PostConstruct;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -13,10 +14,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
 
-import jakarta.annotation.PostConstruct;
-
-import java.time.Duration;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;

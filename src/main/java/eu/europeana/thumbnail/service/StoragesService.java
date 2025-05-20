@@ -23,6 +23,10 @@ public class StoragesService {
 
     private StorageRoutes storageRoutes;
 
+    /**
+     * Initialize a new storgae service
+     * @param storageRoutes, the routes that this service will support
+     */
     public StoragesService(StorageRoutes storageRoutes) {
         this.storageRoutes = storageRoutes;
     }

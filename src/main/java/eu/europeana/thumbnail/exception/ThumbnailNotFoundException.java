@@ -7,6 +7,9 @@ import org.springframework.http.HttpStatus;
  * Error thrown when a requested MediaFile cannot be found.
  */
 public class ThumbnailNotFoundException extends EuropeanaApiException {
+    /**
+     * Initialize a new ThumbnailNotFoundException (404)
+     */
     public ThumbnailNotFoundException() {
         super("Media file not found");
     }

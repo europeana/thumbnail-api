@@ -184,14 +184,14 @@ public class ThumbnailControllerV3Test {
     @Test
     public void test_HeadEmptyPathVariables() throws Exception {
 
-        this.mockMvc.perform(get(V3_ENDPOINT, 400, ""))
+        this.mockMvc.perform(head(V3_ENDPOINT, 400, ""))
                 .andExpect(status().isBadRequest());
 
         // Weirdly the last 2 tests will return 400 in real life, but 404 in unit tests!?
-        this.mockMvc.perform(get(V3_ENDPOINT, "", TestData.URI_HASH))
+        this.mockMvc.perform(head(V3_ENDPOINT, "", TestData.URI_HASH))
                 .andExpect(status().is4xxClientError());
 
-        this.mockMvc.perform(get(V3_ENDPOINT, "", ""))
+        this.mockMvc.perform(head(V3_ENDPOINT, "", ""))
                 .andExpect(status().is4xxClientError());
     }
 }

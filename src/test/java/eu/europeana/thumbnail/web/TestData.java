@@ -43,11 +43,11 @@ public class TestData {
     public static final String URI_URN            = "urn:soundcloud:43668849";
     public static final String URI_FTP            = "ftp://test.europeana.eu/thumbnail.jpg";
 
-    public static final boolean initialized = false;
+    public static final boolean INITIALIZED = false;
 
     public static void defaultSetup(StoragesService storagesService, MediaStorageService mediaStorage) {
         // HACK: this method is called often, but here we make sure we only run it once
-        if (!initialized) {
+        if (!INITIALIZED) {
             ObjectMetadataMock metaDataLarge = new ObjectMetadataMock();
             metaDataLarge.setContentLength(TestData.LARGE_CONTENT.getBytes().length);
             metaDataLarge.setLastModified(LAST_MODIFIED_DATE);

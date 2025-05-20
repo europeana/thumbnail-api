@@ -17,6 +17,11 @@ public class MediaStorageServiceImpl implements MediaStorageService {
     private String name;
     private S3ObjectStorageClient objectStorageClient;
 
+    /**
+     * Initialize a new MediaStorageService implementation
+     * @param name the (informal) name of the storage
+     * @param objectStorageClient the S3 client to use
+     */
     public MediaStorageServiceImpl(String name, S3ObjectStorageClient objectStorageClient) {
         this.name = name;
         this.objectStorageClient = objectStorageClient;
