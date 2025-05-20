@@ -82,8 +82,9 @@ public class ThumbnailControllerV3 extends AbstractController {
     @SuppressWarnings("javasecurity:S5145") // we only log for debug purposes, plus we validate the user input
     public ResponseEntity<InputStreamResource> thumbnailByUrlV3(
             @PathVariable(value = "size", required = false)
-            @Pattern(regexp = "^(200|400)$", message = SIZE_ERROR_MESSAGE) String size,
-            @PathVariable(value = "id") String id,
+                @Pattern(regexp = "^(200|400)$", message = SIZE_ERROR_MESSAGE) String size,
+            @PathVariable(value = "id")
+                @Pattern(regexp = "^[a-fA-F0-9]{8,128}$", message = ID_ERROR_MESSAGE) String id,
             WebRequest webRequest, HttpServletRequest request, HttpServletResponse response) throws EuropeanaApiException {
         long startTime = 0;
         if (LOG.isDebugEnabled()) {
@@ -91,17 +92,15 @@ public class ThumbnailControllerV3 extends AbstractController {
             LOG.debug("Thumbnail id = {}, size = {}", id, size);
         }
 
-        String idWithoutExtension = id;
+        int extensionStart = id.lastIndexOf('.');
+        String idWithoutExtension;
         String extension = null;
-        int i = id.lastIndexOf('.');
-        // if there is no id present, return 400 Bad Request
-        if (i == 0) {
-            throw new ThumbnailInvalidUrlException(ID_ERROR_MESSAGE);
-        }
-        if (i > 0) {
-            idWithoutExtension = id.substring(0, i);
-            extension = id.substring(i);
+        if (extensionStart > 0) {
+            idWithoutExtension = id.substring(0, extensionStart);
+            extension = id.substring(extensionStart);
             LOG.debug("Thumbnail cleaned id = {}, extension = {}", idWithoutExtension, extension);
+        } else {
+            idWithoutExtension = id;
         }
 
         Optional<MediaStream> mediaFile = retrieveThumbnail(request, idWithoutExtension, extension, Integer.valueOf(size));

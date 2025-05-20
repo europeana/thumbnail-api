@@ -21,6 +21,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 /**
  * MockMVC test to check if CORS is configured as desired
  */
+@SuppressWarnings("java:S5786")
 @WebMvcTest({ThumbnailControllerV2.class})
 public class CorsConfigTest {
 

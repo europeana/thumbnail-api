@@ -15,6 +15,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @SpringBootTest(classes = {StorageRoutes.class, StoragesService.class})
 @TestPropertySource("classpath:testroutes.properties")
+@SuppressWarnings("java:S5786")
 public class StorageRoutesTest {
 
     @Autowired

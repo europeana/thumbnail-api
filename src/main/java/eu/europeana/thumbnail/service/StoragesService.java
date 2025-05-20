@@ -21,11 +21,11 @@ public class StoragesService {
 
     private static final Logger LOG = LogManager.getLogger(StoragesService.class);
 
-    private StorageRoutes storageRoutes;
+    private final StorageRoutes storageRoutes;
 
     /**
      * Initialize a new storgae service
-     * @param storageRoutes, the routes that this service will support
+     * @param storageRoutes the routes that this service will support
      */
     public StoragesService(StorageRoutes storageRoutes) {
         this.storageRoutes = storageRoutes;

@@ -30,6 +30,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @TestPropertySource("classpath:testroutes.properties")
 @WebMvcTest({ThumbnailControllerV3.class, StorageRoutes.class})
 @AutoConfigureMockMvc
+@SuppressWarnings("java:S5786")
 public class ThumbnailControllerV3Test {
 
     private static final String V3_ENDPOINT = "/thumbnail/v3/{size}/{url}";
@@ -98,10 +99,10 @@ public class ThumbnailControllerV3Test {
      */
     @Test
     public void test_404_NotFound() throws Exception {
-        this.mockMvc.perform(get(V3_ENDPOINT, 400, "hashNotFound"))
+        this.mockMvc.perform(get(V3_ENDPOINT, 400, "dfbf02e00c4bc7c737a4479a6bcc2662"))
                 .andExpect(status().isNotFound());
 
-        this.mockMvc.perform(head(V3_ENDPOINT, 400, "hashNotFound"))
+        this.mockMvc.perform(head(V3_ENDPOINT, 400, "74af0c22f50e4c4c1b1dead321649e6022a2ac2"))
                 .andExpect(status().isNotFound());
     }
 

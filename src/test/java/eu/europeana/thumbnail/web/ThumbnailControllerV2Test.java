@@ -31,6 +31,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @TestPropertySource("classpath:testroutes.properties")
+@SuppressWarnings("java:S5786")
 public class ThumbnailControllerV2Test {
 
     public static final String V2_ENDPOINT        = "/api/v2/thumbnail-by-url.json";

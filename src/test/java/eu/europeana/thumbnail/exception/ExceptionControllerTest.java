@@ -20,6 +20,7 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
  */
 @SpringBootTest(webEnvironment = RANDOM_PORT)
 @TestPropertySource("classpath:testroutes.properties")
+@SuppressWarnings("java:S5786")
 public class ExceptionControllerTest {
 
     @LocalServerPort

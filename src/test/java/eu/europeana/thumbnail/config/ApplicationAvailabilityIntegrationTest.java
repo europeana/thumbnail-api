@@ -25,6 +25,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @TestPropertySource("classpath:testroutes.properties")
+@SuppressWarnings("java:S5786")
 public class ApplicationAvailabilityIntegrationTest {
 
     @Autowired private MockMvc mockMvc;
