@@ -42,11 +42,16 @@ public class MediaStorageServiceImpl implements MediaStorageService {
     @SuppressWarnings("javasecurity:S5145") // we only log for debug purposes, plus we validate the user input
     public MediaStream retrieve(String id, String originalUrl) {
         LOG.debug("Retrieving file with id {}, url = {}", id, originalUrl);
-        S3Object obj = objectStorageClient.getObject(id);
-        if (obj == null) {
+        try {
+            S3Object obj = objectStorageClient.getObject(id);
+            if (obj == null) {
+                return null;
+            } else {
+                return new MediaStream(id, originalUrl, obj);
+            }
+        } catch (Exception e) {
+            LOG.error("Error retrieving file with {} from storage {} with cause {}", id, name, e.getCause());
             return null;
-        } else {
-            return new MediaStream(id, originalUrl, obj);
         }
     }
 
