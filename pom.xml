@@ -28,7 +28,7 @@
         <spring-boot.version>3.2.4</spring-boot.version>
         <springdoc-openapi.version>2.6.0</springdoc-openapi.version>
         <commonsIO.version>2.16.1</commonsIO.version>
-        <commonsLang3.version>3.16.0</commonsLang3.version>
+        <commonsLang3.version>3.18.0</commonsLang3.version>
         <jodatime.version>2.12.7</jodatime.version>
     </properties>
 
