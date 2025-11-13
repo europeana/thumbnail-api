@@ -90,6 +90,20 @@ public class MediaStream {
         return (metadata != null);
     }
 
+    public ObjectMetadata getMetadata() {
+        return metadata;
+    }
+
+    /**
+     * @return Content type set in metadata, null if not set.
+     */
+    public String getContentType() {
+        if (hasMetadata()) {
+            return metadata.getContentType();
+        }
+        return null;
+    }
+
     /**
      * @return Length of the content in number of bytes
      */

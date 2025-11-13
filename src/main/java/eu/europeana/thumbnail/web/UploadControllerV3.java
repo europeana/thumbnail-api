@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.Arrays;
 
 /**
  * Offers image upload functionality
@@ -25,7 +26,13 @@ public class UploadControllerV3 {
 
     private static final Logger LOG = LogManager.getLogger(UploadControllerV3.class);
 
-    protected static final String ID_ERROR_MESSAGE = "Invalid or empty idx";
+    private static final String ID_ERROR_MESSAGE = "Invalid or empty id";
+    private static final String EMPTY_FILE_ERROR_MESSAGE = "Received file is empty";
+    private static final String UNSUPPORTED_CONTENT_TYPE_ERROR_MESSAGE = "Unsupported content type";
+    private static final String ERROR_PROCESSING_ERROR_MESSAGE = "Error processing image";
+
+    private static final String[] SUPPORTED_IMAGE_TYPES = new String[]{"image/jpeg", "image/jpg", "image/png", "image/webp",
+        "image/gif", "image/tiff", "image/bmp"};
 
     private final LogoUploadService logoUploadService;
 
@@ -48,7 +55,6 @@ public class UploadControllerV3 {
      * the content, or 500 when there's a problem processing or storing the image.
      */
     // TODO Add token-based authorization
-    // TODO check if provided mime-type is acceptable format
     @PutMapping(value = {"/v3/{id}", "/v3/{id}/", "/v3//{id}", "/v3//{id}/"})
     public ResponseEntity<String> uploadImageV3(
             @PathVariable(value = "id") @Pattern(regexp = "^[a-fA-F0-9]{8,128}$", message = ID_ERROR_MESSAGE) String id,
@@ -57,13 +63,14 @@ public class UploadControllerV3 {
         LOG.trace("Received upload PUT request with id {}", id);
         // Validate
         if (file == null || file.isEmpty()) {
-            LOG.error("Received empty file, name {}, id {}", (file == null ? null : file.getOriginalFilename()), id);
-            return ResponseEntity.badRequest().build();
+            LOG.error(EMPTY_FILE_ERROR_MESSAGE + " id {}, name {}", id, (file == null ? null : file.getOriginalFilename()));
+            return ResponseEntity.badRequest().body("Received empty file");
         }
         String mimeType = file.getContentType();
-        if (mimeType == null || !mimeType.startsWith("image/")) {
-            LOG.error("Sent file is not an image, name {}, id {}", file.getOriginalFilename(), id);
-            return ResponseEntity.badRequest().build();
+        if (mimeType == null || Arrays.stream(SUPPORTED_IMAGE_TYPES).noneMatch(mimeType::equalsIgnoreCase)) {
+            LOG.error(UNSUPPORTED_CONTENT_TYPE_ERROR_MESSAGE + "id {}, name {}", id, file.getOriginalFilename());
+            return ResponseEntity.badRequest().body(UNSUPPORTED_CONTENT_TYPE_ERROR_MESSAGE +
+                    "\nSupported types are: " + Arrays.toString(SUPPORTED_IMAGE_TYPES));
         }
 
         try {
@@ -71,8 +78,8 @@ public class UploadControllerV3 {
             LOG.trace("Successfully uploaded image with id {} in {} ms", id, System.currentTimeMillis() - start);
             return ResponseEntity.noContent().build();
         } catch (IOException e) {
-            LOG.error("Error processing file, name {}, id {}", file.getOriginalFilename(), id, e);
-            return ResponseEntity.internalServerError().build();
+            LOG.error(ERROR_PROCESSING_ERROR_MESSAGE + "id {}, name {}", id, file.getOriginalFilename(), e);
+            return ResponseEntity.internalServerError().body(ERROR_PROCESSING_ERROR_MESSAGE + ":" + e.getMessage());
         }
 
     }

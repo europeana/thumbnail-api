@@ -118,40 +118,59 @@ public abstract class AbstractController {
             response.setStatus(HttpStatus.PRECONDITION_FAILED.value());
             return null;
         }
+        MediaType mediaType = this.getMediaType(mediaFile.getContentType(), mediaFile.getOriginalUrl());
 
-        InputStreamResource result = new InputStreamResource(mediaFile.getInputStream());
-        // Normally we let Spring determine the Content-type based on the Accept headers in the request, but here we set
-        // the type dynamically to either jpeg or png depending on the type of thumbnail that we retrieved.
-        MediaType mediaType = getMediaType(mediaFile.getOriginalUrl());
-
+        InputStreamResource imageStream = new InputStreamResource(mediaFile.getInputStream());
         if (mediaFile.hasMetadata()) {
             return ResponseEntity.ok()
                     .contentType(mediaType)
                     .contentLength(mediaFile.getContentLength())
-                    .body(result);
+                    .body(imageStream);
         }
         // avoid sending contentLength 0 if there is no metadata
         return ResponseEntity.ok()
                 .contentType(mediaType)
-                .body(result);
+                .body(imageStream);
     }
 
     /**
-     * Return the media type of the image that we are returning. Note that we base our return value solely on the
-     * extension in the original image url, so if that is not correct we could be returning the incorrect value
+     * Return the (likely) media type of the image that we are returning.
      *
+     * Ideally we return the content type set in the object's metadata, but for "regular" thumbnails this is regularly set
+     * to either "application/octet-stream" or "binary/octet-stream". Only for logo's that we store ourselves do we
+     * return a have a proper content type in the metadata (image/webp).
+     * This means that for regular thumbnails we'll try to guess the most likely type. Usually that's image/jpeg, but for
+     * some v2 requests we know it's probably png.
+     * This method is not 100% accurate but it works for our purposes, even if we get it wrong.
+     *
+     * @param contentTypeMetadata the content type as set in object's metadata (can be null)
      * @param url String
-     * @return String containing the MediaType of the thumbnail image (png for PDF and PNG files, otherwise JPEG)
+     * @return String containing the MediaType of the thumbnail image
      */
-    private MediaType getMediaType(String url) {
-        if (url == null) {
-            return MediaType.IMAGE_JPEG;
+    private MediaType getMediaType(String contentTypeMetadata, String url) {
+        MediaType result  = null;
+        LOG.debug("ContentType from metadata {}", contentTypeMetadata);
+
+        if (contentTypeMetadata != null && contentTypeMetadata.toLowerCase(Locale.getDefault()).startsWith("image/")) {
+            result = MediaType.parseMediaType(contentTypeMetadata);
         }
-        String urlLow = url.toLowerCase(Locale.GERMAN);
-        if (urlLow.endsWith(".png") || urlLow.endsWith(".pdf")) {
-            return MediaType.IMAGE_PNG;
+
+        if (result == null) {
+            // no proper content-type from metadata -> we have to guess
+            if (url == null) {
+                result = MediaType.IMAGE_JPEG; // v3 request -> regular thumbnails are generally stored as jpeg
+            } else {
+                // for v2 requests we can use the url to improve this; png and pdf files are usually stored as png
+                String urlLow = url.toLowerCase(Locale.GERMAN);
+                if (urlLow.endsWith(".png") || urlLow.endsWith(".pdf")) {
+                    return MediaType.IMAGE_PNG;
+                } else {
+                    result = MediaType.IMAGE_JPEG;
+                }
+            }
+            LOG.debug("ContentType from url: {}", result);
         }
-        return MediaType.IMAGE_JPEG;
+        return result;
     }
 
     /**

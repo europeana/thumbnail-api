@@ -25,8 +25,8 @@ import java.util.Optional;
  * Retrieves image thumbnails.
  * The Thumbnail API doesn't require any form of authentication, providing an API key is optional.
  *
- * Note that the controller can return content in PNG and JPG format, depending on the format of the thumbnail that is
- * requested (extension in url parameter)
+ * We allow the user setting an extension like .png or .jpg, but we (mostly) ignore this and simply return the image in
+ * the format as it was stored in S3
  */
 @RestController
 @Validated
