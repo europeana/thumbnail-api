@@ -25,7 +25,11 @@
         <!-- Set to debug to see in what storage a file was found (or not) and log processing time -->
         <Logger name="eu.europeana.thumbnail.web.AbstractController" level="INFO"/>
 
+        <!-- Set to debug to see logo processing and storing in S3 -->
+        <Logger name="eu.europeana.thumbnail.service.impl.LogoUploadService" level="INFO"/>
+
         <Logger name="eu.europeana.thumbnail.web.ThumbnailControllerV2" level="INFO"/>
         <Logger name="eu.europeana.thumbnail.web.ThumbnailControllerV3" level="INFO"/>
+
     </Loggers>
 </Configuration>

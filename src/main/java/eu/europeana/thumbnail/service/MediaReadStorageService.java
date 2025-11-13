@@ -5,7 +5,7 @@ import eu.europeana.thumbnail.model.MediaStream;
 /**
  * Service for retrieving media (e.g. thumbnails) from an object storage like Amazons S3 or IBM Cloud S3
  */
-public interface MediaStorageService {
+public interface MediaReadStorageService {
 
     /**
      * Checks if a particular file with the provided id is present in the media storage

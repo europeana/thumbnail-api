@@ -84,7 +84,7 @@ public class ThumbnailControllerV3 extends AbstractController {
             @PathVariable(value = "size", required = false)
                 @Pattern(regexp = "^(200|400)$", message = SIZE_ERROR_MESSAGE) String size,
             @PathVariable(value = "id")
-                @Pattern(regexp = "^[a-fA-F0-9]{8,128}$", message = ID_ERROR_MESSAGE) String id,
+                @Pattern(regexp = "^[a-fA-F0-9]{8,128}((?i).jpg|.jpeg|.png|.webp)?$", message = ID_ERROR_MESSAGE) String id,
             WebRequest webRequest, HttpServletRequest request, HttpServletResponse response) throws EuropeanaApiException {
         long startTime = 0;
         if (LOG.isDebugEnabled()) {

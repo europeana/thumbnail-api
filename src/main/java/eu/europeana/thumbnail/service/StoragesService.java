@@ -36,19 +36,19 @@ public class StoragesService {
      * @param route the highest level domain name or FQDN
      * @return list of MediaStorageService
      */
-    public List<MediaStorageService> getStorages(String route) {
+    public List<MediaReadStorageService> getStorages(String route) {
         // make sure we use only the highest level part for matching and not the FQDN
         String topLevelName = getTopLevelName(route);
 
         // exact matching
-        List<MediaStorageService> result = storageRoutes.getRoutesMap().get(topLevelName);
+        List<MediaReadStorageService> result = storageRoutes.getRoutesMap().get(topLevelName);
         if (result != null) {
             LOG.debug("Route {} - found exact match", topLevelName);
             return result;
         }
 
         // fallback 1: try to match with "contains"
-        for (Map.Entry<String, List<MediaStorageService>> entry : storageRoutes.getRoutesMap().entrySet()) {
+        for (Map.Entry<String, List<MediaReadStorageService>> entry : storageRoutes.getRoutesMap().entrySet()) {
             if (topLevelName.contains(entry.getKey())) {
                 LOG.debug("Route {} - matched with {}", topLevelName, entry.getKey());
                 return entry.getValue();

@@ -1,6 +1,6 @@
 package eu.europeana.thumbnail.config;
 
-import eu.europeana.thumbnail.service.MediaStorageService;
+import eu.europeana.thumbnail.service.MediaReadStorageService;
 import eu.europeana.thumbnail.service.StoragesService;
 import eu.europeana.thumbnail.web.TestData;
 import eu.europeana.thumbnail.web.ThumbnailControllerV2;
@@ -30,7 +30,7 @@ public class CorsConfigTest {
     @MockBean
     private StoragesService storagesService;
     @MockBean
-    private MediaStorageService mediaStorage;
+    private MediaReadStorageService mediaStorage;
 
     @BeforeEach
     public void setup() {

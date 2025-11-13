@@ -1,11 +1,10 @@
 package eu.europeana.thumbnail.web;
 
-import eu.europeana.thumbnail.model.ImageSize;
 import eu.europeana.thumbnail.model.MediaStream;
-import eu.europeana.thumbnail.service.MediaStorageService;
+import eu.europeana.thumbnail.service.MediaReadStorageService;
 import eu.europeana.thumbnail.service.StoragesService;
 import eu.europeana.thumbnail.utils.ControllerUtils;
-import eu.europeana.thumbnail.utils.HashUtils;
+import eu.europeana.thumbnail.utils.IdUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.StringUtils;
@@ -54,8 +53,7 @@ public abstract class AbstractController {
         if (StringUtils.isEmpty(fileId)) {
             id = computeId(originalUrl);
         }
-        // add image width to id
-        id = addWidth(id, width);
+        id = IdUtils.getS3ObjectId(id, width);
 
         String serverName = request.getServerName();
         if ("localhost".equalsIgnoreCase(serverName)) {
@@ -64,8 +62,8 @@ public abstract class AbstractController {
         }
 
         MediaStream result = null;
-        List<MediaStorageService> mediaStorageServices = storagesService.getStorages(serverName);
-        for (MediaStorageService mss : mediaStorageServices) {
+        List<MediaReadStorageService> mediaStorageServices = storagesService.getStorages(serverName);
+        for (MediaReadStorageService mss : mediaStorageServices) {
             result = mss.retrieve(id, originalUrl);
             if (result == null) {
                 LOG.debug("File {} not present in storage {}", id, mss.getName());
@@ -73,7 +71,9 @@ public abstract class AbstractController {
                 LOG.debug("File {} found in storage {}", id, mss.getName());
                 // Temporarily added so we can get insight in how many images requested in production are not in IBM S3
                 if ("uim-prod".equals(mss.getName())) {
-                    LOG.debug("File with url {} and id {} found in old Amazon S3 storage", originalUrl, id);
+                    // 2025-11-13 Temporarily changed to info level because should Amazon S3 migration is complete
+                    // so this should not happen any more
+                    LOG.warn("File with url {} and id {} found in old Amazon S3 storage", originalUrl, id);
                 }
                 break;
             }
@@ -89,16 +89,10 @@ public abstract class AbstractController {
      * @return id of the thumbnail as it is stored in S3 (but with width indication)
      */
     private String computeId(final String resourceUrl) {
-        return HashUtils.getMD5(resourceUrl);
+        return IdUtils.getMD5(resourceUrl);
     }
 
-    private String addWidth(final String id, final Integer resourceWidth) {
-        String width = ImageSize.LARGE.name();
-        if (resourceWidth != null && resourceWidth == ImageSize.MEDIUM.getWidth()) {
-            width = ImageSize.MEDIUM.name();
-        }
-        return id + "-" + width;
-    }
+
 
     /**
      * Set the proper response headers and return object

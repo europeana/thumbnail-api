@@ -2,7 +2,7 @@ package eu.europeana.thumbnail.web;
 
 import com.amazonaws.services.s3.Headers;
 import eu.europeana.thumbnail.model.MediaStream;
-import eu.europeana.thumbnail.service.MediaStorageService;
+import eu.europeana.thumbnail.service.MediaReadStorageService;
 import eu.europeana.thumbnail.service.StoragesService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -57,7 +57,7 @@ public class ThumbnailControllerV2Test {
     @MockBean
     private StoragesService storagesService;
     @MockBean
-    private MediaStorageService mediaStorage;
+    private MediaReadStorageService mediaStorage;
 
     @BeforeEach
     public void setup() {

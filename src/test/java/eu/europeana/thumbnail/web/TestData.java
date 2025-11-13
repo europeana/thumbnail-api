@@ -3,7 +3,7 @@ package eu.europeana.thumbnail.web;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import eu.europeana.thumbnail.model.ImageSize;
 import eu.europeana.thumbnail.model.MediaStream;
-import eu.europeana.thumbnail.service.MediaStorageService;
+import eu.europeana.thumbnail.service.MediaReadStorageService;
 import eu.europeana.thumbnail.service.StoragesService;
 
 import java.io.ByteArrayInputStream;
@@ -45,7 +45,7 @@ public class TestData {
 
     public static final boolean INITIALIZED = false;
 
-    public static void defaultSetup(StoragesService storagesService, MediaStorageService mediaStorage) {
+    public static void defaultSetup(StoragesService storagesService, MediaReadStorageService mediaStorage) {
         // HACK: this method is called often, but here we make sure we only run it once
         if (!INITIALIZED) {
             ObjectMetadataMock metaDataLarge = new ObjectMetadataMock();
@@ -70,7 +70,7 @@ public class TestData {
             given(mediaStorage.retrieve(TestData.URI_HASH + TestData.SIZE_MEDIUM, null)).willReturn(
                     new MediaStream(TestData.URI_HASH + TestData.SIZE_MEDIUM, null, TestData.MEDIUM_STREAM, metaDataMedium));
 
-            List<MediaStorageService> storages = new ArrayList<>();
+            List<MediaReadStorageService> storages = new ArrayList<>();
             storages.add(mediaStorage);
             given(storagesService.getStorages(anyString())).willReturn(storages);
         }
@@ -84,6 +84,7 @@ public class TestData {
             this.eTag = eTag;
         }
 
+        @Override
         public String getETag() {
             return this.eTag;
         }

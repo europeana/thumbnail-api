@@ -3,32 +3,32 @@ package eu.europeana.thumbnail.service.impl;
 import com.amazonaws.services.s3.model.S3Object;
 import eu.europeana.features.S3ObjectStorageClient;
 import eu.europeana.thumbnail.model.MediaStream;
-import eu.europeana.thumbnail.service.MediaStorageService;
+import eu.europeana.thumbnail.service.MediaReadStorageService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 /**
- * @see eu.europeana.thumbnail.service.MediaStorageService
+ * @see MediaReadStorageService
  */
-public class MediaStorageServiceImpl implements MediaStorageService {
+public class MediaReadStorageServiceImpl implements MediaReadStorageService {
 
-    private static final Logger LOG = LogManager.getLogger(MediaStorageServiceImpl.class);
+    private static final Logger LOG = LogManager.getLogger(MediaReadStorageServiceImpl.class);
 
     private final String name;
-    private final S3ObjectStorageClient objectStorageClient;
+    protected final S3ObjectStorageClient objectStorageClient;
 
     /**
      * Initialize a new MediaStorageService implementation
      * @param name the (informal) name of the storage
      * @param objectStorageClient the S3 client to use
      */
-    public MediaStorageServiceImpl(String name, S3ObjectStorageClient objectStorageClient) {
+    public MediaReadStorageServiceImpl(String name, S3ObjectStorageClient objectStorageClient) {
         this.name = name;
         this.objectStorageClient = objectStorageClient;
     }
 
     /**
-     * @see MediaStorageService#checkIfExists(String)
+     * @see MediaReadStorageService#checkIfExists(String)
      */
     @Override
     public Boolean checkIfExists(String id) {
@@ -36,7 +36,7 @@ public class MediaStorageServiceImpl implements MediaStorageService {
     }
 
     /**
-     * @see MediaStorageService#retrieve(String, String)
+     * @see MediaReadStorageService#retrieve(String, String)
      */
     @Override
     @SuppressWarnings("javasecurity:S5145") // we only log for debug purposes, plus we validate the user input
@@ -51,7 +51,7 @@ public class MediaStorageServiceImpl implements MediaStorageService {
     }
 
     /**
-     * @see MediaStorageService#getName()
+     * @see MediaReadStorageService#getName()
      */
     @Override
     public String getName() {

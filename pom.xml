@@ -22,7 +22,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
-        <object-storage.version>2.2</object-storage.version>
+        <object-storage.version>2.3-SNAPSHOT</object-storage.version>
         <api-commons-sb3.version>0.1.0</api-commons-sb3.version>
 
         <spring-boot.version>3.2.4</spring-boot.version>
@@ -30,6 +30,7 @@
         <commonsIO.version>2.16.1</commonsIO.version>
         <commonsLang3.version>3.16.0</commonsLang3.version>
         <jodatime.version>2.12.7</jodatime.version>
+        <scrimage.version>4.3.5</scrimage.version>
     </properties>
 
     <dependencyManagement>
@@ -93,10 +94,17 @@
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/jakarta.xml.bind/jakarta.xml.bind-api -->
+<!--        <dependency>-->
+<!--            <groupId>jakarta.xml.bind</groupId>-->
+<!--            <artifactId>jakarta.xml.bind-api</artifactId>-->
+<!--            <version>4.0.2</version>-->
+<!--        </dependency>-->
+        <!-- https://mvnrepository.com/artifact/javax.xml.bind/jaxb-api -->
+        <!-- Amazon S3 will complain that it's slower if jaxb-api is not provided -->
         <dependency>
-            <groupId>jakarta.xml.bind</groupId>
-            <artifactId>jakarta.xml.bind-api</artifactId>
-            <version>4.0.2</version>
+            <groupId>javax.xml.bind</groupId>
+            <artifactId>jaxb-api</artifactId>
+            <version>2.3.1</version>
         </dependency>
          <!-- Last-Modified dates -->
         <dependency>
@@ -121,6 +129,23 @@
             <groupId>eu.europeana</groupId>
             <artifactId>object-storage</artifactId>
             <version>${object-storage.version}</version>
+        </dependency>
+
+        <!-- Scrimage image libraries -->
+        <dependency>
+            <groupId>com.sksamuel.scrimage</groupId>
+            <artifactId>scrimage-core</artifactId>
+            <version>${scrimage.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.sksamuel.scrimage</groupId>
+            <artifactId>scrimage-formats-extra</artifactId>
+            <version>${scrimage.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.sksamuel.scrimage</groupId>
+            <artifactId>scrimage-webp</artifactId>
+            <version>${scrimage.version}</version>
         </dependency>
 
         <!-- test dependencies -->
@@ -181,6 +206,8 @@
 <!--                    </execution>-->
 <!--                </executions>-->
 <!--            </plugin>-->
+
+
 
             <plugin>
                 <groupId>org.springframework.boot</groupId>

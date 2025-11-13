@@ -3,9 +3,9 @@ package eu.europeana.thumbnail.config;
 import com.amazonaws.ClientConfiguration;
 import eu.europeana.features.S3ObjectStorageClient;
 import eu.europeana.thumbnail.exception.ConfigurationException;
-import eu.europeana.thumbnail.service.MediaStorageService;
-import eu.europeana.thumbnail.service.impl.IiifImageServerImpl;
-import eu.europeana.thumbnail.service.impl.MediaStorageServiceImpl;
+import eu.europeana.thumbnail.service.MediaReadStorageService;
+import eu.europeana.thumbnail.service.impl.IiifImageReadServerImpl;
+import eu.europeana.thumbnail.service.impl.LogoUploadService;
 import jakarta.annotation.PostConstruct;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
@@ -48,11 +48,15 @@ public class StorageRoutes {
     private static final String PROPERTY_SEPARATOR = ".";
     private static final String VALUE_SEPARATOR    = ",";
 
+    private static final String PROP_LOGO_UPLOAD_STORAGE = "logos.storage";
+
     private String defaultRoute;
 
     // The list of MediaStorageServices has to be an ordered list, so we can guarantee proper order of retrieval!
-    private Map<String, List<MediaStorageService>> routeToStorages = new HashMap<>();
-    private Map<String, MediaStorageService> storageNameToService = new HashMap<>();
+    private Map<String, List<MediaReadStorageService>> routeToStorages = new HashMap<>();
+    private Map<String, MediaReadStorageService> storageNameToService = new HashMap<>();
+
+    private String logoUploadStorageName;
 
     private Environment environment;
 
@@ -69,6 +73,12 @@ public class StorageRoutes {
      */
     @PostConstruct
     private void initRoutesToStorage() {
+        String uploadStorageName = environment.getProperty(PROP_LOGO_UPLOAD_STORAGE);
+        if (!StringUtils.isBlank(uploadStorageName)) {
+            this.logoUploadStorageName = uploadStorageName.trim();
+            LOG.info("Configured logo upload storage = {}", this.logoUploadStorageName);
+        }
+
         int i = 1;
         String routeKeyNr = PROP_ROUTE + i;
         String routeKeyName = routeKeyNr + PROPERTY_SEPARATOR + PROP_ROUTE_NAME;
@@ -89,7 +99,7 @@ public class StorageRoutes {
                     // trim to remove spaces
                     String cleanRoute = route.trim();
                     LOG.info("Adding route {} with storage(s) {}", cleanRoute, storages);
-                    routeToStorages.put(cleanRoute, generateStorageServices(storages));
+                    routeToStorages.put(cleanRoute, generateStorageServices(storages, this.logoUploadStorageName));
                 }
             } else {
                 throw new ConfigurationException(("No storage defined for route(s)" + routes));
@@ -103,18 +113,19 @@ public class StorageRoutes {
         if (routeToStorages.isEmpty()) {
             throw new ConfigurationException("No routes and storages configured!");
         }
+
     }
 
-    private ArrayList<MediaStorageService> generateStorageServices(String[] storageNames) {
-        ArrayList<MediaStorageService> result = new ArrayList<>();
+    private ArrayList<MediaReadStorageService> generateStorageServices(String[] storageNames, String uploadStorageName) {
+        ArrayList<MediaReadStorageService> result = new ArrayList<>();
         for (String storageName : storageNames) {
             // trim values to prevent trailing space
             String name = storageName.trim();
 
             // check if we already created this storage before
-            MediaStorageService service = storageNameToService.get(name);
+            MediaReadStorageService service = storageNameToService.get(name);
             if (service == null) {
-                service = createNewService(name);
+                service = createNewService(name, uploadStorageName);
             } else {
                 LOG.info("Reusing existing service {}", service.getName());
             }
@@ -124,11 +135,11 @@ public class StorageRoutes {
         return result;
     }
 
-    private MediaStorageService createNewService(String storageName) {
+    private MediaReadStorageService createNewService(String storageName, String logoUploadStorageName) {
         LOG.info("Setting up new client {}...", storageName);
-        if (storageName.equalsIgnoreCase(IiifImageServerImpl.STORAGE_NAME)) {
-            LOG.debug("Creating IIIF Image Server client {}...", storageName);
-            return new IiifImageServerImpl();
+        if (storageName.equalsIgnoreCase(IiifImageReadServerImpl.STORAGE_NAME)) {
+            LOG.info("Creating IIIF Image Server client...");
+            return new IiifImageReadServerImpl();
         }
 
         String key = environment.getRequiredProperty(storageName + PROPERTY_SEPARATOR + PROP_S3_KEY);
@@ -147,12 +158,20 @@ public class StorageRoutes {
             config.withValidateAfterInactivityMillis(validateAfter);
             LOG.info("Configured validating connection after = {} ms", config.getValidateAfterInactivityMillis());
         }
+        
         if (StringUtils.isEmpty(endpoint)) {
-            LOG.debug("Creating Amazon storage client {}...", storageName);
-            return new MediaStorageServiceImpl(storageName, new S3ObjectStorageClient(key, secret, region, bucket, config));
+            LOG.info("Creating Amazon storage client {}...", storageName);
+            return new eu.europeana.thumbnail.service.impl.MediaReadStorageServiceImpl(storageName, 
+                    new S3ObjectStorageClient(key, secret, region, bucket, config));
         }
-        LOG.debug("Creating IBM storage client {}...", storageName);
-        return new MediaStorageServiceImpl(storageName, new S3ObjectStorageClient(key, secret, region, bucket, endpoint, config));
+        if (storageName.equalsIgnoreCase(logoUploadStorageName)) {
+            LOG.info("Creating IBM read/write storage client {}...", storageName);
+            return new LogoUploadService(storageName,
+                    new S3ObjectStorageClient(key, secret, region, bucket, endpoint, config));
+        }
+        LOG.info("Creating IBM read storage client {}...", storageName);
+        return new eu.europeana.thumbnail.service.impl.MediaReadStorageServiceImpl(storageName,
+                new S3ObjectStorageClient(key, secret, region, bucket, endpoint, config));
     }
 
     /**
@@ -164,10 +183,18 @@ public class StorageRoutes {
     }
 
     /**
+     * LogoUploadService that uses the appropriate S3 client for uploading images
+     * @return service, or null if nothing was configured
+     */
+    public LogoUploadService getLogoUploadService() {
+        return (LogoUploadService) storageNameToService.get(this.logoUploadStorageName);
+    }
+
+    /**
      * Returns a map of route names (top-level FQDN) and a list of storages services, ordered by priority.
      * @return Map of route names and ordered media storage service
      */
-    public Map<String, List<MediaStorageService>> getRoutesMap() {
+    public Map<String, List<MediaReadStorageService>> getRoutesMap() {
         return routeToStorages;
     }
 

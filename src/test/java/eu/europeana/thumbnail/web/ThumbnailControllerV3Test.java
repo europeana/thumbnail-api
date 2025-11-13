@@ -2,7 +2,7 @@ package eu.europeana.thumbnail.web;
 
 import com.amazonaws.services.s3.Headers;
 import eu.europeana.thumbnail.config.StorageRoutes;
-import eu.europeana.thumbnail.service.MediaStorageService;
+import eu.europeana.thumbnail.service.MediaReadStorageService;
 import eu.europeana.thumbnail.service.StoragesService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -42,7 +42,7 @@ public class ThumbnailControllerV3Test {
     @MockBean
     private StoragesService storageService;
     @MockBean
-    private MediaStorageService mediaStorage;
+    private MediaReadStorageService mediaStorage;
 
     // KNOWN ISSUES: ever since migrating to SB3 and using streams there are 2 weird issues with reading the body in
     // unit tests.
@@ -102,7 +102,7 @@ public class ThumbnailControllerV3Test {
         this.mockMvc.perform(get(V3_ENDPOINT, 400, "dfbf02e00c4bc7c737a4479a6bcc2662"))
                 .andExpect(status().isNotFound());
 
-        this.mockMvc.perform(head(V3_ENDPOINT, 400, "74af0c22f50e4c4c1b1dead321649e6022a2ac2"))
+        this.mockMvc.perform(head(V3_ENDPOINT, 400, "74af0c22f50e4c4c1b1dead321649e6022a2ac2.jpeg"))
                 .andExpect(status().isNotFound());
     }
 

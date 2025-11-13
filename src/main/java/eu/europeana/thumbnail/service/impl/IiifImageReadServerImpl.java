@@ -2,7 +2,7 @@ package eu.europeana.thumbnail.service.impl;
 
 import eu.europeana.thumbnail.model.ImageSize;
 import eu.europeana.thumbnail.model.MediaStream;
-import eu.europeana.thumbnail.service.MediaStorageService;
+import eu.europeana.thumbnail.service.MediaReadStorageService;
 import eu.europeana.thumbnail.utils.IiifUtils;
 import jakarta.validation.constraints.Pattern;
 import org.apache.commons.lang3.NotImplementedException;
@@ -27,11 +27,11 @@ import java.net.URL;
  */
 @Validated
 @Component
-public class IiifImageServerImpl implements MediaStorageService {
+public class IiifImageReadServerImpl implements MediaReadStorageService {
 
     public static final String STORAGE_NAME = "IIIF-IS";
 
-    private static final Logger LOG = LogManager.getLogger(IiifImageServerImpl.class);
+    private static final Logger LOG = LogManager.getLogger(IiifImageReadServerImpl.class);
     private static final String INVALID_URL_MESSAGE = "Not a valid url";
 
     @Override
@@ -40,7 +40,7 @@ public class IiifImageServerImpl implements MediaStorageService {
     }
 
     /**
-     * @see MediaStorageService#retrieve(String, String)
+     * @see MediaReadStorageService#retrieve(String, String)
      *
      * Note that this is only supported if the originalUrl is provided (so for v2 requests), otherwise we simply return null
      *
