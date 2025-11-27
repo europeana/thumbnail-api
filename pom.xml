@@ -184,7 +184,7 @@
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
-            <version>5.12.0</version>
+            <version>5.20.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -194,10 +194,11 @@
             <scope>test</scope>
         </dependency>
         <!-- For testing error response contents (not possible with Mockito)-->
+        <!-- https://mvnrepository.com/artifact/io.rest-assured/rest-assured -->
         <dependency>
             <groupId>io.rest-assured</groupId>
             <artifactId>rest-assured</artifactId>
-            <version>5.4.0</version>
+            <version>5.5.6</version>
             <scope>test</scope>
         </dependency>
 
@@ -248,12 +249,6 @@
                 </executions>
             </plugin>
 
-            <!-- JUnit 5 requires Surefire version 2.22.0 or higher -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <version>2.22.2</version>
-            </plugin>
         </plugins>
     </build>
 

@@ -50,7 +50,7 @@ public class StorageRoutes {
     private static final String PROPERTY_SEPARATOR = ".";
     private static final String VALUE_SEPARATOR    = ",";
 
-    private static final String PROP_LOGO_UPLOAD_STORAGE = "logos.storage";
+    private static final String PROP_LOGO_UPLOAD_STORAGE = "upload.storage";
 
     private String defaultRoute;
 
