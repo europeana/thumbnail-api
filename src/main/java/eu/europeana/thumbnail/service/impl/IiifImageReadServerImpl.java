@@ -1,5 +1,6 @@
 package eu.europeana.thumbnail.service.impl;
 
+import eu.europeana.features.S3Object;
 import eu.europeana.thumbnail.model.ImageSize;
 import eu.europeana.thumbnail.model.MediaStream;
 import eu.europeana.thumbnail.service.MediaReadStorageService;
@@ -16,7 +17,7 @@ import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
-import java.net.URL;
+import java.net.URI;
 
 /**
  * Download a thumbnail image from the Europeana IIIF Image server
@@ -24,9 +25,11 @@ import java.net.URL;
  *
  * @author Patrick Ehlert
  * Created on 2 sep 2020
+ * @deprecated
  */
 @Validated
 @Component
+@Deprecated(since = "v0.9 (nov 2025)")
 public class IiifImageReadServerImpl implements MediaReadStorageService {
 
     public static final String STORAGE_NAME = "IIIF-IS";
@@ -71,7 +74,9 @@ public class IiifImageReadServerImpl implements MediaReadStorageService {
         if (content == null) {
             return null;
         }
-        return new MediaStream(id, imageUrl, content);
+        LOG.info("Returning thumbnail from IIIF server {} ", imageUrl);
+        // TODO can we determine content-length without reading the stream?
+        return new MediaStream(id, imageUrl, new S3Object(content, null));
     }
 
     /**
@@ -83,7 +88,7 @@ public class IiifImageReadServerImpl implements MediaReadStorageService {
     public InputStream retrieve(
             @Pattern(regexp = "^(https?|ftp)://.*$", message = INVALID_URL_MESSAGE) String originalUrl) {
         try {
-            return new BufferedInputStream(new URL(originalUrl).openStream());
+            return new BufferedInputStream(URI.create(originalUrl).toURL().openStream());
         } catch (MalformedURLException e) {
             LOG.error("'{}' is not a valid url", originalUrl, e);
         } catch (IOException e) {

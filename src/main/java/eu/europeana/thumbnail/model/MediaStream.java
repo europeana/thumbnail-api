@@ -1,62 +1,35 @@
 package eu.europeana.thumbnail.model;
 
-import com.amazonaws.services.s3.model.ObjectMetadata;
-import com.amazonaws.services.s3.model.S3Object;
-import org.joda.time.DateTime;
+import eu.europeana.exception.S3ObjectStorageException;
+import eu.europeana.features.S3Object;
 
 import java.io.IOException;
-import java.io.InputStream;
+import java.time.Instant;
+import java.util.Map;
+
 
 /**
- * Wrapping class around a stream or S3Object retrieved from object storage.
+ * Wrapping class around an S3Object retrieved from object storage or a default icon or IIIF image loaded from a IIIF
+ * server
  */
 public class MediaStream {
 
     private final String id;
     private final String originalUrl;
-    private final InputStream inputStream;
-    private final ObjectMetadata metadata;
-    private final S3Object s3object;
+    private final S3Object s3Object;
 
     private boolean closed = false;
 
     /**
-     * Create a new media stream based on an existing inputstream
+     * Create a new media stream based on a retrieved or constructed S3 object.
      * @param id the id (hash) of the object
      * @param originalUrl optional, the original url of the object (only available for v2 requests)
-     * @param inputStream the input stream to use
+     * @param s3Object the retrieved object from S3 storage
      */
-    public MediaStream(String id, String originalUrl, InputStream inputStream) {
-        this(id, originalUrl, inputStream, null);
-    }
-
-    /**
-     * Create a new media stream based on an existing inputstream
-     * @param id the id (hash) of the object
-     * @param originalUrl optional, the original url of the object (only available for v2 requests)
-     * @param inputStream the input stream to use
-     * @param metadata the metadata of the provided input stream
-     */
-    public MediaStream(String id, String originalUrl, InputStream inputStream, ObjectMetadata metadata) {
+    public MediaStream(String id, String originalUrl, S3Object s3Object) {
         this.id = id;
         this.originalUrl = originalUrl;
-        this.inputStream = inputStream;
-        this.metadata = metadata;
-        this.s3object = null;
-    }
-
-    /**
-     * Create a new media stream based on object read from S3 storage
-     * @param id the id (hash) of the object
-     * @param originalUrl optional, the original url of the object (only available for v2 requests)
-     * @param s3object the s3object (with metadata) to use
-     */
-    public MediaStream(String id, String originalUrl, S3Object s3object) {
-        this.id = id;
-        this.originalUrl = originalUrl;
-        this.inputStream = null;
-        this.metadata = s3object.getObjectMetadata();
-        this.s3object = s3object;
+        this.s3Object = s3Object;
     }
 
     /**
@@ -67,71 +40,75 @@ public class MediaStream {
     }
 
     /**
-     * @return the original url of where the file was stored
+     * @return the original url of where the file was stored (for v2 only)
      */
     public String getOriginalUrl() {
         return originalUrl;
     }
 
     /**
-     * @return actual content as stream
+     * @return the stored S3 object
      */
-    public InputStream getInputStream() {
-        if (inputStream != null) {
-            return inputStream;
-        }
-        return s3object.getObjectContent().getDelegateStream();
+    public S3Object getS3Object() {
+        return s3Object;
     }
 
     /**
-     * @return true if the mediastream has metadata, otherwise false
+     * @return true if the stored S3 object has metadata, otherwise false
      */
     public boolean hasMetadata() {
-        return (metadata != null);
-    }
-
-    public ObjectMetadata getMetadata() {
-        return metadata;
+        return (s3Object != null && s3Object.metadata() != null);
     }
 
     /**
-     * @return Content type set in metadata, null if not set.
+     * Returns the metadata of the S3 Object (inputstream)
+     */
+    @SuppressWarnings("java:S1168") // deliberately return null here if there is no metadata (as opposed to empty metadata map)
+    public Map<String, Object> getMetadata() {
+        if (hasMetadata()) {
+            return s3Object.metadata();
+        }
+        return null;
+    }
+
+    /**
+     * @return Content type set in the S3 object's metadata, null if not set.
      */
     public String getContentType() {
-        if (hasMetadata()) {
-            return metadata.getContentType();
+        if (s3Object == null) {
+            return null;
         }
-        return null;
+        return s3Object.getContentType();
     }
 
     /**
-     * @return Length of the content in number of bytes
+     * @return Length of the content in number of bytes (for both S3 objects and default icons), null if not available
      */
-    public long getContentLength() {
-        if (hasMetadata()) {
-            return metadata.getContentLength();
+    public Long getContentLength() {
+        if (s3Object == null) {
+            return null;
         }
-        return 0;
+        return s3Object.getContentLength();
     }
 
     /**
-     * @return date when the file was last modified (if available)
+     * @return date when the S3 object was last modified (if available)
      */
-    public DateTime getLastModified() {
-        if (hasMetadata() && metadata.getLastModified() != null) {
-            return new DateTime(metadata.getLastModified().getTime());
+    public Instant getLastModified() {
+        if (s3Object == null) {
+            return null;
         }
-        return null;
+        return s3Object.getLastModified();
     }
 
     /**
-     * @return eTag of the content (if available)
+     * @return eTag of the S3 object (if available)
      */
     public String getETag() {
-        if (hasMetadata()) {
-            return metadata.getETag();
+        if (s3Object == null) {
+            return null;
         }
-        return null;
+        return s3Object.getETag();
     }
 
     /**
@@ -140,21 +117,18 @@ public class MediaStream {
      */
     public void close() {
         try {
-            if (inputStream != null) {
-                inputStream.close();
-            } else {
-                s3object.close();
+            if (s3Object != null) {
+                s3Object.inputStream().close();
             }
             this.closed = true;
         } catch (IOException e) {
-            throw new RuntimeException("Error closing s3Object " + id, e);
+            throw new S3ObjectStorageException("Error closing S3 object stream " + id, e);
         }
     }
 
     public boolean isClosed() {
         return closed;
     }
-
 
 }
 

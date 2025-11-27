@@ -1,6 +1,6 @@
 package eu.europeana.thumbnail.web;
 
-import com.amazonaws.services.s3.Headers;
+import eu.europeana.features.S3Object;
 import eu.europeana.thumbnail.config.StorageRoutes;
 import eu.europeana.thumbnail.service.MediaReadStorageService;
 import eu.europeana.thumbnail.service.StoragesService;
@@ -12,9 +12,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -39,9 +39,9 @@ public class ThumbnailControllerV3Test {
 
     @Autowired
     private MockMvc mockMvc;
-    @MockBean
+    @MockitoBean
     private StoragesService storageService;
-    @MockBean
+    @MockitoBean
     private MediaReadStorageService mediaStorage;
 
     // KNOWN ISSUES: ever since migrating to SB3 and using streams there are 2 weird issues with reading the body in
@@ -54,6 +54,7 @@ public class ThumbnailControllerV3Test {
     // 3. Some tests in the test_HeadEmptyPathVariables() and test_GetEmptyPathVariables method will return a 400 response
     //    in a running application, but 404 here in unit tests. Therefor we test for 4xx instead of 400
     // It looks like these are bugs (either in IntelliJ or in Mockito)
+    // Update Nov 2025: the above issues still persist, even with the most recent version of IntelliJ
 
     @BeforeEach
     public void setup() {
@@ -121,26 +122,36 @@ public class ThumbnailControllerV3Test {
     }
 
     @Test
+    public void test_400_NoId() throws Exception {
+        this.mockMvc.perform(get("/thumbnail/v3/"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message", Matchers.containsString(ThumbnailControllerV3.URL_ERROR_MESSAGE)));
+
+        this.mockMvc.perform(head(V3_ENDPOINT, 400, ""))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
     public void test_304_NotModified() throws Exception {
         // Check if Last-Modified and eTag are present from first request
         this.mockMvc.perform(get(V3_ENDPOINT, 400, TestData.URI_HASH))
                 .andExpect(status().isOk())
-                .andExpect(header().string((Headers.LAST_MODIFIED), TestData.LAST_MODIFIED_TEXT))
-                .andExpect(header().string((Headers.ETAG), TestData.ETAG_VALUE));
+                .andExpect(header().string((S3Object.LAST_MODIFIED), TestData.LAST_MODIFIED_TEXT))
+                .andExpect(header().string((S3Object.ETAG), TestData.ETAG_VALUE));
 
         // Check if we get 304 if we sent only LastModified
         this.mockMvc.perform(get(V3_ENDPOINT, 400, TestData.URI_HASH)
                 .header("If-Modified-Since", TestData.LAST_MODIFIED_TEXT))
                 .andExpect(status().isNotModified())
-                .andExpect(header().string((Headers.LAST_MODIFIED), TestData.LAST_MODIFIED_TEXT))
-                .andExpect(header().string((Headers.ETAG), TestData.ETAG_VALUE));
+                .andExpect(header().string((S3Object.LAST_MODIFIED), TestData.LAST_MODIFIED_TEXT))
+                .andExpect(header().string((S3Object.ETAG), TestData.ETAG_VALUE));
 
         // Check if we get 304 if we sent only eTag
         this.mockMvc.perform(get(V3_ENDPOINT, 400, TestData.URI_HASH)
                 .header("If-None-Match", TestData.ETAG_VALUE))
                 .andExpect(status().isNotModified())
-                .andExpect(header().string((Headers.LAST_MODIFIED), TestData.LAST_MODIFIED_TEXT))
-                .andExpect(header().string((Headers.ETAG), TestData.ETAG_VALUE));
+                .andExpect(header().string((S3Object.LAST_MODIFIED), TestData.LAST_MODIFIED_TEXT))
+                .andExpect(header().string((S3Object.ETAG), TestData.ETAG_VALUE));
     }
 
     @Test

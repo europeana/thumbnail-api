@@ -25,7 +25,6 @@ import java.util.Optional;
 /**
  * Retrieves image thumbnails for version 3
  * The thumbnail API doesn't require any form of authentication, providing an API key is optional.
- *
  * Note that the controller can return content in PNG and JPG format, depending on the format of the thumbnail that is
  * requested (extension parameter)
  */
@@ -42,6 +41,10 @@ public class ThumbnailControllerV3 extends AbstractController {
 
     protected static final String URL_ERROR_MESSAGE = "Either Size or Id is missing. Correct url is /v3/{size}/{id}";
 
+    /**
+     * Create a new controller to server Thumbnail V3 requests
+     * @param storagesService the storage service to use
+     */
     public ThumbnailControllerV3(StoragesService storagesService) {
         super(storagesService);
     }
@@ -105,11 +108,15 @@ public class ThumbnailControllerV3 extends AbstractController {
 
         Optional<MediaStream> mediaFile = retrieveThumbnail(request, idWithoutExtension, extension, Integer.valueOf(size));
         if (mediaFile.isEmpty()) {
-            logRequestDuration(startTime, "Id = " + id + ", status = " + HttpStatus.NOT_FOUND);
+            if (LOG.isDebugEnabled()) {
+                logRequestDuration(startTime, "Id = " + id + ", status = " + HttpStatus.NOT_FOUND);
+            }
             throw new ThumbnailNotFoundException();
         }
         ResponseEntity<InputStreamResource> result = generateResponse(webRequest, response, mediaFile.get());
-        logRequestDuration(startTime, "Id = " + id + ", status = " + response.getStatus());
+        if (LOG.isDebugEnabled()) {
+            logRequestDuration(startTime, "Id = " + id + ", status = " + response.getStatus());
+        }
         return result;
     }
 }

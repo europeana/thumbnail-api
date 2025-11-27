@@ -3,8 +3,6 @@ package eu.europeana.thumbnail.utils;
 
 import org.junit.jupiter.api.Test;
 
-import java.net.URISyntaxException;
-
 import static org.junit.jupiter.api.Assertions.*;
 
 
@@ -40,7 +38,7 @@ public class IiifUtilsTest {
      * Test if we generate Europeana IIIF image thumbnail urls correctly
      */
     @Test
-    public void GetIiifThumbnailTest() throws URISyntaxException {
+    public void GetIiifThumbnailTest() {
         assertEquals(REVISED_IIIF_URL_HTTP, IiifUtils.getEuropeanaIiifThumbnailUrl(ORIG_IIIF_URL_HTTP, "400"));
         assertEquals(REVISED_IIIF_URL_HTTPS, IiifUtils.getEuropeanaIiifThumbnailUrl(ORIG_IIIF_URL_HTTPS, "200"));
         assertNull(IiifUtils.getEuropeanaIiifThumbnailUrl(REGULAR_URL, "400"));

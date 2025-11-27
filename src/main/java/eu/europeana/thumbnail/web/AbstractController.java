@@ -30,7 +30,7 @@ import java.util.Optional;
 public abstract class AbstractController {
 
     private static final Logger LOG = LogManager.getLogger(AbstractController.class);
-    private static final long DURATION_CONVERTER  = 1_000_000L;
+    private static final long NANO_TO_MS  = 1_000_000L;
 
     protected StoragesService storagesService;
 
@@ -120,16 +120,16 @@ public abstract class AbstractController {
         }
         MediaType mediaType = this.getMediaType(mediaFile.getContentType(), mediaFile.getOriginalUrl());
 
-        InputStreamResource imageStream = new InputStreamResource(mediaFile.getInputStream());
-        if (mediaFile.hasMetadata()) {
+        InputStreamResource imageStream = new InputStreamResource(mediaFile.getS3Object().inputStream());
+        if (mediaFile.getContentLength() == null ) {
+            LOG.warn("No content length for image with url {} and ETag {}", mediaFile.getOriginalUrl(), mediaFile.getETag());
             return ResponseEntity.ok()
                     .contentType(mediaType)
-                    .contentLength(mediaFile.getContentLength())
                     .body(imageStream);
         }
-        // avoid sending contentLength 0 if there is no metadata
         return ResponseEntity.ok()
                 .contentType(mediaType)
+                .contentLength(mediaFile.getContentLength())
                 .body(imageStream);
     }
 
@@ -180,7 +180,7 @@ public abstract class AbstractController {
      */
     protected void logRequestDuration(long startTime, String requestInfo) {
         if (LOG.isDebugEnabled()) {
-            Long duration = (System.nanoTime() - startTime) / DURATION_CONVERTER;
+            Long duration = (System.nanoTime() - startTime) / NANO_TO_MS;
             if (StringUtils.isBlank(requestInfo)) {
                 LOG.debug("Processing time = {} ms ", duration);
             } else {

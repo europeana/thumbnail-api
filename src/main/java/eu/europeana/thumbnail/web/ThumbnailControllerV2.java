@@ -1,6 +1,6 @@
 package eu.europeana.thumbnail.web;
 
-import com.amazonaws.services.s3.model.ObjectMetadata;
+import eu.europeana.features.S3Object;
 import eu.europeana.thumbnail.model.ImageSize;
 import eu.europeana.thumbnail.model.MediaStream;
 import eu.europeana.thumbnail.service.StoragesService;
@@ -8,6 +8,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.constraints.Pattern;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.core.io.InputStreamResource;
@@ -19,12 +20,13 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.WebRequest;
 
 import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 /**
  * Retrieves image thumbnails.
  * The Thumbnail API doesn't require any form of authentication, providing an API key is optional.
- *
  * We allow the user setting an extension like .png or .jpg, but we (mostly) ignore this and simply return the image in
  * the format as it was stored in S3
  */
@@ -34,11 +36,11 @@ public class ThumbnailControllerV2 extends AbstractController {
 
     private static final Logger LOG = LogManager.getLogger(ThumbnailControllerV2.class);
 
-    private static final int CONTENT_LENGTH_IMAGE_ICON = 2319;
-    private static final int CONTENT_LENGTH_SOUND_ICON = 2484;
-    private static final int CONTENT_LENGTH_VIDEO_ICON = 1932;
-    private static final int CONTENT_LENGTH_TEXT_ICON  = 2180;
-    private static final int CONTENT_LENGTH_3D_ICON    = 3012;
+    private static final long CONTENT_LENGTH_IMAGE_ICON = 2319;
+    private static final long CONTENT_LENGTH_SOUND_ICON = 2484;
+    private static final long CONTENT_LENGTH_VIDEO_ICON = 1932;
+    private static final long CONTENT_LENGTH_TEXT_ICON  = 2180;
+    private static final long CONTENT_LENGTH_3D_ICON    = 3012;
 
     protected static final String  INVALID_URL_MESSAGE = "INVALID URL";
 
@@ -82,12 +84,14 @@ public class ThumbnailControllerV2 extends AbstractController {
             result = generateResponse(webRequest, response, mediaFile.get());
         }
 
-        logRequestDuration(startTime, "Url = " + url + ", status = " + response.getStatus());
+        if (LOG.isDebugEnabled()) {
+            logRequestDuration(startTime, "Url = " + url + ", status = " + response.getStatus());
+        }
         return result;
     }
 
     private int getWidth(String size) {
-        if (StringUtils.equalsIgnoreCase(size, "w200") || StringUtils.equalsIgnoreCase(size, "200")) {
+        if (Strings.CI.equals(size, "w200") || Strings.CI.equals(size, "200")) {
             return ImageSize.MEDIUM.getWidth();
         }
         return ImageSize.LARGE.getWidth();
@@ -95,35 +99,37 @@ public class ThumbnailControllerV2 extends AbstractController {
 
     private MediaStream getDefaultThumbnailForNotFoundResourceByType(final String type) {
         String defaultImageName;
-        ObjectMetadata metadata = new ObjectMetadata();
+        long defaultImageContentLength;
         switch (StringUtils.upperCase(type)) {
             case "IMAGE" -> {
                 defaultImageName = "EU_thumbnails_image.png";
-                metadata.setContentLength(CONTENT_LENGTH_IMAGE_ICON);
+                defaultImageContentLength = CONTENT_LENGTH_IMAGE_ICON;
             }
             case "SOUND" -> {
                 defaultImageName = "EU_thumbnails_sound.png";
-                metadata.setContentLength(CONTENT_LENGTH_SOUND_ICON);
+                defaultImageContentLength = CONTENT_LENGTH_SOUND_ICON;
             }
             case "VIDEO" -> {
                 defaultImageName = "EU_thumbnails_video.png";
-                metadata.setContentLength(CONTENT_LENGTH_VIDEO_ICON);
+                defaultImageContentLength = CONTENT_LENGTH_VIDEO_ICON;
             }
             case "TEXT" -> {
                 defaultImageName = "EU_thumbnails_text.png";
-                metadata.setContentLength(CONTENT_LENGTH_TEXT_ICON);
+                defaultImageContentLength = CONTENT_LENGTH_TEXT_ICON;
             }
             case "3D" -> {
                 defaultImageName = "EU_thumbnails_3d.png";
-                metadata.setContentLength(CONTENT_LENGTH_3D_ICON);
+                defaultImageContentLength = CONTENT_LENGTH_3D_ICON;
             }
             default -> {
                 defaultImageName = "EU_thumbnails_image.png";
-                metadata.setContentLength(CONTENT_LENGTH_IMAGE_ICON);
+                defaultImageContentLength = CONTENT_LENGTH_IMAGE_ICON;
             }
         }
         InputStream stream = this.getClass().getResourceAsStream("/images/" + defaultImageName);
-        return new MediaStream(null, defaultImageName, stream, metadata);
+        Map<String, Object> metadata = new HashMap<>();
+        metadata.put(S3Object.CONTENT_LENGTH, defaultImageContentLength);
+        return new MediaStream(null, defaultImageName, new S3Object(stream, metadata));
     }
 
 }

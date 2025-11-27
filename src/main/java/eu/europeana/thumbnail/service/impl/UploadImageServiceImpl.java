@@ -1,11 +1,10 @@
 package eu.europeana.thumbnail.service.impl;
 
-import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.sksamuel.scrimage.ImmutableImage;
 import com.sksamuel.scrimage.webp.WebpWriter;
-import eu.europeana.features.MetadataUtils;
 import eu.europeana.features.S3ObjectStorageClient;
 import eu.europeana.thumbnail.model.ImageSize;
+import eu.europeana.thumbnail.service.UploadImageService;
 import eu.europeana.thumbnail.utils.IdUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -18,16 +17,16 @@ import java.io.InputStream;
  * Service for reading an uploaded image (organisation logo), generating a 200 and 400 pixel version thumbnail and
  * storing this in an S3 storage
  */
-public class LogoUploadService extends MediaReadStorageServiceImpl {
+public class UploadImageServiceImpl extends MediaReadStorageServiceImpl implements UploadImageService {
 
-    private static final Logger LOG = LogManager.getLogger(LogoUploadService.class);
+    private static final Logger LOG = LogManager.getLogger(UploadImageServiceImpl.class);
 
     /**
      * Initialize a new service for uploading images/logo's
      * @param storageName name of the used storage where files are stored
      * @param objectStorageClient client connected to the S3 object storage
      */
-    public LogoUploadService(String storageName, S3ObjectStorageClient objectStorageClient) {
+    public UploadImageServiceImpl(String storageName, S3ObjectStorageClient objectStorageClient) {
         super(storageName, objectStorageClient);
     }
 
@@ -52,14 +51,12 @@ public class LogoUploadService extends MediaReadStorageServiceImpl {
                 .scaleToWidth(size.getWidth())
                 .forWriter(WebpWriter.DEFAULT).stream()) {
             String s3id = IdUtils.getS3ObjectId(id, size.getWidth());
-            ObjectMetadata metadata = MetadataUtils.generateObjectMetadata(convertedImage);
-            metadata.setContentType("image/webp");
 
             if (objectStorageClient.isObjectAvailable(s3id)) {
                 LOG.warn("Replacing S3 object with id {}", s3id);
             }
             LOG.debug("Saving {}px image to S3...", size.getWidth());
-            objectStorageClient.putObject(s3id, convertedImage, metadata);
+            objectStorageClient.putObject(s3id, "image/webp", convertedImage);
         }
     }
 

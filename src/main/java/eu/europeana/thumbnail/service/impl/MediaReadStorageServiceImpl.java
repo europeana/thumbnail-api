@@ -1,6 +1,6 @@
 package eu.europeana.thumbnail.service.impl;
 
-import com.amazonaws.services.s3.model.S3Object;
+import eu.europeana.features.S3Object;
 import eu.europeana.features.S3ObjectStorageClient;
 import eu.europeana.thumbnail.model.MediaStream;
 import eu.europeana.thumbnail.service.MediaReadStorageService;
@@ -8,7 +8,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 /**
- * @see MediaReadStorageService
+ * Service for retrieving media (e.g. thumbnails) from an object storage like Amazons S3 or IBM Cloud S3
  */
 public class MediaReadStorageServiceImpl implements MediaReadStorageService {
 
@@ -43,7 +43,7 @@ public class MediaReadStorageServiceImpl implements MediaReadStorageService {
     public MediaStream retrieve(String id, String originalUrl) {
         LOG.debug("Retrieving file with id {}, url = {}", id, originalUrl);
         S3Object obj = objectStorageClient.getObject(id);
-        if (obj == null) {
+        if (obj == null || obj.inputStream() == null) {
             return null;
         } else {
             return new MediaStream(id, originalUrl, obj);

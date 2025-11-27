@@ -5,11 +5,11 @@
     <parent>
         <groupId>eu.europeana</groupId>
         <artifactId>europeana-parent-pom</artifactId>
-        <version>2.5</version>
+        <version>3.0</version>
     </parent>
 
     <artifactId>thumbnail-api</artifactId>
-    <version>0.8.2-SNAPSHOT</version>
+    <version>0.9.0-SNAPSHOT</version>
     <packaging>war</packaging>
 
     <name>Thumbnail API</name>
@@ -24,12 +24,12 @@
 
         <object-storage.version>2.3-SNAPSHOT</object-storage.version>
         <api-commons-sb3.version>0.1.0</api-commons-sb3.version>
+        <!-- <api-commons-sb3.version>0.1.3-SNAPSHOT</api-commons-sb3.version> -->
 
-        <spring-boot.version>3.2.4</spring-boot.version>
-        <springdoc-openapi.version>2.6.0</springdoc-openapi.version>
-        <commonsIO.version>2.16.1</commonsIO.version>
-        <commonsLang3.version>3.16.0</commonsLang3.version>
-        <jodatime.version>2.12.7</jodatime.version>
+        <spring-boot.version>3.5.7</spring-boot.version>
+        <commonsIO.version>2.21.0</commonsIO.version>
+        <commonsLang3.version>3.19.0</commonsLang3.version>
+        <jodatime.version>2.14.0</jodatime.version>
         <scrimage.version>4.3.5</scrimage.version>
     </properties>
 
@@ -48,6 +48,7 @@
 
     <dependencies>
 
+        <!-- https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-web -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
@@ -78,20 +79,39 @@
             <artifactId>spring-boot-starter-log4j2</artifactId>
         </dependency>
 
-        <!-- https://mvnrepository.com/artifact/org.springdoc/springdoc-openapi-starter-webmvc-ui -->
-        <!-- Temporary commented about because of CVE-2024-45801 and EA-3929 -->
-<!--        <dependency>-->
-<!--            <groupId>org.springdoc</groupId>-->
-<!--            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>-->
-<!--            <version>2.5.0</version>-->
-<!--        </dependency>-->
-
         <!-- Use commons so we always return errors in json format -->
         <dependency>
             <groupId>eu.europeana.api</groupId>
             <artifactId>commons-sb3-error</artifactId>
             <version>${api-commons-sb3.version}</version>
         </dependency>
+
+        <!-- Use commons so we always return errors in json format -->
+        <!-- europeana api commons -->
+<!--        <dependency>-->
+<!--            <groupId>eu.europeana.api</groupId>-->
+<!--            <artifactId>commons-sb3-web</artifactId>-->
+<!--            <version>${api-commons-sb3.version}</version>-->
+<!--            <exclusions>-->
+<!--                <exclusion>-->
+<!--                    <groupId>eu.europeana.api</groupId>-->
+<!--                    <artifactId>commons-sb3-nosql</artifactId>-->
+<!--                </exclusion>-->
+<!--                <exclusion>-->
+<!--                    <groupId>org.slf4j</groupId>-->
+<!--                    <artifactId>slf4j-log4j12</artifactId>-->
+<!--                </exclusion>-->
+<!--                <exclusion>-->
+<!--                    <groupId>io.springfox</groupId>-->
+<!--                    <artifactId>springfox-swagger2</artifactId>-->
+<!--                </exclusion>-->
+<!--                &lt;!&ndash; Explicitly exclude test dependencies for Eclipse, transitive dependency for groovy generates runtime errors &ndash;&gt;-->
+<!--                <exclusion>-->
+<!--                    <groupId>io.rest-assured</groupId>-->
+<!--                    <artifactId>*</artifactId>-->
+<!--                </exclusion>-->
+<!--            </exclusions>-->
+<!--        </dependency>-->
 
         <!-- https://mvnrepository.com/artifact/jakarta.xml.bind/jakarta.xml.bind-api -->
 <!--        <dependency>-->
@@ -129,6 +149,12 @@
             <groupId>eu.europeana</groupId>
             <artifactId>object-storage</artifactId>
             <version>${object-storage.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>commons-logging</groupId>
+                    <artifactId>commons-logging</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <!-- Scrimage image libraries -->
@@ -164,7 +190,7 @@
         <dependency>
             <groupId>com.github.tomakehurst</groupId>
             <artifactId>wiremock-jre8</artifactId>
-            <version>2.35.1</version>
+            <version>2.35.2</version>
             <scope>test</scope>
         </dependency>
         <!-- For testing error response contents (not possible with Mockito)-->

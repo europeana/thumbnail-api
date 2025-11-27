@@ -1,11 +1,11 @@
 package eu.europeana.thumbnail.config;
 
-import com.amazonaws.ClientConfiguration;
 import eu.europeana.features.S3ObjectStorageClient;
 import eu.europeana.thumbnail.exception.ConfigurationException;
+import eu.europeana.thumbnail.service.UploadImageService;
 import eu.europeana.thumbnail.service.MediaReadStorageService;
 import eu.europeana.thumbnail.service.impl.IiifImageReadServerImpl;
-import eu.europeana.thumbnail.service.impl.LogoUploadService;
+import eu.europeana.thumbnail.service.impl.UploadImageServiceImpl;
 import jakarta.annotation.PostConstruct;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
@@ -13,7 +13,9 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
+import software.amazon.awssdk.http.apache.ApacheHttpClient;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -43,8 +45,8 @@ public class StorageRoutes {
     private static final String PROP_S3_BUCKET     = "s3.bucket";
     private static final String PROP_S3_ENDPOINT   = "s3.endpoint";
 
-    private static final String PROP_VALIDATE_CONNECTION_AFTER = "s3.validate.connection";
     private static final String PROP_MAX_CONNECTIONS = "s3.max.connections";
+    private static final int    DEFVAL_MAX_CONNECTIONS = 50;
     private static final String PROPERTY_SEPARATOR = ".";
     private static final String VALUE_SEPARATOR    = ",";
 
@@ -53,12 +55,12 @@ public class StorageRoutes {
     private String defaultRoute;
 
     // The list of MediaStorageServices has to be an ordered list, so we can guarantee proper order of retrieval!
-    private Map<String, List<MediaReadStorageService>> routeToStorages = new HashMap<>();
-    private Map<String, MediaReadStorageService> storageNameToService = new HashMap<>();
+    private final Map<String, List<MediaReadStorageService>> routeToStorages = new HashMap<>();
+    private final Map<String, MediaReadStorageService> storageNameToService = new HashMap<>();
 
     private String logoUploadStorageName;
 
-    private Environment environment;
+    private final Environment environment;
 
     /**
      * Initialize configuration of routes and corresponding media storages.
@@ -147,31 +149,31 @@ public class StorageRoutes {
         String region = environment.getRequiredProperty(storageName + PROPERTY_SEPARATOR + PROP_S3_REGION);
         String bucket = environment.getRequiredProperty(storageName + PROPERTY_SEPARATOR + PROP_S3_BUCKET);
         String endpoint = environment.getProperty(storageName + PROPERTY_SEPARATOR + PROP_S3_ENDPOINT);
-        Integer maxConnections = environment.getProperty(storageName + PROPERTY_SEPARATOR + PROP_MAX_CONNECTIONS, Integer.class, 50);
-        Integer validateAfter = environment.getProperty(storageName + PROPERTY_SEPARATOR + PROP_VALIDATE_CONNECTION_AFTER, Integer.class, -1);
-        ClientConfiguration config = new ClientConfiguration();
+        URI endpointUri = null;
+        if (!StringUtils.isBlank(endpoint)) {
+            endpointUri = URI.create(endpoint);
+        }
+         Integer maxConnections = environment.getProperty(storageName + PROPERTY_SEPARATOR + PROP_MAX_CONNECTIONS,
+                Integer.class, DEFVAL_MAX_CONNECTIONS);
+        ApacheHttpClient.Builder httpClientBuilder = ApacheHttpClient.builder();
         if (maxConnections > 1) {
-            config.setMaxConnections(maxConnections);
-            LOG.info("Configured maximum connections = {}", config.getMaxConnections());
+            httpClientBuilder.maxConnections(maxConnections);
+            LOG.info("Configured maximum connections = {}", maxConnections);
         }
-        if (validateAfter >= 100) {
-            config.withValidateAfterInactivityMillis(validateAfter);
-            LOG.info("Configured validating connection after = {} ms", config.getValidateAfterInactivityMillis());
-        }
-        
+
         if (StringUtils.isEmpty(endpoint)) {
             LOG.info("Creating Amazon storage client {}...", storageName);
             return new eu.europeana.thumbnail.service.impl.MediaReadStorageServiceImpl(storageName, 
-                    new S3ObjectStorageClient(key, secret, region, bucket, config));
+                    new S3ObjectStorageClient(key, secret, region, bucket, httpClientBuilder.build()));
         }
         if (storageName.equalsIgnoreCase(logoUploadStorageName)) {
             LOG.info("Creating IBM read/write storage client {}...", storageName);
-            return new LogoUploadService(storageName,
-                    new S3ObjectStorageClient(key, secret, region, bucket, endpoint, config));
+            return new UploadImageServiceImpl(storageName,
+                    new S3ObjectStorageClient(key, secret, region, bucket, endpointUri, httpClientBuilder.build()));
         }
         LOG.info("Creating IBM read storage client {}...", storageName);
         return new eu.europeana.thumbnail.service.impl.MediaReadStorageServiceImpl(storageName,
-                new S3ObjectStorageClient(key, secret, region, bucket, endpoint, config));
+                new S3ObjectStorageClient(key, secret, region, bucket, endpointUri  , httpClientBuilder.build()));
     }
 
     /**
@@ -186,8 +188,8 @@ public class StorageRoutes {
      * LogoUploadService that uses the appropriate S3 client for uploading images
      * @return service, or null if nothing was configured
      */
-    public LogoUploadService getLogoUploadService() {
-        return (LogoUploadService) storageNameToService.get(this.logoUploadStorageName);
+    public UploadImageService getUploadImageService() {
+        return (UploadImageService) storageNameToService.get(this.logoUploadStorageName);
     }
 
     /**

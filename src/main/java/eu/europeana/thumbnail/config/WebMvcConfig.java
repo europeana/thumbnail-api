@@ -14,7 +14,6 @@ public class WebMvcConfig implements WebMvcConfigurer {
 
     /**
      * Setup CORS for all requests.
-     * Note that this doesn't work for the Swagger endpoint
      */
     @Override
     public void addCorsMappings(CorsRegistry registry) {
