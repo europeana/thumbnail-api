@@ -6,9 +6,13 @@ The application needs Java17 and Maven v3.8.x or above
 
 ## Functionality
 
-  * We use 2 storages : Amazon S3 and IBM Cloud storage.
+  * We use 3 storages : IBM Cloud S3 storage, Amazon S3 (deprecated) and IIIF server (deprecated)
   * When a request for a thumbnail comes in, the API’s ThumbnailController will always check IBM Cloud 
 storage first and if a thumbnail is not found there it will go on to check if it’s in the old Amazon S3 storage.
+If it can be found there either, it will check the IIIF server (for v2 IIIF image urls).
+  * The upload functionality uses an (unmodified) version of the [Scrimage](https://github.com/sksamuel/scrimage)
+library for scaling images and converting them to webp. This software has an [Apache 2.0 license](https://github.com/sksamuel/scrimage/blob/master/LICENSE)
+    
 
 ## Build
 ``mvn clean install`` (add ``-DskipTests``) to skip the unit tests during build
