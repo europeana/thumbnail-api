@@ -1,6 +1,6 @@
 package eu.europeana.thumbnail.web;
 
-import eu.europeana.features.S3Object;
+import eu.europeana.s3.S3Object;
 import eu.europeana.thumbnail.model.ImageSize;
 import eu.europeana.thumbnail.model.MediaStream;
 import eu.europeana.thumbnail.service.MediaReadStorageService;
@@ -60,18 +60,18 @@ public class TestData {
             // for v2 we send id and originalUrl
             given(mediaStorage.retrieve(TestData.URI_HASH + TestData.SIZE_LARGE, TestData.URI))
                     .willReturn(new MediaStream(TestData.URI_HASH + TestData.SIZE_LARGE, TestData.URI,
-                            new S3Object(TestData.LARGE_STREAM, metaDataLarge)));
+                            new S3Object(TestData.URI_HASH + TestData.SIZE_LARGE, TestData.LARGE_STREAM, metaDataLarge)));
             given(mediaStorage.retrieve(TestData.URI_HASH + TestData.SIZE_MEDIUM, TestData.URI))
                     .willReturn(new MediaStream(TestData.URI_HASH + TestData.SIZE_MEDIUM, TestData.URI,
-                            new S3Object(TestData.MEDIUM_STREAM, metaDataMedium)));
+                            new S3Object(TestData.URI_HASH + TestData.SIZE_MEDIUM, TestData.MEDIUM_STREAM, metaDataMedium)));
 
             // for v3 we send only id since originalUrl is not known
             given(mediaStorage.retrieve(TestData.URI_HASH + TestData.SIZE_LARGE, null))
                     .willReturn(new MediaStream(TestData.URI_HASH + TestData.SIZE_LARGE, null,
-                            new S3Object(TestData.LARGE_STREAM, metaDataLarge)));
+                            new S3Object(TestData.URI_HASH + TestData.SIZE_LARGE, TestData.LARGE_STREAM, metaDataLarge)));
             given(mediaStorage.retrieve(TestData.URI_HASH + TestData.SIZE_MEDIUM, null))
                     .willReturn(new MediaStream(TestData.URI_HASH + TestData.SIZE_MEDIUM, null,
-                            new S3Object(TestData.MEDIUM_STREAM, metaDataMedium)));
+                            new S3Object(TestData.URI_HASH + TestData.SIZE_MEDIUM, TestData.MEDIUM_STREAM, metaDataMedium)));
 
             List<MediaReadStorageService> storages = new ArrayList<>();
             storages.add(mediaStorage);

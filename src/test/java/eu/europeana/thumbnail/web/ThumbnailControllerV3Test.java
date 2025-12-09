@@ -1,6 +1,6 @@
 package eu.europeana.thumbnail.web;
 
-import eu.europeana.features.S3Object;
+import eu.europeana.s3.S3Object;
 import eu.europeana.thumbnail.config.StorageRoutes;
 import eu.europeana.thumbnail.service.MediaReadStorageService;
 import eu.europeana.thumbnail.service.StoragesService;

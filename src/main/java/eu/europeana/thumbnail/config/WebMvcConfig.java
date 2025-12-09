@@ -12,6 +12,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @Configuration
 public class WebMvcConfig implements WebMvcConfigurer {
 
+    private static final long CORS_MAX_AGE = 1000; // in seconds
     /**
      * Setup CORS for all requests.
      */
@@ -27,7 +28,7 @@ public class WebMvcConfig implements WebMvcConfigurer {
                                 HttpHeaders.CACHE_CONTROL,
                                 HttpHeaders.ETAG,
                                 HttpHeaders.LAST_MODIFIED)
-                .maxAge(1000L); // in seconds
+                .maxAge(CORS_MAX_AGE);
     }
 
 }

@@ -1,6 +1,6 @@
 package eu.europeana.thumbnail.web;
 
-import eu.europeana.features.S3Object;
+import eu.europeana.s3.S3Object;
 import eu.europeana.thumbnail.model.MediaStream;
 import eu.europeana.thumbnail.service.MediaReadStorageService;
 import eu.europeana.thumbnail.service.StoragesService;
@@ -132,13 +132,13 @@ public class ThumbnailControllerV2Test {
     public void test_200_ContentType() throws Exception {
         given(mediaStorage.retrieve(URI_NO_TYPE_HASH + TestData.SIZE_LARGE, URI_NO_TYPE)).willReturn(
                 new MediaStream(URI_NO_TYPE_HASH + TestData.SIZE_LARGE, URI_NO_TYPE,
-                        new S3Object(TestData.LARGE_STREAM, null)));
+                        new S3Object(URI_NO_TYPE_HASH + TestData.SIZE_LARGE, TestData.LARGE_STREAM, null)));
         given(mediaStorage.retrieve(URI_PNG_HASH + TestData.SIZE_LARGE, URI_PNG)).willReturn(
                 new MediaStream(URI_PNG_HASH + TestData.SIZE_LARGE, URI_PNG,
-                        new S3Object(TestData.LARGE_STREAM, null)));
+                        new S3Object(URI_PNG_HASH + TestData.SIZE_LARGE, TestData.LARGE_STREAM, null)));
         given(mediaStorage.retrieve(URI_PDF_HASH + TestData.SIZE_LARGE, URI_PDF)).willReturn(
                 new MediaStream(URI_PDF_HASH + TestData.SIZE_LARGE, URI_PDF,
-                        new S3Object(TestData.LARGE_STREAM, null)));
+                        new S3Object(URI_PDF_HASH + TestData.SIZE_LARGE, TestData.LARGE_STREAM, null)));
 
         this.mockMvc.perform(get(V2_ENDPOINT)
                     .param(URI_PARAMETER, URI_NO_TYPE))

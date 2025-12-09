@@ -1,6 +1,6 @@
 package eu.europeana.thumbnail.model;
 
-import eu.europeana.features.S3Object;
+import eu.europeana.s3.S3Object;
 import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;
@@ -14,7 +14,7 @@ public class MediaStreamTest {
 
     @Test
     public void testNoMetadata() {
-        MediaStream ms = new MediaStream("id", null, new S3Object(null, null));
+        MediaStream ms = new MediaStream("id", null, new S3Object("id", null, null));
         assertFalse(ms.hasMetadata());
         assertNull(ms.getMetadata());
     }
@@ -30,7 +30,7 @@ public class MediaStreamTest {
         metadata.put(S3Object.CONTENT_LENGTH, contentLength);
         metadata.put(S3Object.ETAG, eTag);
         metadata.put(S3Object.LAST_MODIFIED, lastModified);
-        MediaStream ms = new MediaStream("id", null, new S3Object(null, metadata));
+        MediaStream ms = new MediaStream("id", null, new S3Object("id", null, metadata));
 
         assertTrue(ms.hasMetadata());
         assertNotNull(ms.getMetadata());
@@ -43,7 +43,7 @@ public class MediaStreamTest {
     @Test
     public void testStreamOpenClosed() {
         String testData = "This is a test data";
-        MediaStream ms = new MediaStream("id", null, new S3Object(
+        MediaStream ms = new MediaStream("id", null, new S3Object("id",
             new ByteArrayInputStream(testData.getBytes()), null));
         assertFalse(ms.isClosed());
         ms.close();

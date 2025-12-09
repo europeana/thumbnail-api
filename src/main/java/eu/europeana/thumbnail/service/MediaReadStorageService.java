@@ -16,7 +16,7 @@ public interface MediaReadStorageService {
     Boolean checkIfExists(String id);
 
     /**
-     * Retrieves a file from media storage given it's id
+     * Retrieves a file from media storage given its id
      *
      * @param id the id of the file
      * @param originalUrl the original url of the file, optional for S3 storage, required for IiifImageServer

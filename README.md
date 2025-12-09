@@ -11,7 +11,7 @@ The application needs Java17 and Maven v3.8.x or above
 storage first and if a thumbnail is not found there it will go on to check if it’s in the old Amazon S3 storage.
 If it can be found there either, it will check the IIIF server (for v2 IIIF image urls).
   * The upload functionality uses an (unmodified) version of the [Scrimage](https://github.com/sksamuel/scrimage)
-library for scaling images and converting them to webp. This software has an [Apache 2.0 license](https://github.com/sksamuel/scrimage/blob/master/LICENSE)
+library for scaling images and converting them to webp. This library has an [Apache 2.0 license](https://github.com/sksamuel/scrimage/blob/master/LICENSE)
     
 
 ## Build

@@ -1,7 +1,7 @@
 package eu.europeana.thumbnail.model;
 
-import eu.europeana.exception.S3ObjectStorageException;
-import eu.europeana.features.S3Object;
+import eu.europeana.s3.exception.S3ObjectStorageException;
+import eu.europeana.s3.S3Object;
 
 import java.io.IOException;
 import java.time.Instant;

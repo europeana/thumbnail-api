@@ -1,6 +1,6 @@
 package eu.europeana.thumbnail.service.impl;
 
-import eu.europeana.features.S3Object;
+import eu.europeana.s3.S3Object;
 import eu.europeana.thumbnail.model.ImageSize;
 import eu.europeana.thumbnail.model.MediaStream;
 import eu.europeana.thumbnail.service.MediaReadStorageService;
@@ -76,7 +76,7 @@ public class IiifImageReadServerImpl implements MediaReadStorageService {
         }
         LOG.info("Returning thumbnail from IIIF server {} ", imageUrl);
         // TODO can we determine content-length without reading the stream?
-        return new MediaStream(id, imageUrl, new S3Object(content, null));
+        return new MediaStream(id, imageUrl, new S3Object(id, content, null));
     }
 
     /**

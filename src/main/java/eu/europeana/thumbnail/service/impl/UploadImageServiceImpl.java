@@ -2,7 +2,7 @@ package eu.europeana.thumbnail.service.impl;
 
 import com.sksamuel.scrimage.ImmutableImage;
 import com.sksamuel.scrimage.webp.WebpWriter;
-import eu.europeana.features.S3ObjectStorageClient;
+import eu.europeana.s3.S3ObjectStorageClient;
 import eu.europeana.thumbnail.model.ImageSize;
 import eu.europeana.thumbnail.service.UploadImageService;
 import eu.europeana.thumbnail.utils.IdUtils;

@@ -1,6 +1,6 @@
 package eu.europeana.thumbnail.config;
 
-import eu.europeana.features.S3ObjectStorageClient;
+import eu.europeana.s3.S3ObjectStorageClient;
 import eu.europeana.thumbnail.exception.ConfigurationException;
 import eu.europeana.thumbnail.service.UploadImageService;
 import eu.europeana.thumbnail.service.MediaReadStorageService;

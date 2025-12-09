@@ -1,6 +1,6 @@
 package eu.europeana.thumbnail.web;
 
-import eu.europeana.features.S3Object;
+import eu.europeana.s3.S3Object;
 import eu.europeana.thumbnail.model.ImageSize;
 import eu.europeana.thumbnail.model.MediaStream;
 import eu.europeana.thumbnail.service.StoragesService;
@@ -129,7 +129,7 @@ public class ThumbnailControllerV2 extends AbstractController {
         InputStream stream = this.getClass().getResourceAsStream("/images/" + defaultImageName);
         Map<String, Object> metadata = new HashMap<>();
         metadata.put(S3Object.CONTENT_LENGTH, defaultImageContentLength);
-        return new MediaStream(null, defaultImageName, new S3Object(stream, metadata));
+        return new MediaStream(null, defaultImageName, new S3Object(defaultImageName, stream, metadata));
     }
 
 }

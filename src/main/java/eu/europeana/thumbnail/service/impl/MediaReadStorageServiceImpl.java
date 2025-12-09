@@ -1,7 +1,7 @@
 package eu.europeana.thumbnail.service.impl;
 
-import eu.europeana.features.S3Object;
-import eu.europeana.features.S3ObjectStorageClient;
+import eu.europeana.s3.S3Object;
+import eu.europeana.s3.S3ObjectStorageClient;
 import eu.europeana.thumbnail.model.MediaStream;
 import eu.europeana.thumbnail.service.MediaReadStorageService;
 import org.apache.logging.log4j.LogManager;

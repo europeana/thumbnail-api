@@ -6,6 +6,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 
+/**
+ * Basic Thumbnail API configuration
+ */
 @Configuration
 @PropertySource(value = "classpath:thumbnail.properties")
 @PropertySource(value = "classpath:thumbnail.user.properties", ignoreResourceNotFound = true)
