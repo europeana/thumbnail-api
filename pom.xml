@@ -23,8 +23,7 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
         <object-storage.version>3.0-SNAPSHOT</object-storage.version>
-        <api-commons-sb3.version>0.1.0</api-commons-sb3.version>
-        <!-- <api-commons-sb3.version>0.1.3-SNAPSHOT</api-commons-sb3.version> -->
+        <api-commons-sb3.version>0.1.3-SNAPSHOT</api-commons-sb3.version>
 
         <spring-boot.version>3.5.7</spring-boot.version>
         <commonsIO.version>2.21.0</commonsIO.version>
@@ -83,6 +82,11 @@
         <dependency>
             <groupId>eu.europeana.api</groupId>
             <artifactId>commons-sb3-error</artifactId>
+            <version>${api-commons-sb3.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>eu.europeana.api</groupId>
+            <artifactId>commons-sb3-oauth</artifactId>
             <version>${api-commons-sb3.version}</version>
         </dependency>
 

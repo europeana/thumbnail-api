@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.HttpHeaders;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
@@ -22,7 +23,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * MockMVC test to check if CORS is configured as desired
  */
 @SuppressWarnings("java:S5786")
-@WebMvcTest({ThumbnailControllerV2.class})
+@TestPropertySource("classpath:testroutes.properties")
+@TestPropertySource(properties=
+        {"spring.autoconfigure.exclude=org.springframework.boot.actuate.autoconfigure.security.servlet.ManagementWebSecurityAutoConfiguration," +
+                "org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration"})
+@WebMvcTest({ThumbnailControllerV2.class, ApiConfig.class})
 public class CorsConfigTest {
 
     @Autowired
