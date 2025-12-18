@@ -1,8 +1,8 @@
 package eu.europeana.thumbnail.web;
 
-import com.amazonaws.services.s3.Headers;
+import eu.europeana.s3.S3Object;
 import eu.europeana.thumbnail.model.MediaStream;
-import eu.europeana.thumbnail.service.MediaStorageService;
+import eu.europeana.thumbnail.service.MediaReadStorageService;
 import eu.europeana.thumbnail.service.StoragesService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -12,9 +12,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.mockito.BDDMockito.given;
@@ -54,10 +54,10 @@ public class ThumbnailControllerV2Test {
 
     @Autowired
     private MockMvc mockMvc;
-    @MockBean
+    @MockitoBean
     private StoragesService storagesService;
-    @MockBean
-    private MediaStorageService mediaStorage;
+    @MockitoBean
+    private MediaReadStorageService mediaStorage;
 
     @BeforeEach
     public void setup() {
@@ -72,6 +72,7 @@ public class ThumbnailControllerV2Test {
     //    content for the second GET request (with MEDIUM data) is empty despite us specifying an expected value.
     //    As a workaround we read the MEDIUM_STREAM before the test and strangely then the problem disappears.
     // It looks like these are bugs (either in IntelliJ or in Mockito)
+    // Update Nov 2025: the above issues still persist, even with the most recent version of IntelliJ
 
     /**
      * Test normal 200 Ok requests
@@ -130,11 +131,14 @@ public class ThumbnailControllerV2Test {
     @Test
     public void test_200_ContentType() throws Exception {
         given(mediaStorage.retrieve(URI_NO_TYPE_HASH + TestData.SIZE_LARGE, URI_NO_TYPE)).willReturn(
-                new MediaStream(URI_NO_TYPE_HASH + TestData.SIZE_LARGE, URI_NO_TYPE, TestData.LARGE_STREAM));
+                new MediaStream(URI_NO_TYPE_HASH + TestData.SIZE_LARGE, URI_NO_TYPE,
+                        new S3Object(URI_NO_TYPE_HASH + TestData.SIZE_LARGE, TestData.LARGE_STREAM, null)));
         given(mediaStorage.retrieve(URI_PNG_HASH + TestData.SIZE_LARGE, URI_PNG)).willReturn(
-                new MediaStream(URI_PNG_HASH + TestData.SIZE_LARGE, URI_PNG, TestData.LARGE_STREAM));
+                new MediaStream(URI_PNG_HASH + TestData.SIZE_LARGE, URI_PNG,
+                        new S3Object(URI_PNG_HASH + TestData.SIZE_LARGE, TestData.LARGE_STREAM, null)));
         given(mediaStorage.retrieve(URI_PDF_HASH + TestData.SIZE_LARGE, URI_PDF)).willReturn(
-                new MediaStream(URI_PDF_HASH + TestData.SIZE_LARGE, URI_PDF, TestData.LARGE_STREAM));
+                new MediaStream(URI_PDF_HASH + TestData.SIZE_LARGE, URI_PDF,
+                        new S3Object(URI_PDF_HASH + TestData.SIZE_LARGE, TestData.LARGE_STREAM, null)));
 
         this.mockMvc.perform(get(V2_ENDPOINT)
                     .param(URI_PARAMETER, URI_NO_TYPE))
@@ -160,14 +164,14 @@ public class ThumbnailControllerV2Test {
      */
     @Test
     public void test_200_DefaultIcon() throws Exception {
-        //for invalid Image and default icon
+        // for invalid Image and default icon
         this.mockMvc.perform(get(V2_ENDPOINT)
                 .param(URI_PARAMETER, URI_NOT_PRESENT))
                 .andExpect(status().isOk())
                 .andExpect(header().string("Content-Type", (MediaType.IMAGE_PNG_VALUE)))
                 .andExpect(header().string("Content-Length", DEFAULT_IMAGE_LENGTH));
 
-        //for invalid Video and default icon
+        // for invalid Video and default icon
         this.mockMvc.perform(get(V2_ENDPOINT)
                 .param(URI_PARAMETER, URI_NOT_PRESENT).param("type", "VIDEO"))
                 .andExpect(status().isOk())
@@ -180,7 +184,6 @@ public class ThumbnailControllerV2Test {
                 .andExpect(header().string("Content-Type", (MediaType.IMAGE_PNG_VALUE)))
                 .andExpect(header().string("Content-Length", DEFAULT_IMAGE_LENGTH));
 
-        //for invalid Video and default icon
         this.mockMvc.perform(head(V2_ENDPOINT)
                 .param(URI_PARAMETER, URI_NOT_PRESENT).param("type", "VIDEO"))
                 .andExpect(status().isOk())
@@ -209,24 +212,24 @@ public class ThumbnailControllerV2Test {
         this.mockMvc.perform(get(V2_ENDPOINT)
                 .param(URI_PARAMETER, TestData.URI))
                 .andExpect(status().isOk())
-                .andExpect(header().string((Headers.LAST_MODIFIED), TestData.LAST_MODIFIED_TEXT))
-                .andExpect(header().string((Headers.ETAG), TestData.ETAG_VALUE));
+                .andExpect(header().string((S3Object.LAST_MODIFIED), TestData.LAST_MODIFIED_TEXT))
+                .andExpect(header().string((S3Object.ETAG), TestData.ETAG_VALUE));
 
         // Check if we get 304 if we sent only LastModified
         this.mockMvc.perform(get(V2_ENDPOINT)
                 .param(URI_PARAMETER, TestData.URI)
                 .header("If-Modified-Since", TestData.LAST_MODIFIED_TEXT))
                 .andExpect(status().isNotModified())
-                .andExpect(header().string((Headers.LAST_MODIFIED), TestData.LAST_MODIFIED_TEXT))
-                .andExpect(header().string((Headers.ETAG), TestData.ETAG_VALUE));
+                .andExpect(header().string((S3Object.LAST_MODIFIED), TestData.LAST_MODIFIED_TEXT))
+                .andExpect(header().string((S3Object.ETAG), TestData.ETAG_VALUE));
 
         // Check if we get 304 if we sent only eTag
         this.mockMvc.perform(get(V2_ENDPOINT)
                 .param(URI_PARAMETER, TestData.URI)
                 .header("If-None-Match", TestData.ETAG_VALUE))
                 .andExpect(status().isNotModified())
-                .andExpect(header().string((Headers.LAST_MODIFIED), TestData.LAST_MODIFIED_TEXT))
-                .andExpect(header().string((Headers.ETAG), TestData.ETAG_VALUE));
+                .andExpect(header().string((S3Object.LAST_MODIFIED), TestData.LAST_MODIFIED_TEXT))
+                .andExpect(header().string((S3Object.ETAG), TestData.ETAG_VALUE));
     }
 
     @Test

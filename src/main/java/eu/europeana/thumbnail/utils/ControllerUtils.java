@@ -1,11 +1,10 @@
 package eu.europeana.thumbnail.utils;
 
 import eu.europeana.thumbnail.model.MediaStream;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.http.HttpHeaders;
-import org.springframework.web.context.request.WebRequest;
-
 import jakarta.servlet.http.HttpServletResponse;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.http.HttpHeaders;
+import org.springframework.web.context.request.WebRequest;
 
 /**
  * Class containing a number of useful controller utilities (mainly for setting headers)
@@ -57,7 +56,7 @@ public final class ControllerUtils {
     public static boolean checkForNotModified(MediaStream mediaFile, WebRequest webRequest) {
         if (mediaFile.getLastModified() != null && mediaFile.getETag() != null) {
             return webRequest.checkNotModified(StringUtils.removeEndIgnoreCase(mediaFile.getETag(), GZIPSUFFIX),
-                                               mediaFile.getLastModified().getMillis());
+                                               mediaFile.getLastModified().toEpochMilli());
         } else return mediaFile.getETag() != null &&
                       webRequest.checkNotModified(StringUtils.removeEndIgnoreCase(mediaFile.getETag(), GZIPSUFFIX));
     }

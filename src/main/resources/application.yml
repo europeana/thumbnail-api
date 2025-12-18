@@ -1,6 +1,14 @@
 # Settings for local testing
 server.port: 8081
 
+spring:
+  servlet:
+    multipart:
+      enabled: true
+      location: ${java.io.tmpdir}
+      max-file-size: 8MB
+      max-request-size: 8MB
+
 server:
   error:
     include-message: always            # with on_param only shown when using 'message' option
@@ -28,10 +36,3 @@ management:
       enabled: true
     readinessState:
       enabled: true
-
-# Creates a redirect from /console to /swagger-ui/index.html
-springdoc:
-  swagger-ui:
-    path: /console
-  # Don't include Error controller
-  paths-to-exclude: /error

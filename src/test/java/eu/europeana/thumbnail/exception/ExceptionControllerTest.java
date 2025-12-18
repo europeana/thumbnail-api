@@ -45,7 +45,7 @@ public class ExceptionControllerTest {
         assertEquals(Boolean.FALSE, response.getBoolean("success"));
         assertEquals("404", response.getString("status"));
         assertNotNull(response.getString("timestamp"));
-        assertTrue(response.getString("timestamp").length() > 0);
+        assertFalse(response.getString("timestamp").isEmpty());
     }
 
 }

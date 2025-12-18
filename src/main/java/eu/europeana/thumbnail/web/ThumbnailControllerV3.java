@@ -25,7 +25,6 @@ import java.util.Optional;
 /**
  * Retrieves image thumbnails for version 3
  * The thumbnail API doesn't require any form of authentication, providing an API key is optional.
- *
  * Note that the controller can return content in PNG and JPG format, depending on the format of the thumbnail that is
  * requested (extension parameter)
  */
@@ -42,6 +41,10 @@ public class ThumbnailControllerV3 extends AbstractController {
 
     protected static final String URL_ERROR_MESSAGE = "Either Size or Id is missing. Correct url is /v3/{size}/{id}";
 
+    /**
+     * Create a new controller to server Thumbnail V3 requests
+     * @param storagesService the storage service to use
+     */
     public ThumbnailControllerV3(StoragesService storagesService) {
         super(storagesService);
     }
@@ -84,7 +87,7 @@ public class ThumbnailControllerV3 extends AbstractController {
             @PathVariable(value = "size", required = false)
                 @Pattern(regexp = "^(200|400)$", message = SIZE_ERROR_MESSAGE) String size,
             @PathVariable(value = "id")
-                @Pattern(regexp = "^[a-fA-F0-9]{8,128}$", message = ID_ERROR_MESSAGE) String id,
+                @Pattern(regexp = "^[a-fA-F0-9]{8,128}((?i).jpg|.jpeg|.png|.webp)?$", message = ID_ERROR_MESSAGE) String id,
             WebRequest webRequest, HttpServletRequest request, HttpServletResponse response) throws EuropeanaApiException {
         long startTime = 0;
         if (LOG.isDebugEnabled()) {
@@ -105,11 +108,15 @@ public class ThumbnailControllerV3 extends AbstractController {
 
         Optional<MediaStream> mediaFile = retrieveThumbnail(request, idWithoutExtension, extension, Integer.valueOf(size));
         if (mediaFile.isEmpty()) {
-            logRequestDuration(startTime, "Id = " + id + ", status = " + HttpStatus.NOT_FOUND);
+            if (LOG.isDebugEnabled()) {
+                logRequestDuration(startTime, "Id = " + id + ", status = " + HttpStatus.NOT_FOUND);
+            }
             throw new ThumbnailNotFoundException();
         }
         ResponseEntity<InputStreamResource> result = generateResponse(webRequest, response, mediaFile.get());
-        logRequestDuration(startTime, "Id = " + id + ", status = " + response.getStatus());
+        if (LOG.isDebugEnabled()) {
+            logRequestDuration(startTime, "Id = " + id + ", status = " + response.getStatus());
+        }
         return result;
     }
 }

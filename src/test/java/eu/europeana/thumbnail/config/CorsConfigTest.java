@@ -1,6 +1,6 @@
 package eu.europeana.thumbnail.config;
 
-import eu.europeana.thumbnail.service.MediaStorageService;
+import eu.europeana.thumbnail.service.MediaReadStorageService;
 import eu.europeana.thumbnail.service.StoragesService;
 import eu.europeana.thumbnail.web.TestData;
 import eu.europeana.thumbnail.web.ThumbnailControllerV2;
@@ -9,8 +9,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpHeaders;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 
@@ -27,10 +27,10 @@ public class CorsConfigTest {
 
     @Autowired
     private MockMvc mockMvc;
-    @MockBean
+    @MockitoBean
     private StoragesService storagesService;
-    @MockBean
-    private MediaStorageService mediaStorage;
+    @MockitoBean
+    private MediaReadStorageService mediaStorage;
 
     @BeforeEach
     public void setup() {

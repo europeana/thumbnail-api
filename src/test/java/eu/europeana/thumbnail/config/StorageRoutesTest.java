@@ -1,8 +1,8 @@
 package eu.europeana.thumbnail.config;
 
-import eu.europeana.thumbnail.service.MediaStorageService;
+import eu.europeana.thumbnail.service.MediaReadStorageService;
 import eu.europeana.thumbnail.service.StoragesService;
-import eu.europeana.thumbnail.service.impl.IiifImageServerImpl;
+import eu.europeana.thumbnail.service.impl.IiifImageReadServerImpl;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -48,22 +48,22 @@ public class StorageRoutesTest {
         testFirstStorage(storagesService.getStorages("test2"));
     }
 
-    private void testFirstStorage(List<MediaStorageService> services) {
+    private void testFirstStorage(List<MediaReadStorageService> services) {
         assertNotNull(services);
         assertEquals(4, services.size());
         assertEquals("default", services.get(0).getName());
         assertEquals("prod1", services.get(1).getName());
         assertEquals("prod2", services.get(2).getName());
-        assertEquals(IiifImageServerImpl.STORAGE_NAME, services.get(3).getName());
+        assertEquals(IiifImageReadServerImpl.STORAGE_NAME, services.get(3).getName());
     }
 
-    private void testSecondStorage(List<MediaStorageService> services) {
+    private void testSecondStorage(List<MediaReadStorageService> services) {
         assertNotNull(services);
         assertEquals(1, services.size());
         assertEquals("test2", services.get(0).getName());
     }
 
-    private void testThirdStorage(List<MediaStorageService> services) {
+    private void testThirdStorage(List<MediaReadStorageService> services) {
         assertNotNull(services);
         assertEquals(1, services.size());
         assertEquals("default", services.get(0).getName());

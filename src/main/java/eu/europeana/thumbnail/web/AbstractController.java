@@ -1,11 +1,10 @@
 package eu.europeana.thumbnail.web;
 
-import eu.europeana.thumbnail.model.ImageSize;
 import eu.europeana.thumbnail.model.MediaStream;
-import eu.europeana.thumbnail.service.MediaStorageService;
+import eu.europeana.thumbnail.service.MediaReadStorageService;
 import eu.europeana.thumbnail.service.StoragesService;
 import eu.europeana.thumbnail.utils.ControllerUtils;
-import eu.europeana.thumbnail.utils.HashUtils;
+import eu.europeana.thumbnail.utils.IdUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.StringUtils;
@@ -31,7 +30,7 @@ import java.util.Optional;
 public abstract class AbstractController {
 
     private static final Logger LOG = LogManager.getLogger(AbstractController.class);
-    private static final long DURATION_CONVERTER  = 1_000_000L;
+    private static final long NANO_TO_MS  = 1_000_000L;
 
     protected StoragesService storagesService;
 
@@ -54,8 +53,7 @@ public abstract class AbstractController {
         if (StringUtils.isEmpty(fileId)) {
             id = computeId(originalUrl);
         }
-        // add image width to id
-        id = addWidth(id, width);
+        id = IdUtils.getS3ObjectId(id, width);
 
         String serverName = request.getServerName();
         if ("localhost".equalsIgnoreCase(serverName)) {
@@ -64,8 +62,8 @@ public abstract class AbstractController {
         }
 
         MediaStream result = null;
-        List<MediaStorageService> mediaStorageServices = storagesService.getStorages(serverName);
-        for (MediaStorageService mss : mediaStorageServices) {
+        List<MediaReadStorageService> mediaStorageServices = storagesService.getStorages(serverName);
+        for (MediaReadStorageService mss : mediaStorageServices) {
             result = mss.retrieve(id, originalUrl);
             if (result == null) {
                 LOG.debug("File {} not present in storage {}", id, mss.getName());
@@ -73,7 +71,9 @@ public abstract class AbstractController {
                 LOG.debug("File {} found in storage {}", id, mss.getName());
                 // Temporarily added so we can get insight in how many images requested in production are not in IBM S3
                 if ("uim-prod".equals(mss.getName())) {
-                    LOG.debug("File with url {} and id {} found in old Amazon S3 storage", originalUrl, id);
+                    // 2025-11-13 Temporarily changed to info level because should Amazon S3 migration is complete
+                    // so this should not happen any more
+                    LOG.warn("File with url {} and id {} found in old Amazon S3 storage", originalUrl, id);
                 }
                 break;
             }
@@ -89,16 +89,10 @@ public abstract class AbstractController {
      * @return id of the thumbnail as it is stored in S3 (but with width indication)
      */
     private String computeId(final String resourceUrl) {
-        return HashUtils.getMD5(resourceUrl);
+        return IdUtils.getMD5(resourceUrl);
     }
 
-    private String addWidth(final String id, final Integer resourceWidth) {
-        String width = ImageSize.LARGE.name();
-        if (resourceWidth != null && resourceWidth == ImageSize.MEDIUM.getWidth()) {
-            width = ImageSize.MEDIUM.name();
-        }
-        return id + "-" + width;
-    }
+
 
     /**
      * Set the proper response headers and return object
@@ -124,40 +118,59 @@ public abstract class AbstractController {
             response.setStatus(HttpStatus.PRECONDITION_FAILED.value());
             return null;
         }
+        MediaType mediaType = this.getMediaType(mediaFile.getContentType(), mediaFile.getOriginalUrl());
 
-        InputStreamResource result = new InputStreamResource(mediaFile.getInputStream());
-        // Normally we let Spring determine the Content-type based on the Accept headers in the request, but here we set
-        // the type dynamically to either jpeg or png depending on the type of thumbnail that we retrieved.
-        MediaType mediaType = getMediaType(mediaFile.getOriginalUrl());
-
-        if (mediaFile.hasMetadata()) {
+        InputStreamResource imageStream = new InputStreamResource(mediaFile.getS3Object().inputStream());
+        if (mediaFile.getContentLength() == null ) {
+            LOG.warn("No content length for image with url {} and ETag {}", mediaFile.getOriginalUrl(), mediaFile.getETag());
             return ResponseEntity.ok()
                     .contentType(mediaType)
-                    .contentLength(mediaFile.getContentLength())
-                    .body(result);
+                    .body(imageStream);
         }
-        // avoid sending contentLength 0 if there is no metadata
         return ResponseEntity.ok()
                 .contentType(mediaType)
-                .body(result);
+                .contentLength(mediaFile.getContentLength())
+                .body(imageStream);
     }
 
     /**
-     * Return the media type of the image that we are returning. Note that we base our return value solely on the
-     * extension in the original image url, so if that is not correct we could be returning the incorrect value
+     * Return the (likely) media type of the image that we are returning.
      *
+     * Ideally we return the content type set in the object's metadata, but for "regular" thumbnails this is regularly set
+     * to either "application/octet-stream" or "binary/octet-stream". Only for logo's that we store ourselves do we
+     * return a have a proper content type in the metadata (image/webp).
+     * This means that for regular thumbnails we'll try to guess the most likely type. Usually that's image/jpeg, but for
+     * some v2 requests we know it's probably png.
+     * This method is not 100% accurate but it works for our purposes, even if we get it wrong.
+     *
+     * @param contentTypeMetadata the content type as set in object's metadata (can be null)
      * @param url String
-     * @return String containing the MediaType of the thumbnail image (png for PDF and PNG files, otherwise JPEG)
+     * @return String containing the MediaType of the thumbnail image
      */
-    private MediaType getMediaType(String url) {
-        if (url == null) {
-            return MediaType.IMAGE_JPEG;
+    private MediaType getMediaType(String contentTypeMetadata, String url) {
+        MediaType result  = null;
+        LOG.debug("ContentType from metadata {}", contentTypeMetadata);
+
+        if (contentTypeMetadata != null && contentTypeMetadata.toLowerCase(Locale.getDefault()).startsWith("image/")) {
+            result = MediaType.parseMediaType(contentTypeMetadata);
         }
-        String urlLow = url.toLowerCase(Locale.GERMAN);
-        if (urlLow.endsWith(".png") || urlLow.endsWith(".pdf")) {
-            return MediaType.IMAGE_PNG;
+
+        if (result == null) {
+            // no proper content-type from metadata -> we have to guess
+            if (url == null) {
+                result = MediaType.IMAGE_JPEG; // v3 request -> regular thumbnails are generally stored as jpeg
+            } else {
+                // for v2 requests we can use the url to improve this; png and pdf files are usually stored as png
+                String urlLow = url.toLowerCase(Locale.GERMAN);
+                if (urlLow.endsWith(".png") || urlLow.endsWith(".pdf")) {
+                    return MediaType.IMAGE_PNG;
+                } else {
+                    result = MediaType.IMAGE_JPEG;
+                }
+            }
+            LOG.debug("ContentType from url: {}", result);
         }
-        return MediaType.IMAGE_JPEG;
+        return result;
     }
 
     /**
@@ -167,7 +180,7 @@ public abstract class AbstractController {
      */
     protected void logRequestDuration(long startTime, String requestInfo) {
         if (LOG.isDebugEnabled()) {
-            Long duration = (System.nanoTime() - startTime) / DURATION_CONVERTER;
+            Long duration = (System.nanoTime() - startTime) / NANO_TO_MS;
             if (StringUtils.isBlank(requestInfo)) {
                 LOG.debug("Processing time = {} ms ", duration);
             } else {
