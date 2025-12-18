@@ -18,8 +18,10 @@
         <!-- Set to debug to see how routes are resolved and linked to configured storages-->
         <Logger name="eu.europeana.thumbnail.service.StoragesService" level="INFO"/>
 
-        <!-- Set to debug to see logo processing and storing in S3 -->
-        <Logger name="eu.europeana.thumbnail.service.impl.LogoUploadService" level="INFO"/>
+        <!-- Set to debug to see logo processing and storing in S3, as well as metadata-->
+        <Logger name="eu.europeana.thumbnail.service.impl.UploadImageServiceImpl" level="DEBUG"/>
+        <!-- Set to debug to see metadata from retrieve images -->
+        <Logger name="eu.europeana.thumbnail.service.impl.MediaReadStorageServiceImpl" level="DEBUG"/>
 
         <!-- Set to debug to see in what storage a file was found (or not) and with what content-type -->
         <Logger name="eu.europeana.thumbnail.web.AbstractController" level="INFO"/>

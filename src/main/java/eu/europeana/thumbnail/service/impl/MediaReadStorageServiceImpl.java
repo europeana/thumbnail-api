@@ -1,11 +1,16 @@
 package eu.europeana.thumbnail.service.impl;
 
+import com.sksamuel.scrimage.metadata.Tag;
 import eu.europeana.s3.S3Object;
 import eu.europeana.s3.S3ObjectStorageClient;
 import eu.europeana.thumbnail.model.MediaStream;
 import eu.europeana.thumbnail.service.MediaReadStorageService;
+import eu.europeana.thumbnail.utils.MetadataUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import java.io.IOException;
+import java.util.List;
 
 /**
  * Service for retrieving media (e.g. thumbnails) from an object storage like Amazons S3 or IBM Cloud S3
@@ -46,6 +51,19 @@ public class MediaReadStorageServiceImpl implements MediaReadStorageService {
         if (obj == null || obj.inputStream() == null) {
             return null;
         } else {
+            if (LOG.isDebugEnabled()) {
+                //
+                try {
+                    List<Tag> metaData = MetadataUtils.getMetadata(obj.inputStream());
+                    StringBuilder sb = new StringBuilder();
+                    metaData.forEach(tag -> sb.append(tag).append("\n"));
+                    LOG.debug("Retrieved image {} metadata:\n{}", id, sb);
+                } catch (IOException ioe) {
+                    LOG.error("Error retrieving image metadata", ioe);
+                }
+                // WORKAROUND we read the stream so we need a new one to return as result
+                obj = objectStorageClient.getObject(id);
+            }
             return new MediaStream(id, originalUrl, obj);
         }
     }

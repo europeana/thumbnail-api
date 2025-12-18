@@ -53,7 +53,7 @@ public class UploadControllerV3 {
         if (this.uploadImageService == null) {
             LOG.info("Uploading is disabled");
         } else {
-            LOG.info("Uploading is enabled {}",
+            LOG.warn("Uploading is enabled {}",
                     apiConfig.isUploadAuthEnabled() ? "with authorization" : "without authorization!");
         }
     }
@@ -66,13 +66,11 @@ public class UploadControllerV3 {
      * @param request the received upload request
      * @return empty 406 response when succesful, or 401 when authorization fails, or 400 when there's a problem reading
      * the content, or 500 when there's a problem processing or storing the image.
-     * @throws ApplicationAuthenticationException when authentication is enabled and fails
      */
     @PutMapping(value = {"/v3/{id}", "/v3/{id}/", "/v3//{id}", "/v3//{id}/"})
     public ResponseEntity<String> uploadImageV3(
             @PathVariable(value = "id") @Pattern(regexp = "^[a-fA-F0-9]{8,128}$", message = ID_ERROR_MESSAGE) String id,
-            @RequestParam("file") MultipartFile file, HttpServletRequest request)
-            throws ApplicationAuthenticationException {
+            @RequestParam("file") MultipartFile file, HttpServletRequest request) {
         long start = System.currentTimeMillis();
         try {
             apiConfig.authorizeWriteAccess(request, Operations.UPDATE);
@@ -96,7 +94,7 @@ public class UploadControllerV3 {
         }
         if (contentType == null || Arrays.stream(SUPPORTED_IMAGE_TYPES).noneMatch(contentType::equalsIgnoreCase)) {
             LOG.error(UNSUPPORTED_CONTENT_TYPE_ERROR_MESSAGE + " {}, id {}, name {}", contentType, id, file.getOriginalFilename());
-            return ResponseEntity.badRequest().body(UNSUPPORTED_CONTENT_TYPE_ERROR_MESSAGE +
+            return ResponseEntity.badRequest().body(UNSUPPORTED_CONTENT_TYPE_ERROR_MESSAGE + ": " + contentType +
                     "\nSupported types are: " + Arrays.toString(SUPPORTED_IMAGE_TYPES));
         }
 

@@ -1,17 +1,20 @@
 package eu.europeana.thumbnail.service.impl;
 
 import com.sksamuel.scrimage.ImmutableImage;
+import com.sksamuel.scrimage.metadata.Tag;
 import com.sksamuel.scrimage.webp.WebpWriter;
 import eu.europeana.s3.S3ObjectStorageClient;
 import eu.europeana.thumbnail.model.ImageSize;
 import eu.europeana.thumbnail.service.UploadImageService;
 import eu.europeana.thumbnail.utils.IdUtils;
+import eu.europeana.thumbnail.utils.MetadataUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 
 /**
  * Service for reading an uploaded image (organisation logo), generating a 200 and 400 pixel version thumbnail and
@@ -38,6 +41,13 @@ public class UploadImageServiceImpl extends MediaReadStorageServiceImpl implemen
      */
     public void process(String id, MultipartFile file) throws IOException {
         long startTime = System.currentTimeMillis();
+        if (LOG.isDebugEnabled()) {
+            List<Tag> metaData = MetadataUtils.getMetadata(file.getInputStream());
+            StringBuilder sb = new StringBuilder();
+            metaData.forEach(tag -> sb.append(tag).append("\n"));
+            LOG.debug("Uploaded image metadata:\n{}", sb);
+        }
+
         byte[] image = file.getBytes();
         generateThumbnailAndSave(id, image, ImageSize.LARGE);
         generateThumbnailAndSave(id, image, ImageSize.MEDIUM);
