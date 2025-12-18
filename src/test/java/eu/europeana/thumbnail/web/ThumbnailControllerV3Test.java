@@ -1,6 +1,7 @@
 package eu.europeana.thumbnail.web;
 
 import eu.europeana.s3.S3Object;
+import eu.europeana.thumbnail.config.ApiConfig;
 import eu.europeana.thumbnail.config.StorageRoutes;
 import eu.europeana.thumbnail.service.MediaReadStorageService;
 import eu.europeana.thumbnail.service.StoragesService;
@@ -28,7 +29,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * @author Patrick Ehlert, major refactoring in September 2020
  */
 @TestPropertySource("classpath:testroutes.properties")
-@WebMvcTest({ThumbnailControllerV3.class, StorageRoutes.class})
+@TestPropertySource(properties=
+        {"spring.autoconfigure.exclude=org.springframework.boot.actuate.autoconfigure.security.servlet.ManagementWebSecurityAutoConfiguration," +
+                "org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration"})
+@WebMvcTest({ThumbnailControllerV3.class, StorageRoutes.class, ApiConfig.class})
 @AutoConfigureMockMvc
 @SuppressWarnings("java:S5786")
 public class ThumbnailControllerV3Test {

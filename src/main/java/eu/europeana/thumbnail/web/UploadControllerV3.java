@@ -1,13 +1,12 @@
 package eu.europeana.thumbnail.web;
 
+import eu.europeana.api.commons_sb3.definitions.oauth.Operations;
+import eu.europeana.api.commons_sb3.error.exceptions.ApplicationAuthenticationException;
 import eu.europeana.thumbnail.config.ApiConfig;
 import eu.europeana.thumbnail.config.StorageRoutes;
-import eu.europeana.thumbnail.exception.UploadAuthenticationException;
 import eu.europeana.thumbnail.service.UploadImageService;
-import jakarta.security.auth.message.AuthException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.constraints.Pattern;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,7 +40,6 @@ public class UploadControllerV3 {
 
     private final ApiConfig apiConfig;
     private final UploadImageService uploadImageService;
-    //private AuthorizationService authorizationService;
 
     /**
      * Create a new UploadControler
@@ -54,9 +52,10 @@ public class UploadControllerV3 {
         this.uploadImageService = storageRoutes.getUploadImageService();
         if (this.uploadImageService == null) {
             LOG.info("Uploading is disabled");
+        } else if (apiConfig.isUploadAuthEnabled()) {
+            LOG.info("Uploading is enabled with authorization");
         } else {
-            LOG.info("Uploading is enabled {}",
-                    apiConfig.isUploadAuthEnabled() ? "with authorization" : "without authorization!");
+            LOG.warn("Uploading is enabled but without any authorization!");
         }
     }
 
@@ -65,31 +64,23 @@ public class UploadControllerV3 {
      * thumbnails for it and store it with the provided id.
      * @param id the identifier used to store the image
      * @param file the uploaded file
+     * @param request the received upload request
      * @return empty 406 response when succesful, or 401 when authorization fails, or 400 when there's a problem reading
      * the content, or 500 when there's a problem processing or storing the image.
-     * // @throws ApplicationAuthenticationException when authentication is enabled and fails
-     * @throws AuthException
      */
     @PutMapping(value = {"/v3/{id}", "/v3/{id}/", "/v3//{id}", "/v3//{id}/"})
     public ResponseEntity<String> uploadImageV3(
             @PathVariable(value = "id") @Pattern(regexp = "^[a-fA-F0-9]{8,128}$", message = ID_ERROR_MESSAGE) String id,
-            @RequestParam(value = "wskey", required = false) String wskey, // Tmp parameter until we have proper token validation
-            @RequestParam("file") MultipartFile file, HttpServletRequest request)
-        //throws ApplicationAuthenticationException {
-         throws UploadAuthenticationException {
+            @RequestParam("file") MultipartFile file, HttpServletRequest request) {
         long start = System.currentTimeMillis();
-        // authorization
-        // TODO Replace static wskey authentication with token-based authorization
-        if (apiConfig.isUploadAuthEnabled()) {
-            if (StringUtils.isEmpty(wskey)) {
-                throw new UploadAuthenticationException("This endpoint requires authentication");
-            } else if (!apiConfig.getWskey().equalsIgnoreCase(wskey)) {
-                throw new UploadAuthenticationException("Invalid wskey");
-            }
+        try {
+            apiConfig.authorizeWriteAccess(request, Operations.UPDATE);
+        } catch (ApplicationAuthenticationException e) {
+            // TODO for some reason the GlobalExceptionHandler is not catching this. So as workaround we catch, log and rethrow
+            LOG.error("Failed to authorize write access", e);
+            throw new RuntimeException(e);
         }
-//        if (apiConfig.isUploadAuthEnabled()) {
-//           verifyWriteAccess(request);
-//        }
+
 
         LOG.trace("Received upload PUT request with id {}", id);
         // Validate
@@ -104,7 +95,7 @@ public class UploadControllerV3 {
         }
         if (contentType == null || Arrays.stream(SUPPORTED_IMAGE_TYPES).noneMatch(contentType::equalsIgnoreCase)) {
             LOG.error(UNSUPPORTED_CONTENT_TYPE_ERROR_MESSAGE + " {}, id {}, name {}", contentType, id, file.getOriginalFilename());
-            return ResponseEntity.badRequest().body(UNSUPPORTED_CONTENT_TYPE_ERROR_MESSAGE +
+            return ResponseEntity.badRequest().body(UNSUPPORTED_CONTENT_TYPE_ERROR_MESSAGE + ": " + contentType +
                     "\nSupported types are: " + Arrays.toString(SUPPORTED_IMAGE_TYPES));
         }
 
@@ -118,10 +109,5 @@ public class UploadControllerV3 {
         }
 
     }
-
-//    private Authentication verifyWriteAccess(HttpServletRequest request) throws ApplicationAuthenticationException {
-//        //return this.authorizationService.authorizeWriteAccess(request, Operations.UPDATE);
-//        return null;
-//    }
 
 }

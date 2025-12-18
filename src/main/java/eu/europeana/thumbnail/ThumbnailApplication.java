@@ -1,7 +1,9 @@
 package eu.europeana.thumbnail;
 
 import org.springframework.boot.SpringApplication;
+import org.springframework.boot.actuate.autoconfigure.security.servlet.ManagementWebSecurityAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 
@@ -11,13 +13,14 @@ import org.springframework.boot.web.servlet.support.SpringBootServletInitializer
  * @author Srishti Singh
  * Created on 12-08-2019
  */
-@SpringBootApplication(scanBasePackages = {"eu.europeana.api", "eu.europeana.thumbnail"})
+@SpringBootApplication(scanBasePackages = {"eu.europeana.api", "eu.europeana.thumbnail"},
+        exclude = { ManagementWebSecurityAutoConfiguration.class, SecurityAutoConfiguration.class })
 public class ThumbnailApplication extends SpringBootServletInitializer {
 
     /**
      * This method is called when starting as a Spring-Boot application (e.g. from your IDE)
      *
-     * @param args main application paramaters
+     * @param args main application parameters
      */
     public static void main(String[] args) {
         SpringApplication.run(ThumbnailApplication.class, args);

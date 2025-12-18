@@ -28,10 +28,10 @@ public class ThumbnailInvalidUrlException extends EuropeanaApiException {
     }
 
     /**
-     * @return boolean indicating whether we should include the stacktrace in the logs (if doLog is enabled)
+     * @return boolean indicating whether we should not include the stacktrace in the logs (if doLog is enabled)
      */
-    public boolean logStacktrace() {
-        return true;
+    public boolean doLogStacktrace() {
+        return false;
     }
 
     @Override

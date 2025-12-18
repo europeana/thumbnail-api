@@ -33,6 +33,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * @author Patrick Ehlert, major refactoring in September 2020
  */
 @TestPropertySource("classpath:testroutes.properties")
+@TestPropertySource(properties=
+        {"spring.autoconfigure.exclude=org.springframework.boot.actuate.autoconfigure.security.servlet.ManagementWebSecurityAutoConfiguration," +
+                "org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration"})
 @WebMvcTest({UploadControllerV3.class, StorageRoutes.class, ApiConfig.class})
 @AutoConfigureMockMvc
 @SuppressWarnings("java:S5786")
