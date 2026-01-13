@@ -84,6 +84,7 @@ public class StorageRoutes {
         int i = 1;
         String routeKeyNr = PROP_ROUTE + i;
         String routeKeyName = routeKeyNr + PROPERTY_SEPARATOR + PROP_ROUTE_NAME;
+        List<String> createdStoragesNames = new ArrayList<>(); // tmp to check later if our upload storage was configured properly
 
         while (environment.containsProperty(routeKeyName)) {
             // get routes
@@ -101,7 +102,9 @@ public class StorageRoutes {
                     // trim to remove spaces
                     String cleanRoute = route.trim();
                     LOG.info("Adding route {} with storage(s) {}", cleanRoute, storages);
-                    routeToStorages.put(cleanRoute, generateStorageServices(storages, this.logoUploadStorageName));
+                    List<MediaReadStorageService> created = generateStorageServices(storages, this.logoUploadStorageName);
+                    routeToStorages.put(cleanRoute, created);
+                    created.forEach(storage -> createdStoragesNames.add(storage.getName()));
                 }
             } else {
                 throw new ConfigurationException(("No storage defined for route(s)" + routes));
@@ -112,10 +115,13 @@ public class StorageRoutes {
             routeKeyName = routeKeyNr + PROPERTY_SEPARATOR + PROP_ROUTE_NAME;
         }
 
+        // validation
         if (routeToStorages.isEmpty()) {
             throw new ConfigurationException("No routes and storages configured!");
         }
-
+        if (!createdStoragesNames.contains(this.logoUploadStorageName)) {
+            LOG.error("Configured logo upload storage {} not found!", this.logoUploadStorageName);
+        }
     }
 
     private ArrayList<MediaReadStorageService> generateStorageServices(String[] storageNames, String uploadStorageName) {
