@@ -68,7 +68,7 @@ public class UploadControllerV3 {
      * @return empty 406 response when succesful, or 401 when authorization fails, or 400 when there's a problem reading
      * the content, or 500 when there's a problem processing or storing the image.
      */
-    @SuppressWarnings("javasecurity:S5145")
+    @SuppressWarnings("javasecurity:S5145") // input is sanitized by Spring Boot
     @PutMapping(value = {"/v3/{id}", "/v3/{id}/", "/v3//{id}", "/v3//{id}/"})
     public ResponseEntity<String> uploadImageV3(
             @PathVariable(value = "id") @Pattern(regexp = "^[a-fA-F0-9]{8,128}$", message = ID_ERROR_MESSAGE) String id,

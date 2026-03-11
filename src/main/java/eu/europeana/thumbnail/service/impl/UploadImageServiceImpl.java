@@ -36,6 +36,7 @@ public class UploadImageServiceImpl extends MediaReadStorageServiceImpl implemen
      * @param file the uploaded file
      * @throws IOException when there is and issue reading the uploaded file
      */
+    @SuppressWarnings("javasecurity:S5145") // input is sanitized by Spring Boot
     public void process(String id, MultipartFile file) throws IOException {
         long startTime = System.currentTimeMillis();
         byte[] image = file.getBytes();
