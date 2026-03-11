@@ -68,6 +68,7 @@ public class UploadControllerV3 {
      * @return empty 406 response when succesful, or 401 when authorization fails, or 400 when there's a problem reading
      * the content, or 500 when there's a problem processing or storing the image.
      */
+    @SuppressWarnings("javasecurity:S5145")
     @PutMapping(value = {"/v3/{id}", "/v3/{id}/", "/v3//{id}", "/v3//{id}/"})
     public ResponseEntity<String> uploadImageV3(
             @PathVariable(value = "id") @Pattern(regexp = "^[a-fA-F0-9]{8,128}$", message = ID_ERROR_MESSAGE) String id,
@@ -85,7 +86,7 @@ public class UploadControllerV3 {
         LOG.trace("Received upload PUT request with id {}", id);
         // Validate
         if (file == null || file.isEmpty()) {
-            LOG.error(EMPTY_FILE_ERROR_MESSAGE + " id {}, name {}", id, (file == null ? null : file.getOriginalFilename()));
+            LOG.error(EMPTY_FILE_ERROR_MESSAGE + " id {}, name {}", id, (file == null ? null : file.getName()));
             return ResponseEntity.badRequest().body("Received empty file");
         }
         String contentType = file.getContentType();
@@ -94,7 +95,7 @@ public class UploadControllerV3 {
             contentType = contentType.substring(0, contentType.indexOf(";"));
         }
         if (contentType == null || Arrays.stream(SUPPORTED_IMAGE_TYPES).noneMatch(contentType::equalsIgnoreCase)) {
-            LOG.error(UNSUPPORTED_CONTENT_TYPE_ERROR_MESSAGE + " {}, id {}, name {}", contentType, id, file.getOriginalFilename());
+            LOG.error(UNSUPPORTED_CONTENT_TYPE_ERROR_MESSAGE + " {}, id {}, name {}", contentType, id, file.getName());
             return ResponseEntity.badRequest().body(UNSUPPORTED_CONTENT_TYPE_ERROR_MESSAGE + ": " + contentType +
                     "\nSupported types are: " + Arrays.toString(SUPPORTED_IMAGE_TYPES));
         }

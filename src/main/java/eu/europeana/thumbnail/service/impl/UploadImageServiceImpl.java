@@ -41,7 +41,7 @@ public class UploadImageServiceImpl extends MediaReadStorageServiceImpl implemen
         byte[] image = file.getBytes();
         generateThumbnailAndSave(id, image, ImageSize.LARGE);
         generateThumbnailAndSave(id, image, ImageSize.MEDIUM);
-        LOG.info("Image with id {} and name {} processed successfully in {} ms", id, file.getOriginalFilename(),
+        LOG.info("Image with id {} and name {} processed successfully in {} ms", id, file.getName(),
                 System.currentTimeMillis() - startTime);
     }
 
