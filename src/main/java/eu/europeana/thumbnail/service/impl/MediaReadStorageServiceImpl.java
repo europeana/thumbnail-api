@@ -57,6 +57,10 @@ public class MediaReadStorageServiceImpl implements MediaReadStorageService {
     public String getName() {
         return name;
     }
+
+    public S3ObjectStorageClient getObjectStorageClient(){
+        return this.objectStorageClient;
+    }
 }
 
 
