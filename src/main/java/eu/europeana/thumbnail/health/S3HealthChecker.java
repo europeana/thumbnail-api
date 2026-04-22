@@ -59,7 +59,7 @@ public class S3HealthChecker implements HealthIndicator {
                         } else if (nrDown > 1){
                             sb.append(",");
                         }
-                        sb.append(" ").append(entry.getKey()).append(" / ").append(entry.getValue());
+                        sb.append(" ").append(entry.getKey()).append("/").append(entry.getValue());
                         LOG.error("{} / {} is not available", entry.getKey(), entry.getValue());
                     }
                     serviceBucketHealthMap.put(entry.getKey() + "/" + entry.getValue(), bucketUp);
