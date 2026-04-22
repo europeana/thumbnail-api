@@ -123,7 +123,7 @@ public class StorageRoutes {
         }
         if (!createdStoragesNames.contains(this.logoUploadStorageName)) {
             LOG.error("Configured logo upload storage {} not found!", this.logoUploadStorageName);
-        }
+        }// here?
     }
 
     private ArrayList<MediaReadStorageService> generateStorageServices(String[] storageNames, String uploadStorageName) {
