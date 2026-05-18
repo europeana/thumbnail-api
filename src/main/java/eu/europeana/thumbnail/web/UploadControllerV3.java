@@ -65,8 +65,14 @@ public class UploadControllerV3 {
      * @param id the identifier used to store the image
      * @param file the uploaded file
      * @param request the received upload request
-     * @return empty 406 response when succesful, or 401 when authorization fails, or 400 when there's a problem reading
-     * the content, or 500 when there's a problem processing or storing the image.
+     * @return empty 204 response when successful, or
+     * <ul>
+     *     <li>400 when there's the provided id is invalid</li>
+     *     <li>401 when authorization fails</li>
+     *     <li>405 when no image is added to the request</li>
+     *     <li>413 if a file is uploaded larger than the configured maximum</li>
+     *     <li>500 when there's a problem processing or storing the image</li>
+     * </ul>
      */
     @SuppressWarnings("javasecurity:S5145") // input is sanitized by Spring Boot
     @PutMapping(value = {"/v3/{id}", "/v3/{id}/", "/v3//{id}", "/v3//{id}/"})
