@@ -33,14 +33,13 @@ management:
       probes:
         enabled: true
       show-details: always
+      # We simplify the groups to use standard, built-in states
       group:
-      # Liveness group - keep it simple
         liveness:
           include: livenessState
           show-details: always
-        # Readiness group - check dependencies
         readiness:
-          include: readinessState,s3
+          include: readinessState
           show-details: always
 
   health:
