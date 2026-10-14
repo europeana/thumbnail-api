@@ -21,6 +21,9 @@ public class StorageRoutesTest {
     @Autowired
     private StoragesService storagesService;
 
+    @Autowired
+    private StorageRoutes storageRoutes;
+
     @Test
     public void testExactMatch() {
         // first route, first name
@@ -67,5 +70,10 @@ public class StorageRoutesTest {
         assertNotNull(services);
         assertEquals(1, services.size());
         assertEquals("default", services.get(0).getName());
+    }
+
+    @Test
+    void testPrimaryStorage() {
+        assertEquals("default", storageRoutes.getPrimaryStorage().getName());
     }
 }

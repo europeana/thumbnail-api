@@ -49,8 +49,8 @@ public class StorageRoutes {
     private static final int    DEFVAL_MAX_CONNECTIONS = 50;
     private static final String PROPERTY_SEPARATOR = ".";
     private static final String VALUE_SEPARATOR    = ",";
-
     private static final String PROP_LOGO_UPLOAD_STORAGE = "upload.storage";
+    public static final String PRIMARY_STORAGE = "primaryStorage";
 
     private String defaultRoute;
 
@@ -61,6 +61,8 @@ public class StorageRoutes {
     private String logoUploadStorageName;
 
     private final Environment environment;
+
+    private final Map<String, String> serviceBucketMap = new HashMap<>();
 
     /**
      * Initialize configuration of routes and corresponding media storages.
@@ -121,7 +123,7 @@ public class StorageRoutes {
         }
         if (!createdStoragesNames.contains(this.logoUploadStorageName)) {
             LOG.error("Configured logo upload storage {} not found!", this.logoUploadStorageName);
-        }
+        }// here?
     }
 
     private ArrayList<MediaReadStorageService> generateStorageServices(String[] storageNames, String uploadStorageName) {
@@ -168,15 +170,18 @@ public class StorageRoutes {
         }
 
         if (StringUtils.isEmpty(endpoint)) {
+            serviceBucketMap.put(storageName, bucket);
             LOG.info("Creating Amazon storage client {}...", storageName);
             return new eu.europeana.thumbnail.service.impl.MediaReadStorageServiceImpl(storageName, 
                     new S3ObjectStorageClient(key, secret, region, bucket, httpClientBuilder.build()));
         }
         if (storageName.equalsIgnoreCase(logoUploadStorageName)) {
+            serviceBucketMap.put(storageName, bucket);
             LOG.info("Creating IBM read/write storage client {}...", storageName);
             return new UploadImageServiceImpl(storageName,
                     new S3ObjectStorageClient(key, secret, region, bucket, endpointUri, httpClientBuilder.build()));
         }
+        serviceBucketMap.put(storageName, bucket);
         LOG.info("Creating IBM read storage client {}...", storageName);
         return new eu.europeana.thumbnail.service.impl.MediaReadStorageServiceImpl(storageName,
                 new S3ObjectStorageClient(key, secret, region, bucket, endpointUri  , httpClientBuilder.build()));
@@ -204,6 +209,36 @@ public class StorageRoutes {
      */
     public Map<String, List<MediaReadStorageService>> getRoutesMap() {
         return routeToStorages;
+    }
+
+    /**
+     * Returns the first storage associated with the default route.
+     * @return the primary storage service
+     * @throws IllegalStateException if the default route or its storage list is missing or empty
+     */
+    public MediaReadStorageService getPrimaryStorage() {
+        List<MediaReadStorageService> storages = routeToStorages.get(defaultRoute);
+
+        if (storages == null || storages.isEmpty()) {
+            throw new IllegalStateException(
+                    "No storage configured for default route: " + defaultRoute);
+        }
+
+        return storages.get(0);
+    }
+
+    /**
+     * Returns a map of MediaReadStorageServices that will be monitored by the health check
+     */
+    public Map<String, MediaReadStorageService> getMediaStorageServices() {
+        return storageNameToService;
+    }
+
+    /**
+     * Returns a map of MediaReadStorageServices that will be monitored by the health check
+     */
+    public Map<String, String> getServiceBucketMap() {
+        return serviceBucketMap;
     }
 
 }

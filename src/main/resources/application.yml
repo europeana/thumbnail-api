@@ -1,19 +1,22 @@
 # Settings for local testing
 server.port: 8081
 
+server:
+  error:
+    include-message: always            # with on_param only shown when using 'message' option
+    include-stacktrace: on_param       # with on_param only shown when using 'trace' option
+    include-exception: true
+  shutdown: graceful
+
 spring:
+  lifecycle:
+    timeout-per-shutdown-phase: 20s
   servlet:
     multipart:
       enabled: true
       location: ${java.io.tmpdir}
       max-file-size: 8MB
       max-request-size: 8MB
-
-server:
-  error:
-    include-message: always            # with on_param only shown when using 'message' option
-    include-stacktrace: on_param       # with on_param only shown when using 'trace' option
-    include-exception: true
 
 management:
   endpoints:
@@ -30,6 +33,14 @@ management:
       probes:
         enabled: true
       show-details: never
+      # We simplify the groups to use standard, built-in states
+      group:
+        liveness:
+          include: livenessState
+          show-details: never
+        readiness:
+          include: readinessState, primaryStorage
+          show-details: never
 
   health:
     livenessState:
