@@ -17,11 +17,9 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMultipartHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import org.springframework.web.multipart.MultipartFile;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doNothing;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -59,8 +57,7 @@ public class UploadControllerV3Test {
     /**
      * Test normal 200 Ok requests
      */
-    @Disabled
-    // TODO fix unit test so it doesn't call the real uploadImageService.process() method.
+    @Disabled("TODO: Mock uploadImageService.process() before enabling this test")
     @Test
     public void test_200_Ok() throws Exception {
         doNothing().when(uploadImageService).process(anyString(), any());

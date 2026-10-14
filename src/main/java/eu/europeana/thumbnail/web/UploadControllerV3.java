@@ -50,6 +50,7 @@ public class UploadControllerV3 {
     public UploadControllerV3(ApiConfig apiConfig, StorageRoutes storageRoutes) {
         this.apiConfig = apiConfig;
         this.uploadImageService = storageRoutes.getUploadImageService();
+        LOG.info("UploadImageService injected into controller: {}", this.uploadImageService);
         if (this.uploadImageService == null) {
             LOG.info("Uploading is disabled");
         } else if (apiConfig.isUploadAuthEnabled()) {

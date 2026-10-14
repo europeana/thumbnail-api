@@ -1,5 +1,6 @@
 package eu.europeana.thumbnail.config;
 
+import eu.europeana.thumbnail.health.PrimaryStorageHealthIndicator;
 import eu.europeana.thumbnail.health.S3HealthChecker;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -39,11 +40,16 @@ public class ApplicationAvailabilityIntegrationTest {
     @MockitoBean(name = "s3")
     private S3HealthChecker s3HealthChecker;
 
+    @MockitoBean(name = "primaryStorage")
+    private PrimaryStorageHealthIndicator primaryStorageHealthIndicator;
+
     @BeforeEach
     void setUp() {
         // 2. Instruct the mock bean to always return an UP health status during the test
         Mockito.when(s3HealthChecker.health())
                 .thenReturn(Health.up().withDetail("status", "Mocked for integration testing").build());
+        Mockito.when(primaryStorageHealthIndicator.health())
+                .thenReturn(Health.up().build());
     }
 
     @Autowired private MockMvc mockMvc;

@@ -49,8 +49,8 @@ public class StorageRoutes {
     private static final int    DEFVAL_MAX_CONNECTIONS = 50;
     private static final String PROPERTY_SEPARATOR = ".";
     private static final String VALUE_SEPARATOR    = ",";
-
     private static final String PROP_LOGO_UPLOAD_STORAGE = "upload.storage";
+    public static final String PRIMARY_STORAGE = "primaryStorage";
 
     private String defaultRoute;
 
@@ -209,6 +209,22 @@ public class StorageRoutes {
      */
     public Map<String, List<MediaReadStorageService>> getRoutesMap() {
         return routeToStorages;
+    }
+
+    /**
+     * Returns the first storage associated with the default route.
+     * @return the primary storage service
+     * @throws IllegalStateException if the default route or its storage list is missing or empty
+     */
+    public MediaReadStorageService getPrimaryStorage() {
+        List<MediaReadStorageService> storages = routeToStorages.get(defaultRoute);
+
+        if (storages == null || storages.isEmpty()) {
+            throw new IllegalStateException(
+                    "No storage configured for default route: " + defaultRoute);
+        }
+
+        return storages.get(0);
     }
 
     /**
